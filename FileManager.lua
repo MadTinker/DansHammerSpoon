@@ -389,6 +389,40 @@ function FileManager.copyMostRecentImage()
         hs.alert.show("No recent images found on Desktop")
     end
 end
+
+function FileManager.openMostRecentImageFolder()
+    log:i('Attempting to open folder containing most recent image from Desktop')
+    local desktopPath = hs.fs.pathToAbsolute(os.getenv("HOME") .. "/Desktop")
+    log:d('Desktop path: ' .. desktopPath)
+
+    -- Look for multiple image formats, not just PNG
+    local cmd = string.format(
+        "find '%s' -maxdepth 1 -type f \\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.gif' -o -iname '*.bmp' -o -iname '*.tiff' \\) -exec ls -t {} + | head -n 1",
+        desktopPath)
+    log:d('Executing command: ' .. cmd)
+
+    local output, status, type, rc = hs.execute(cmd)
+
+    if status and output and output ~= "" then
+        -- Trim whitespace and newlines from the output
+        local filePath = output:match("^%s*(.-)%s*$")
+        if filePath and filePath ~= "" then
+            log:i('Opening folder containing image: ' .. filePath)
+            lastSelected.file = { name = "recent_image_folder", path = filePath }
+            -- Open the folder and select the file
+            local openCmd = string.format("open -R '%s'", filePath)
+            log:d('Executing open command: ' .. openCmd)
+            hs.execute(openCmd)
+            hs.alert.show("Opened folder containing: " .. hs.fs.displayName(filePath))
+        else
+            log:w('No valid file path found in command output')
+            hs.alert.show("No recent images found on Desktop")
+        end
+    else
+        log:w('Command failed or no images found. Status: ' .. tostring(status) .. ', RC: ' .. tostring(rc))
+        hs.alert.show("No recent images found on Desktop")
+    end
+end
 -- Save in global environment for module reuse
 _G.FileManager = FileManager
 return FileManager
