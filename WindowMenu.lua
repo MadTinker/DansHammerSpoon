@@ -484,11 +484,11 @@ end
 -- Show gap size selection menu
 function WindowMenu.showGapSizeMenu()
     local choices = {
-        { text = "Gap: 0px",  gap = 0 },
-        { text = "Gap: 5px",  gap = 5 },
-        { text = "Gap: 10px", gap = 10 },
-        { text = "Gap: 15px", gap = 15 },
-        { text = "Gap: 20px", gap = 20 }
+        { text = "Gap: 0px",  gap = 0, image = hs.image.imageFromName("NSImageNameRuler") },
+        { text = "Gap: 5px",  gap = 5, image = hs.image.imageFromName("NSImageNameRuler") },
+        { text = "Gap: 10px", gap = 10, image = hs.image.imageFromName("NSImageNameRuler") },
+        { text = "Gap: 15px", gap = 15, image = hs.image.imageFromName("NSImageNameRuler") },
+        { text = "Gap: 20px", gap = 20, image = hs.image.imageFromName("NSImageNameRuler") }
     }
 
     local chooser = hs.chooser.new(function(choice)
@@ -513,7 +513,8 @@ function WindowMenu.showSavedLayoutsMenu()
         table.insert(choices, {
             text = layoutName,
             subText = layoutData.description or "Saved layout",
-            layoutName = layoutName
+            layoutName = layoutName,
+            image = hs.image.imageFromName("NSImageNameFlowViewTemplate")
         })
     end
 
@@ -629,14 +630,26 @@ function WindowMenu.showMenu()
                     text = prefix .. item.title .. " ▶",
                     subText = "Submenu",
                     submenu = item.menu,
-                    prefix = prefix .. "  "
+                    prefix = prefix .. "  ",
+                    image = hs.image.imageFromName("NSRightFacingTriangleTemplate")
                 })
             else
                 -- Regular menu item
+                local iconName = "NSActionTemplate" -- Default icon
+                if item.title:find(icons.toggle) then iconName = "NSSlideshowTemplate"
+                elseif item.title:find(icons.location) then iconName = "NSImageNameDotMac"
+                elseif item.title:find(icons.save) then iconName = "NSSavePanelTemplate"
+                elseif item.title:find(icons.restore) then iconName = "NSRefreshTemplate"
+                elseif item.title:find(icons.settings) then iconName = "NSAdvanced"
+                elseif item.title:find(icons.monitor) then iconName = "NSComputer"
+                elseif item.title:find(icons.clear) then iconName = "NSTrashFull"
+                end
+
                 table.insert(choices, {
                     text = prefix .. item.title,
                     subText = item.tooltip or "Window action",
-                    fn = item.fn
+                    fn = item.fn,
+                    image = hs.image.imageFromName(iconName)
                 })
             end
         end
@@ -710,7 +723,8 @@ function WindowMenu.showSubmenu(submenuItems, title, prefix)
     table.insert(choices, 1, {
         text = "◀ Back to Main Menu",
         subText = "Return to previous menu",
-        back = true
+        back = true,
+        image = hs.image.imageFromName("NSLeftFacingTriangleTemplate")
     })
 
     local chooser = hs.chooser.new(function(choice)

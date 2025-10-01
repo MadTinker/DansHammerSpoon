@@ -179,7 +179,8 @@ local function getTargetWindow(callback)
             table.insert(visibleWindows, {
                 window = w,
                 text = appName .. " - " .. title,
-                subText = "App: " .. appName
+                subText = "App: " .. appName,
+                image = hs.image.imageFromName(hs.applications.infoForBundleID(app:bundleID()).path)
             })
         end
     end
@@ -514,32 +515,37 @@ function WindowToggler.showLocationsMenu()
         local menuItems = {
             {
                 text = "Save to Location 1",
-                subText = hasLocation1 and "Overwrite existing" or "New location"
+                subText = hasLocation1 and "Overwrite existing" or "New location",
+                image = hs.image.imageFromName("NSSavePanelTemplate")
             },
             {
                 text = "Save to Location 2",
-                subText = hasLocation2 and "Overwrite existing" or "New location"
+                subText = hasLocation2 and "Overwrite existing" or "New location",
+                image = hs.image.imageFromName("NSSavePanelTemplate")
             }
         }
 
         if hasLocation1 then
             table.insert(menuItems, {
                 text = "Restore to Location 1",
-                subText = "Go to saved location 1"
+                subText = "Go to saved location 1",
+                image = hs.image.imageFromName("NSRefreshTemplate")
             })
         end
 
         if hasLocation2 then
             table.insert(menuItems, {
                 text = "Restore to Location 2",
-                subText = "Go to saved location 2"
+                subText = "Go to saved location 2",
+                image = hs.image.imageFromName("NSRefreshTemplate")
             })
         end
 
         if hasLocation1 or hasLocation2 then
             table.insert(menuItems, {
                 text = "Clear This Window's Locations",
-                subText = "Remove saved locations for " .. appName
+                subText = "Remove saved locations for " .. appName,
+                image = hs.image.imageFromName("NSTrashFull")
             })
         end
 

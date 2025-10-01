@@ -50,15 +50,17 @@ local fallback_projects_list = {
     { name = "madness_interactive",        path = seatOfMadness },
     { name = ".hammerspoon",        path = "~/.hammerspoon" },
     { name = "Chat History",               path = seatOfMadness .. "/docs/cursor_chathistory" },
-    { name = "Todomill_projectorium",      path = seatOfMadness .. "/projects/common/Omnispindle/Todomill_projectorium" },
     { name = "Inventorium",                path = seatOfMadness .. "/projects/common/Inventorium" },
-    { name = "Omnispindle",                path = seatOfMadness .. "/projects/common/Omnispindle" },
-    { name = "Omnispindle-cli-bridge",     path = seatOfMadness .. "/projects/common/Omnispindle-cli-bridge" },
-    { name = "Swarmonomicon",              path = seatOfMadness .. "/projects/common/Swarmonomicon" },
-    { name = "Whispermind_Conduit",        path = seatOfMadness .. "/projects/common/Whispermind_Conduit" },
     { name = "SwarmDesk",                  path = seatOfMadness .. "/projects/common/SwarmDesk" },
-    { name = "regressiontestkit",          path = seatOfTest },
+    { name = "Omnispindle",                path = seatOfMadness .. "/projects/common/Omnispindle" },
+
+    { name = "Swarmonomicon",              path = seatOfMadness .. "/projects/common/Swarmonomicon" },
+    { name = "verified_madness",           path = seatOfMadness .. "/projects/python/verified_madness" },
+    { name = "Whispermind_Conduit",        path = seatOfMadness .. "/projects/common/Whispermind_Conduit" },
+    { name = "Todomill_projectorium",      path = seatOfMadness .. "/projects/common/Omnispindle/Todomill_projectorium" },
+
     -- RegressionTestKit ecosystem
+    { name = "regressiontestkit",          path = seatOfTest },
     { name = "IntergrationsQAtesting",     path = seatOfTest .. "/IntergrationsQAtesting" },
     { name = "OculusTestKit",              path = seatOfTest .. "/OculusTestKit" },
     { name = "phoenix",                    path = seatOfTest .. "/phoenix" },
@@ -72,11 +74,6 @@ local fallback_projects_list = {
     { name = "saws",                       path = seatOfTest .. "/saws" },
     { name = "prod-ed-configs",            path = seatOfTest .. "/prod-ed-configs" },
 
-    -- Swarmonomicon ecosystem
-    -- { name = "swarm-browser-agent", path = "~/lab/madness_interactive/projects/common/Swarmonomicon/browser-agent" },
-    -- { name = "swarm-todo-server",   path = "~/lab/madness_interactive/projects/common/Swarmonomicon/Omnispindle" },
-    -- { name = "swarm-projects",      path = "~/lab/madness_interactive/projects/common/Swarmonomicon/projects" },
-    -- { name = "lego-vision",         path = "~/lab/madness_interactive/projects/common/Swarmonomicon/projects/python/lego-vision" },
 
     -- Other major projects
     { name = "Cogwyrm",                    path = seatOfMadness .. "/projects/mobile/Cogwyrm" },
@@ -85,34 +82,21 @@ local fallback_projects_list = {
     { name = "EventGhost-Rust",            path = seatOfMadness .. "/projects/rust/EventGhost-Rust" },
 
     -- Python projects
-    -- { name = "fastmcp-balena-cli",  path = seatOfMadness .. "/projects/python/fastmcp-balena-cli" },
-    { name = "mcp-personal-jira",          path = seatOfMadness .. "/projects/python/mcp-personal-jira" },
-    -- { name = "LegoScry",            path = seatOfMadness .. "/projects/python/LegoScry" },
-    -- { name = "local-ai",            path = seatOfMadness .. "/projects/python/local-ai" },
-    -- { name = "simple-mqtt-server",  path = seatOfMadness .. "/projects/python/simple-mqtt-server-agent" },
     { name = "mqtt-get-var",               path = seatOfMadness .. "/projects/python/mqtt-get-var" },
     { name = "dvtTestKit",                 path = seatOfMadness .. "/projects/python/dvtTestKit" },
-    -- { name = "SeleniumPageUtils",   path = seatOfMadness .. "/projects/python/SeleniumPageUtilities" },
-    -- { name = "MqttLogger",          path = seatOfMadness .. "/projects/python/MqttLogger" },
     { name = "EventGhost-py",              path = seatOfMadness .. "/projects/python/EventGhost" },
-    -- { name = "py-games",            path = seatOfMadness .. "/projects/python/games" },
-    -- { name = "snowball-snowman",    path = seatOfMadness .. "/projects/python/games/snowball_snowman" },
 
-    -- Project root directories
-    { name = "projects-root",              path = seatOfMadness .. "/projects" },
-    { name = "common-projects",            path = seatOfMadness .. "/projects/common" },
-    { name = "mobile-projects",            path = seatOfMadness .. "/projects/mobile" },
-    { name = "python-projects",            path = seatOfMadness .. "/projects/python" },
-    -- { name = "nodeJS-projects",     path = "~/lab/madness_interactive/projects/nodeJS" },
-    { name = "lua-projects",               path = seatOfMadness .. "/projects/lua" },
-    { name = "powershell-projects",        path = seatOfMadness .. "/projects/powershell" },
-    -- { name = "OS-projects",         path = seatOfMadness .. "/projects/OS" },
-    { name = "rust-projects",              path = seatOfMadness .. "/projects/rust" },
-    { name = "tasker-projects",            path = seatOfMadness .. "/projects/tasker" },
-
-    -- Lua projects
-    -- { name = "LGS_script_template", path = "~/lab/madness_interactive/projects/lua/LGS_script_template" },
-    { name = "hammerspoon-proj",           path = seatOfMadness .. "/projects/lua/hammerspoon" },
+    -- -- Project root directories
+    -- { name = "projects-root",              path = seatOfMadness .. "/projects" },
+    -- { name = "common-projects",            path = seatOfMadness .. "/projects/common" },
+    -- { name = "mobile-projects",            path = seatOfMadness .. "/projects/mobile" },
+    -- { name = "python-projects",            path = seatOfMadness .. "/projects/python" },
+    -- -- { name = "nodeJS-projects",     path = "~/lab/madness_interactive/projects/nodeJS" },
+    -- { name = "lua-projects",               path = seatOfMadness .. "/projects/lua" },
+    -- { name = "powershell-projects",        path = seatOfMadness .. "/projects/powershell" },
+    -- -- { name = "OS-projects",         path = seatOfMadness .. "/projects/OS" },
+    -- { name = "rust-projects",              path = seatOfMadness .. "/projects/rust" },
+    -- { name = "tasker-projects",            path = seatOfMadness .. "/projects/tasker" },
 
     -- PowerShell projects
     { name = "WinSystemSnapshot",          path = seatOfMadness .. "/projects/powershell/WinSystemSnapshot" },
@@ -215,7 +199,8 @@ function FileManager.showFileMenu()
         table.insert(choices, {
             text = file.name,
             subText = "Edit this file",
-            path = file.path
+            path = file.path,
+            image = hs.image.imageFromName("NSBookmarksTemplate")
         })
     end
 
@@ -252,7 +237,8 @@ function FileManager.showEditorMenu()
             table.insert(choices, {
                 text = editorOption.name,
                 subText = "Select this editor",
-                command = editorOption.command
+                command = editorOption.command,
+                image = hs.image.imageFromName("NSAdvanced")
             })
         else
             log:w('Invalid editor option found, skipping:', hs.inspect(editorOption))

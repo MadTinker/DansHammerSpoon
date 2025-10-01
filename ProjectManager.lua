@@ -327,7 +327,7 @@ function ProjectManager.showProjectManager()
             subText = project.description .. " - " .. project.path,
             path = project.path,
             id = project.id,
-            image = hs.image.imageFromName(isActive and "NSFolderSmart" or "NSFolder")
+            image = hs.image.imageFromName(isActive and "NSAdvanced" or "NSBookmark")
         })
     end
 

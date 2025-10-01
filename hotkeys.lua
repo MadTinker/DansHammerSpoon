@@ -172,6 +172,7 @@ hs.hotkey.bind(hammer, ";", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(_hyper, ";", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "'", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(_hyper, "'", "Temporary Function", function() tempFunction() end)
+hs.hotkey.bind(hammer, "return", "Toggle Native Fullscreen", function() WindowManager.toggleNativeFullScreen() end)
 
 -- Shift Row
 hs.hotkey.bind(hammer, "z", "Temporary Function", function() tempFunction() end)
@@ -270,7 +271,8 @@ function restoreLayoutChooser()
     for _, layout in ipairs(layouts) do
         table.insert(choices, {
             text = layout.name,
-            subText = layout.description .. " (" .. layout.windowCount .. " windows)"
+            subText = layout.description .. " (" .. layout.windowCount .. " windows)",
+            image = hs.image.imageFromName("NSRefreshTemplate")
         })
     end
 
@@ -297,7 +299,8 @@ function deleteLayoutChooser()
     for _, layout in ipairs(layouts) do
         table.insert(choices, {
             text = layout.name,
-            subText = "Delete: " .. layout.description .. " (" .. layout.windowCount .. " windows)"
+            subText = "Delete: " .. layout.description .. " (" .. layout.windowCount .. " windows)",
+            image = hs.image.imageFromName("NSTrashFull")
         })
     end
 

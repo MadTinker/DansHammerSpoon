@@ -61,7 +61,8 @@ function AppManager.madFocus(appName)
             text = title,
             subText = "Focus this " .. appName .. " window",
             window = win,
-            type = "window"
+            type = "window",
+            image = hs.image.imageFromName("NSRightFacingTriangle")
         })
         openWindowTitles[title] = true
     end
@@ -82,7 +83,8 @@ function AppManager.madFocus(appName)
                 text = project.name,
                 subText = "Open " .. project.path,
                 path = project.path,
-                type = "project"
+                type = "project",
+                image = hs.image.imageFromName("NSBookmark")
             })
         end
     end
@@ -208,7 +210,8 @@ function AppManager.launchGitHubWithProjectSelection(app)
                 text = project.name,
                 subText = "Open " .. project.path,
                 path = project.path,
-                type = "project"
+                type = "project",
+                image = hs.image.imageFromName("NSBookmark")
             })
         end
 
@@ -305,7 +308,8 @@ function AppManager.launchGitHubWithProjectSelection(app)
                 text = title,
                 subText = "Focus this " .. appName .. " window",
                 window = win,
-                type = "window"
+                type = "window",
+                image = hs.image.imageFromName("NSRightFacingTriangle")
             })
             openWindowTitles[title] = true
         end
@@ -326,7 +330,8 @@ function AppManager.launchGitHubWithProjectSelection(app)
                     text = project.name,
                     subText = "Open " .. project.path,
                     path = project.path,
-                    type = "project"
+                    type = "project",
+                    image = hs.image.imageFromName("NSBookmark")
                 })
             end
         end
@@ -443,7 +448,8 @@ function AppManager.launchCursorWithGitHubDesktop()
                 text = project.name,
                 subText = "Open " .. project.path,
                 path = project.path,
-                type = "project"
+                type = "project",
+                image = hs.image.imageFromName("NSBookmark")
             })
         end
 
@@ -553,7 +559,8 @@ function AppManager.launchCursorWithGitHubDesktop()
                 subText = "Focus this " .. cursorAppName .. " window",
                 window = win,
                 type = "window",
-                path = path
+                path = path,
+                image = hs.image.imageFromName("NSRightFacingTriangle")
             })
             openWindowTitles[title] = true
         end
@@ -575,7 +582,8 @@ function AppManager.launchCursorWithGitHubDesktop()
                     text = project.name,
                     subText = "Open " .. project.path,
                     path = project.path,
-                    type = "project"
+                    type = "project",
+                    image = hs.image.imageFromName("NSBookmark")
                 })
             end
         end
@@ -790,7 +798,8 @@ function AppManager.open_scrcpy()
             text = scrcpyWin.title,
             subText = "Focus scrcpy window (" .. scrcpyWin.appName .. ")",
             window = scrcpyWin.window,
-            type = "window"
+            type = "window",
+            image = hs.image.imageFromName("NSRightFacingTriangle")
         })
     end
 
@@ -798,7 +807,8 @@ function AppManager.open_scrcpy()
     table.insert(choices, {
         text = "Launch New scrcpy",
         subText = "Start a new scrcpy instance",
-        type = "new"
+        type = "new",
+        image = hs.image.imageFromName("NSAddTemplate")
     })
 
     local chooser = hs.chooser.new(function(choice)

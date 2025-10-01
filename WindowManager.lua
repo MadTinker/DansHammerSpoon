@@ -488,6 +488,14 @@ function WindowManager.toggleFullLayout()
         log:d("True Full Layout", __FILE__, 511)
     end
 end
+
+function WindowManager.toggleNativeFullScreen()
+    local win = hs.window.focusedWindow()
+    if win then
+        win:setFullScreen(not win:isFullScreen())
+    end
+end
+
 -- Multi-window layout management
 function WindowManager.saveCurrentLayout(layoutName)
     log.i('Saving multi-window layout:', layoutName)
