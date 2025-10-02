@@ -33,6 +33,7 @@ local fileList = {
     { name = "Main init",       path = "~/.hammerspoon/init.lua" },
     { name = "Global Hotkeys", path = "~/.hammerspoon/hotkeys.lua" },
     { name = "File Manager",   path = "~/.hammerspoon/FileManager.lua" },
+    { name = "claude settings", path = "~/.claude/settings.json" },
     { name = "zshenv",         path = "~/.zshenv" },
     { name = "zshrc",          path = "~/.zshrc" },
     { name = "bash_aliases",   path = "~/.bash_aliases" },
