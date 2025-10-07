@@ -951,6 +951,15 @@ function WindowManager:changeAlpha(direction, amount)
     self:setAlpha(newAlpha, win)
 end
 
+function WindowManager.toggleAlwaysOnTop()
+    local win = hs.window.focusedWindow()
+    if win then
+        local state = not win:alwaysOnTop()
+        win:setAlwaysOnTop(state)
+        hs.alert.show(state and "Always on top" or "No longer on top")
+    end
+end
+
 -- Save in global environment for module reuse
 _G.WindowManager = WindowManager
 return WindowManager
