@@ -17,3 +17,4 @@ hammerghost_actions.json
 hammerghost_actions.json
 *.backup
 .DS_Store
+/.claude/data

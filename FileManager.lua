@@ -55,6 +55,8 @@ local fallback_projects_list = {
     { name = "SwarmDesk",                  path = seatOfMadness .. "/projects/common/SwarmDesk" },
     { name = "Omnispindle",                path = seatOfMadness .. "/projects/common/Omnispindle" },
 
+    { name = "Anathesmelt",                path = seatOfMadness .. "/projects/common/Anathesmelt" },
+
     { name = "Swarmonomicon",              path = seatOfMadness .. "/projects/common/Swarmonomicon" },
     { name = "verified_madness",           path = seatOfMadness .. "/projects/python/verified_madness" },
     { name = "Whispermind_Conduit",        path = seatOfMadness .. "/projects/common/Whispermind_Conduit" },
@@ -62,7 +64,9 @@ local fallback_projects_list = {
 
     -- RegressionTestKit ecosystem
     { name = "regressiontestkit",          path = seatOfTest },
+    { name = "abbvie-em",                  path = seatOfTest .. "/abbvie-em"},
     { name = "IntergrationsQAtesting",     path = seatOfTest .. "/IntergrationsQAtesting" },
+
     { name = "OculusTestKit",              path = seatOfTest .. "/OculusTestKit" },
     { name = "phoenix",                    path = seatOfTest .. "/phoenix" },
     { name = "rust_ingest",                path = seatOfTest .. "/rust_ingest" },
@@ -81,6 +85,7 @@ local fallback_projects_list = {
     -- Rust projects
     { name = "Tinker",                     path = seatOfMadness .. "/projects/rust/Tinker" },
     { name = "EventGhost-Rust",            path = seatOfMadness .. "/projects/rust/EventGhost-Rust" },
+
 
     -- Python projects
     { name = "mqtt-get-var",               path = seatOfMadness .. "/projects/python/mqtt-get-var" },

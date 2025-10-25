@@ -72,7 +72,7 @@ hs.hotkey.bind("cmd", "F6", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "F7", "Restore Window Position", function() WindowManager.restoreWindowPosition() end)
 hs.hotkey.bind(_hyper, "F7", "Restore All Window Positions", function() WindowManager.restoreAllWindowPositions() end)
 hs.hotkey.bind("cmd", "F8", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "F8", "Toggle Always On Top", function() WindowManager.toggleAlwaysOnTop() end)
+hs.hotkey.bind(hammer, "F8", "Raise Window to Front", function() WindowManager.toggleAlwaysOnTop() end)
 hs.hotkey.bind(_hyper, "F8", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind("cmd", "F9", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "F9", "Show Window Config Info", function() WindowToggler.showConfigurationInfo() end)
@@ -117,6 +117,9 @@ hs.hotkey.bind(hammer, "=", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(_hyper, "=", "Temporary Function", function() tempFunction() end)
 -- hs.hotkey.bind(hammer, "delete", "Temporary Function", function() tempFunction() end) (cant bind while modifier is down)
 -- hs.hotkey.bind(_hyper, "delete", "Temporary Function", function() tempFunction() end)
+-- hs.hotkey.bind(hammer, "u", "Save Current Layout", function() saveLayoutWithDialog() end)
+-- hs.hotkey.bind(hammer, "i", "Restore Layout", function() restoreLayoutChooser() end)
+-- hs.hotkey.bind(_hyper, "y", "Delete Layout", function() deleteLayoutChooser() end)
 
 -- Keybindings - Tab Row
 hs.hotkey.bind(hammer, "Tab", "Open Mission Control", function() AppManager.open_mission_control() end)
@@ -216,19 +219,7 @@ for i = 1, 9 do
     end
 end
 
-hs.hotkey.bind(_meta, "0", "Show Top Projects", function()
-    local projects = FileManager.getProjectsList()
-    if #projects == 0 then
-        hs.alert.show("No projects found.")
-        return
-    end
-
-    local message = "Top Projects:\n\n"
-    for i = 1, math.min(9, #projects) do
-        message = message .. i .. ". " .. projects[i].name .. "\n"
-    end
-    hs.alert.show(message, 10)
-end)
+hs.hotkey.bind(_meta, "0", "Show Top Projects", function() showTopProjects() end)
 
 -- Add a definition for tempFunction at the end of the file
 function tempFunction()
@@ -239,10 +230,6 @@ end
 
 
 -- Window layout management hotkeys
--- hs.hotkey.bind(hammer, "u", "Save Current Layout", function() saveLayoutWithDialog() end)
-
--- hs.hotkey.bind(hammer, "i", "Restore Layout", function() restoreLayoutChooser() end)
--- hs.hotkey.bind(_hyper, "y", "Delete Layout", function() deleteLayoutChooser() end)
 
 -- Delete layout keybinding
 
@@ -313,4 +300,18 @@ function deleteLayoutChooser()
     chooser:placeholderText("Select a layout to DELETE")
     chooser:choices(choices)
     chooser:show()
+end
+
+function showTopProjects()
+    local projects = FileManager.getProjectsList()
+    if #projects == 0 then
+        hs.alert.show("No projects found.")
+        return
+    end
+
+    local message = "Top Projects:\n\n"
+    for i = 1, math.min(9, #projects) do
+        message = message .. i .. ". " .. projects[i].name .. "\n"
+    end
+    hs.alert.show(message, 10)
 end

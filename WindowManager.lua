@@ -953,11 +953,15 @@ end
 
 function WindowManager.toggleAlwaysOnTop()
     local win = hs.window.focusedWindow()
-    if win then
-        local state = not win:alwaysOnTop()
-        win:setAlwaysOnTop(state)
-        hs.alert.show(state and "Always on top" or "No longer on top")
+    if not win then
+        hs.alert.show("No focused window")
+        return
     end
+
+    -- Since true "always on top" isn't available in Hammerspoon,
+    -- this function will raise the window to front
+    win:raise()
+    hs.alert.show("Window raised to front")
 end
 
 -- Save in global environment for module reuse
