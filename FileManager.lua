@@ -20,6 +20,9 @@ local seatOfMadness = "/Users/d.edens/lab/madness_interactive"
 -- local seatOfTest = os.getenv("SEAT_OF_TEST")
 local seatOfTest = "/Users/d.edens/lab/regressiontestkit"
 
+local seatOfFaros = "/Users/d.edens/lab/Faros"
+local seatOfLight = "/Users/d.edens/lab"
+
 -- State
 local selectedFile = nil
 local fileChooser = nil
@@ -64,7 +67,6 @@ local fallback_projects_list = {
 
     -- RegressionTestKit ecosystem
     { name = "regressiontestkit",          path = seatOfTest },
-    { name = "abbvie-em",                  path = seatOfTest .. "/abbvie-em"},
     { name = "IntergrationsQAtesting",     path = seatOfTest .. "/IntergrationsQAtesting" },
 
     { name = "OculusTestKit",              path = seatOfTest .. "/OculusTestKit" },
