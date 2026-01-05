@@ -123,10 +123,12 @@ end
 
 -- Function to toggle the main window
 function obj:toggle()
-    if not self.window or not self.window:isVisible() then
+    if not self.window then
         ui.createMainWindow(self)
-    else
+    elseif self.window:isVisible() then
         self.window:hide()
+    else
+        self.window:show()
     end
 end
 

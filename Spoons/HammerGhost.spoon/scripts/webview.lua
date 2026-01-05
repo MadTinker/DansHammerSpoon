@@ -6,14 +6,16 @@ local M = {}
 
 function M.init(spoon)
     -- Load the main HTML file
-    local htmlPath = hs.spoons.resourcePath("assets/index.html")
+    local htmlPath = hs.spoons.resourcePath("../assets/index.html")
+    spoon.logger:d("Attempting to read index.html from path: " .. htmlPath)
     local htmlContent = ""
-    local file = io.open(htmlPath, "r")
+    local file, err = io.open(htmlPath, "r")
     if file then
         htmlContent = file:read("*a")
-        io.close(file)
+        file:close()
     else
-        hs.logger.new("HammerGhost"):e("Could not read index.html")
+        hs.logger.new("HammerGhost"):e("Could not read index.html. Error: " .. tostring(err))
+        htmlContent = "<html><body><h1>Error</h1><p>" .. tostring(err) .. "</p></body></html>"
     end
 
     spoon.window:html(htmlContent)
