@@ -1,9 +1,9 @@
 -- Spoons/HammerGhost.spoon/scripts/ui.lua
 
-local window_manager = require("window")
-local toolbar_manager = require("toolbar")
-local webview_manager = require("webview")
-local properties_manager = require("properties")
+local window_manager = dofile(hs.spoons.resourcePath("window.lua"))
+local toolbar_manager = dofile(hs.spoons.resourcePath("toolbar.lua"))
+local webview_manager = dofile(hs.spoons.resourcePath("webview.lua"))
+local properties_manager = dofile(hs.spoons.resourcePath("properties.lua"))
 
 local M = {}
 

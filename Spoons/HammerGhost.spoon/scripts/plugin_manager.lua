@@ -1,7 +1,7 @@
 -- Spoons/HammerGhost.spoon/scripts/plugin_manager.lua
 
 local M = {}
-local action_system = require("action_system")
+local action_system = dofile(hs.spoons.resourcePath("action_system.lua"))
 
 function M.loadPlugins()
     local pluginDir = hs.spoons.resourcePath("plugins")

@@ -683,11 +683,11 @@ end
 function AppManager.launchAntigravityWithProjectSelection()
     local antigravityAppName = "antigravity"
     local antigravityPath = "/Users/d.edens/.antigravity/antigravity/bin/antigravity"
-    
+
     -- Try to find antigravity as a registered application first (fast path)
     local app = hs.application.find(antigravityAppName)
     local windows = {}
-    
+
     if app then
         -- Fast path: get windows directly from the app
         windows = app:allWindows()
@@ -705,19 +705,19 @@ function AppManager.launchAntigravityWithProjectSelection()
             end
         end
     end
-    
+
     -- Cache projects list to avoid multiple calls
     local projects_list = FileManager.getProjectsList()
-    
+
     local choices = {}
     local openWindowTitles = {}
-    
+
     -- Add existing windows as choices if any
     if #windows > 0 then
         for _, win in ipairs(windows) do
             local title = win:title()
             local path = ""
-            
+
             -- Check if this window title matches any known project
             for _, project in ipairs(projects_list) do
                 if title:match(project.name) then
@@ -725,7 +725,7 @@ function AppManager.launchAntigravityWithProjectSelection()
                     break
                 end
             end
-            
+
             table.insert(choices, {
                 text = title,
                 subText = "Focus this " .. antigravityAppName .. " window",
@@ -737,7 +737,7 @@ function AppManager.launchAntigravityWithProjectSelection()
             openWindowTitles[title] = true
         end
     end
-    
+
     -- Add a separator if enabled and we have windows
     if #windows > 0 and enableMenuSeparators then
         table.insert(choices, {
@@ -746,7 +746,7 @@ function AppManager.launchAntigravityWithProjectSelection()
             disabled = true
         })
     end
-    
+
     -- Add projects list as choices
     for _, project in ipairs(projects_list) do
         if not openWindowTitles[project.name] then

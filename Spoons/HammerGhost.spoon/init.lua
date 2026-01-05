@@ -21,15 +21,19 @@ obj.homepage = "https://github.com/Hammerspoon/Spoons"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
 -- Load additional modules
-local config = require("config")
-local ui = require("ui")
-local treeHelpers = require("tree_helpers")
-local action_editor = require("action_editor")
-local action_system = require("action_system")
-local sequence_editor = require("sequence_editor")
-local action_chooser = require("action_chooser")
-local condition_editor = require("condition_editor")
-local plugin_manager = require("plugin_manager")
+local config = dofile(hs.spoons.resourcePath("scripts/config.lua"))
+local ui = dofile(hs.spoons.resourcePath("scripts/ui.lua"))
+local treeHelpers = dofile(hs.spoons.resourcePath("scripts/tree_helpers.lua"))
+local action_editor = dofile(hs.spoons.resourcePath("scripts/action_editor.lua"))
+local action_system = dofile(hs.spoons.resourcePath("scripts/action_system.lua"))
+local sequence_editor = dofile(hs.spoons.resourcePath("scripts/sequence_editor.lua"))
+local action_chooser = dofile(hs.spoons.resourcePath("scripts/action_chooser.lua"))
+local condition_editor = dofile(hs.spoons.resourcePath("scripts/condition_editor.lua"))
+local plugin_manager = dofile(hs.spoons.resourcePath("scripts/plugin_manager.lua"))
+local xmlparser = dofile(hs.spoons.resourcePath("scripts/xmlparser.lua"))
+
+-- Initialize modules with dependencies
+config.init({ xmlparser = xmlparser })
 
 -- Internal variables
 obj.window = nil
@@ -49,7 +53,7 @@ obj.conditionTypes = {}
 function obj:init()
     self.logger = hs.logger.new("HammerGhost", "debug")
     self.logger:i("Initializing HammerGhost")
-    
+
     -- Load plugins
     plugin_manager.loadPlugins()
 
