@@ -1,5 +1,7 @@
 -- Spoons/HammerGhost.spoon/scripts/webview.lua
 
+local tree_helpers = dofile(hs.spoons.resourcePath("tree_helpers.lua"))
+
 local M = {}
 
 function M.init(spoon)
@@ -23,7 +25,6 @@ function M.refresh(spoon)
     end
 
     -- Generate HTML for the macro tree
-    local tree_helpers = dofile(hs.spoons.resourcePath("scripts/tree_helpers.lua"))
     local html = ""
     for _, item in ipairs(spoon.macroTree) do
         html = html .. tree_helpers.itemToHTML(item, 0, spoon.currentSelection)

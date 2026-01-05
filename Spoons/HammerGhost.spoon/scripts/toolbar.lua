@@ -3,11 +3,11 @@
 local M = {}
 
 function M.create(spoon)
-    local toolbar = hs.webview.toolbar.new({
+    local toolbar = hs.webview.toolbar.new("hammerghostToolbar", {
         {
             id = "addFolder",
             label = "Add Folder",
-            image = hs.image.imageFromName(hs.image.systemImageNames.folder),
+            image = hs.image.imageFromName("NSFolder"),
             fn = function()
                 spoon:addFolder()
             end,
@@ -15,7 +15,7 @@ function M.create(spoon)
         {
             id = "addAction",
             label = "Add Action",
-            image = hs.image.imageFromName(hs.image.systemImageNames.action),
+            image = hs.image.imageFromName("NSActionTemplate"),
             fn = function()
                 spoon:addAction()
             end,
@@ -23,7 +23,7 @@ function M.create(spoon)
         {
             id = "addSequence",
             label = "Add Sequence",
-            image = hs.image.imageFromName(hs.image.systemImageNames.slideshow),
+            image = hs.image.imageFromName("NSSlideshowTemplate"),
             fn = function()
                 spoon:addSequence()
             end,
@@ -32,7 +32,7 @@ function M.create(spoon)
         {
             id = "save",
             label = "Save",
-            image = hs.image.imageFromName(hs.image.systemImageNames.save),
+            image = hs.image.imageFromName("NSSavePanel"),
             fn = function()
                 spoon:saveConfig()
             end,
@@ -40,7 +40,7 @@ function M.create(spoon)
         {
             id = "reload",
             label = "Reload",
-            image = hs.image.imageFromName(hs.image.systemImageNames.refresh),
+            image = hs.image.imageFromName("NSRefreshTemplate"),
             fn = function()
                 spoon:reloadConfig()
             end,

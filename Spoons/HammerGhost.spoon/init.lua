@@ -21,6 +21,16 @@ obj.homepage = "https://github.com/Hammerspoon/Spoons"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
 -- Load additional modules
+-- local config = dofile(hs.spoons.resourcePath("scripts/config.lua"))
+-- local ui = dofile(hs.spoons.resourcePath("scripts/ui.lua"))
+-- local treeHelpers = dofile(hs.spoons.resourcePath("scripts/tree_helpers.lua"))
+-- local action_editor = dofile(hs.spoons.resourcePath("scripts/action_editor.lua"))
+-- local action_system = dofile(hs.spoons.resourcePath("scripts/action_system.lua"))
+-- local sequence_editor = dofile(hs.spoons.resourcePath("scripts/sequence_editor.lua"))
+-- local action_chooser = dofile(hs.spoons.resourcePath("scripts/action_chooser.lua"))
+-- local condition_editor = dofile(hs.spoons.resourcePath("scripts/condition_editor.lua"))
+-- local plugin_manager = dofile(hs.spoons.resourcePath("scripts/plugin_manager.lua"))
+-- local xmlparser = dofile(hs.spoons.resourcePath("scripts/xmlparser.lua"))
 local config = dofile(hs.spoons.resourcePath("scripts/config.lua"))
 local ui = dofile(hs.spoons.resourcePath("scripts/ui.lua"))
 local treeHelpers = dofile(hs.spoons.resourcePath("scripts/tree_helpers.lua"))
