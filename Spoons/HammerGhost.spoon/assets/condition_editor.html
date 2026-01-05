@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Condition Editor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="condition-editor">
+        <h2>Condition Editor</h2>
+        <form id="condition-form">
+            <input type="hidden" id="condition-id">
+            <div class="form-group">
+                <label for="condition-type">Type</label>
+                <select id="condition-type">
+                    <!-- Condition types will be populated dynamically -->
+                </select>
+            </div>
+            <div id="condition-parameters">
+                <!-- Condition parameters will be populated here -->
+            </div>
+            <div class="form-buttons">
+                <button type="submit" class="primary">Save Condition</button>
+                <button type="button" id="cancel-condition">Cancel</button>
+            </div>
+        </form>
+    </div>
+    <script src="condition_editor.js"></script>
+</body>
+</html>

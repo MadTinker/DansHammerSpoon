@@ -679,6 +679,172 @@ function AppManager.launchCursorWithGitHubDesktop()
     end
 end
 
+-- Special function for Antigravity editor with project selection menu
+function AppManager.launchAntigravityWithProjectSelection()
+    local antigravityAppName = "antigravity"
+    local antigravityPath = "/Users/d.edens/.antigravity/antigravity/bin/antigravity"
+    
+    -- Try to find antigravity as a registered application first (fast path)
+    local app = hs.application.find(antigravityAppName)
+    local windows = {}
+    
+    if app then
+        -- Fast path: get windows directly from the app
+        windows = app:allWindows()
+    else
+        -- Fallback: scan all windows (slower, but handles unregistered apps)
+        local allWindows = hs.window.allWindows()
+        for _, win in ipairs(allWindows) do
+            local winApp = win:application()
+            if winApp and winApp:name() then
+                local title = win:title()
+                -- Look for antigravity windows - check if the app name or title contains antigravity
+                if winApp:name():lower():match("antigravity") or (title and title:lower():match("antigravity")) then
+                    table.insert(windows, win)
+                end
+            end
+        end
+    end
+    
+    -- Cache projects list to avoid multiple calls
+    local projects_list = FileManager.getProjectsList()
+    
+    local choices = {}
+    local openWindowTitles = {}
+    
+    -- Add existing windows as choices if any
+    if #windows > 0 then
+        for _, win in ipairs(windows) do
+            local title = win:title()
+            local path = ""
+            
+            -- Check if this window title matches any known project
+            for _, project in ipairs(projects_list) do
+                if title:match(project.name) then
+                    path = project.path
+                    break
+                end
+            end
+            
+            table.insert(choices, {
+                text = title,
+                subText = "Focus this " .. antigravityAppName .. " window",
+                window = win,
+                type = "window",
+                path = path,
+                image = hs.image.imageFromName("NSRightFacingTriangle")
+            })
+            openWindowTitles[title] = true
+        end
+    end
+    
+    -- Add a separator if enabled and we have windows
+    if #windows > 0 and enableMenuSeparators then
+        table.insert(choices, {
+            text = "──────────────────────────────────",
+            subText = "Projects",
+            disabled = true
+        })
+    end
+    
+    -- Add projects list as choices
+    for _, project in ipairs(projects_list) do
+        if not openWindowTitles[project.name] then
+            table.insert(choices, {
+                text = project.name,
+                subText = "Open " .. project.path,
+                path = project.path,
+                type = "project",
+                image = hs.image.imageFromName("NSBookmark")
+            })
+        end
+    end
+
+    local chooser = hs.chooser.new(function(choice)
+        if not choice then return end
+
+        if choice.type == "window" then
+            -- Focus the selected window
+            choice.window:focus()
+        elseif choice.type == "project" then
+            -- Open the selected project with antigravity
+            hs.execute("'" .. antigravityPath .. "' " .. choice.path)
+        elseif choice.type == "custom" then
+            -- Open the custom path with antigravity
+            hs.execute("'" .. antigravityPath .. "' " .. choice.path)
+        end
+    end)
+
+    -- Handle the query changed callback for custom paths
+    chooser:queryChangedCallback(function(query)
+        if query:match("^[~/]") then
+            -- If query starts with / or ~, show only one option for custom path
+            local customChoices = {}
+            for k, v in pairs(choices) do customChoices[k] = v end
+            table.insert(customChoices, 1, {
+                text = "Open custom path: " .. query,
+                subText = "Enter to open this path with " .. antigravityAppName,
+                path = query,
+                type = "custom"
+            })
+
+            chooser:choices(customChoices)
+        else
+            -- Filter choices based on the query
+            local filteredChoices = {}
+            local hasMatches = false
+            local matchingChoices = {}
+            local separatorChoice = nil
+
+            -- First find the separator and matching items
+            for _, choice in ipairs(choices) do
+                if choice.disabled then
+                    separatorChoice = choice
+                elseif choice.type == "project" or choice.type == "window" then
+                    if choice.text:lower():find(query:lower(), 1, true) then
+                        table.insert(matchingChoices, choice)
+                        hasMatches = true
+                    end
+                end
+            end
+
+            -- Add windows first if any
+            for _, choice in ipairs(matchingChoices) do
+                if choice.type == "window" then
+                    table.insert(filteredChoices, choice)
+                end
+            end
+
+            -- Add separator if we have any matches and menu separators are enabled
+            if hasMatches and separatorChoice and enableMenuSeparators then
+                table.insert(filteredChoices, separatorChoice)
+            end
+
+            -- Add projects
+            for _, choice in ipairs(matchingChoices) do
+                if choice.type == "project" then
+                    table.insert(filteredChoices, choice)
+                end
+            end
+
+            -- If no matches found and query is not empty, add custom path option
+            if not hasMatches and query ~= "" then
+                table.insert(filteredChoices, {
+                    text = "Open custom path: " .. query,
+                    subText = "Enter to open this path with " .. antigravityAppName,
+                    path = query,
+                    type = "custom"
+                })
+            end
+
+            chooser:choices(filteredChoices)
+        end
+    end)
+
+    chooser:choices(choices)
+    chooser:show()
+end
+
 -- Application Launch Functions
 function AppManager.open_github()
     local githubAppName = "GitHub Desktop"
@@ -708,6 +874,10 @@ end
 
 function AppManager.open_pycharm()
     AppManager.madFocus("PyCharm Community Edition")
+end
+
+function AppManager.open_antigravity()
+    AppManager.launchAntigravityWithProjectSelection()
 end
 
 function AppManager.open_anythingllm()
