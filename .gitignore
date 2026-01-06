@@ -18,3 +18,4 @@ hammerghost_actions.json
 *.backup
 .DS_Store
 /.claude/data
+.gemini/settings.json

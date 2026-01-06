@@ -460,3 +460,43 @@ sandybrown = hs.drawing.color.x11.sandybrown
 black50 = { red = 0, blue = 0, green = 0, alpha = 0.5 }
 darkblue = { red = 24 / 255, blue = 195 / 255, green = 145 / 255, alpha = 1 }
 gray = { red = 246 / 255, blue = 246 / 255, green = 246 / 255, alpha = 0.3 }
+
+--
+-- MQTT Remote Command Handler
+--
+function handleRemoteCommand(command)
+    local log = _G.AppLogger or hs.logger.new('MQTTHandler')
+    log:d("Received remote command: " .. command)
+
+    local remoteCommands = {
+        -- Key Presses
+        ["F1"] = function() hs.eventtap.keyStroke({}, 'f1') end,
+        ["TAB"] = function() hs.eventtap.keyStroke({}, 'tab') end,
+        ["PASTE"] = function() hs.eventtap.keyStroke({'cmd'}, 'v') end,
+        ["COPY"] = function() hs.eventtap.keyStroke({'cmd'}, 'c') end,
+        ["ENTER"] = function() hs.eventtap.keyStroke({}, 'return') end,
+
+        -- Application Switching
+        ["CHROME"] = function() hs.application.launchOrFocus('Google Chrome') end,
+        ["WARP"] = function() hs.application.launchOrFocus('Warp') end,
+        ["SLACK"] = function() hs.application.launchOrFocus('Slack') end,
+        ["CURSOR"] = function() hs.application.launchOrFocus('Cursor') end,
+
+        -- Window Management
+        ["WIN_LEFT"] = function() hs.window.focusedWindow():move(hs.geometry.rect(0, 0, 0.5, 1), hs.screen.mainScreen(), true) end,
+        ["WIN_RIGHT"] = function() hs.window.focusedWindow():move(hs.geometry.rect(0.5, 0, 0.5, 1), hs.screen.mainScreen(), true) end,
+        ["WIN_MAX"] = function() hs.window.focusedWindow():maximize() end,
+
+        -- System Control
+        ["LOCK_SCREEN"] = function() hs.caffeinate.lockScreen() end,
+    }
+
+    local action = remoteCommands[command]
+    if action then
+        action()
+    else
+        log:w("No action defined for command: " .. command)
+        hs.alert.show("Unknown Command", "Received: " .. command, 0.5)
+    end
+end
+
