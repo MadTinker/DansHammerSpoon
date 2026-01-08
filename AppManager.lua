@@ -880,6 +880,10 @@ function AppManager.open_antigravity()
     AppManager.launchAntigravityWithProjectSelection()
 end
 
+function AppManager.open_postman()
+    AppManager.madFocus("Postman")
+end
+
 function AppManager.open_anythingllm()
     AppManager.madFocus("AnythingLLM")
 end

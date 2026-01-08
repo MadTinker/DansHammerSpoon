@@ -55,7 +55,7 @@ local fallback_projects_list = {
     { name = ".hammerspoon",        path = "~/.hammerspoon" },
     { name = "Chat History",               path = seatOfMadness .. "/docs/cursor_chathistory" },
     { name = "Inventorium",                path = seatOfMadness .. "/projects/common/Inventorium" },
-    { name = "Obnubilare",                 path = seatOfMadness .. "/projects/common/Obnubilare" },
+    { name = "cartogomancy",                path = seatOfMadness .. "/projects/common/cartogomancy" },
 
     { name = "Em-Demo-System",             path = seatOfFaros .. "/Em-Demo-System" },
 

@@ -17,12 +17,12 @@ When the DragonGrid is active, you can use the following keys:
    - Press numbers `1-9` to select a grid cell (the grid is numbered 1-9 from top-left to bottom-right)
    - The grid will zoom in to your selected cell and show a new 3x3 grid within it
    - Press another number to make a final selection
-   
-2. **Actions**:
+
+2. **Actions**:51
    - `Return/Enter`: Confirm the position (Go)
    - `Escape`: Cancel and close the grid
    - `U`: Undo the last selection (go back one level)
-   
+
 3. **Mouse Actions**:
    - `Space`: Left-click at the current position
    - `Alt+Space`: Right-click at the current position
@@ -70,9 +70,9 @@ DragonGrid.setConfig({
 
 -- Custom key bindings
 hs.hotkey.bind({"cmd", "alt"}, "g", function() DragonGrid.toggleDragonGrid() end)
-hs.hotkey.bind({"cmd", "alt", "shift"}, "g", function() 
+hs.hotkey.bind({"cmd", "alt", "shift"}, "g", function()
     windowMode = true
-    DragonGrid.createDragonGrid() 
+    DragonGrid.createDragonGrid()
 end)
 ```
 
@@ -81,4 +81,4 @@ end)
 - For maximum precision, make use of the two-level grid selection
 - Use window mode for more accurate control over application UI elements
 - The drag operation is useful for selecting text or moving items
-- DragonGrid works well with mouse-unfriendly applications that require precise positioning 
+- DragonGrid works well with mouse-unfriendly applications that require precise positioning
