@@ -36,6 +36,10 @@ local fileList = {
     { name = "Main init",       path = "~/.hammerspoon/init.lua" },
     { name = "Global Hotkeys", path = "~/.hammerspoon/hotkeys.lua" },
     { name = "File Manager",   path = "~/.hammerspoon/FileManager.lua" },
+    { name = "madcode",         path = "/Users/d.edens/lab/madness_interactive/projects/opencode/Whispermind_Conduit" },
+    { name = "ellie-monorepo",  path = "/Users/d.edens/lab/Faros/ellie-monorepo" },
+
+
     { name = "claude settings", path = "~/.claude/settings.json" },
     { name = "zshenv",         path = "~/.zshenv" },
     { name = "zshrc",          path = "~/.zshrc" },
@@ -56,9 +60,7 @@ local fallback_projects_list = {
     { name = "Chat History",               path = seatOfMadness .. "/docs/cursor_chathistory" },
     { name = "Inventorium",                path = seatOfMadness .. "/projects/common/Inventorium" },
     { name = "cartogomancy",                path = seatOfMadness .. "/projects/common/cartogomancy" },
-
-    { name = "Em-Demo-System",             path = seatOfFaros .. "/Em-Demo-System" },
-
+    { name = "ellie-monorepo",             path = seatOfFaros .. "/ellie-monorepo" },
     { name = "SwarmDesk",                  path = seatOfMadness .. "/projects/common/SwarmDesk" },
     { name = "Omnispindle",                path = seatOfMadness .. "/projects/common/Omnispindle" },
 
@@ -66,7 +68,7 @@ local fallback_projects_list = {
 
     { name = "Swarmonomicon",              path = seatOfMadness .. "/projects/common/Swarmonomicon" },
     { name = "verified_madness",           path = seatOfMadness .. "/projects/python/verified_madness" },
-    { name = "Whispermind_Conduit",        path = seatOfMadness .. "/projects/common/Whispermind_Conduit" },
+    { name = "Whispermind_Conduit_old",        path = seatOfMadness .. "/projects/common/Whispermind_Conduit" },
     { name = "Todomill_projectorium",      path = seatOfMadness .. "/projects/common/Omnispindle/Todomill_projectorium" },
 
     -- RegressionTestKit ecosystem

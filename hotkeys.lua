@@ -189,6 +189,14 @@ hs.hotkey.bind(hammer, "v", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(_hyper, "v", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "b", "Open Chrome", function() AppManager.open_chrome() end)
 hs.hotkey.bind(_hyper, "b", "Open Arc Browser", function() AppManager.open_arc() end)
+-- Open Replit team link in Work Chrome profile (profile dir: check chrome://version/ when Work is active)
+local workChromeProfile = "Profile 1"   -- change if your Work profile uses another dir, e.g. "Default" or "Profile 2"
+hs.hotkey.bind({"ctrl", "cmd"}, "b", "Open Replit (Work Chrome)", function()
+    hs.execute(string.format(
+        'open -na "Google Chrome" --args --profile-directory="%s" "https://replit.com/t/elemental-machines"',
+        workChromeProfile
+    ))
+end)
 hs.hotkey.bind(hammer, "n", "Restore Window to Location 2", function() WindowToggler.restoreToLocation2() end)
 hs.hotkey.bind(_hyper, "n", "Save Window to Location 2", function() WindowToggler.saveToLocation2() end)
 hs.hotkey.bind(hammer, "m", "Toggle HammerGhost", function() spoon.HammerGhost:toggle() end)
