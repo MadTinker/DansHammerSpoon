@@ -60,9 +60,8 @@ local fallback_projects_list = {
     { name = "Chat History",               path = seatOfMadness .. "/docs/cursor_chathistory" },
     { name = "Inventorium",                path = seatOfMadness .. "/projects/common/Inventorium" },
     { name = "monorepo-ellie",             path = seatOfFaros .. "/ellie-monorepo" },
-    { name = "gateway-ellie",            path = seatOfFaros .. "/ellie-monorepo/ellie-api-master" },
-    { name = "guardian-ellie",            path = seatOfFaros .. "/ellie-monorepo/ellie-guardian" },
-    { name = "slack-bot-ellie",            path = seatOfFaros .. "/ellie-monorepo/ellie-client-slack-bot" },
+    { name = "ellie",                       path = seatOfFaros .. "/ellie-monorepo/ellie" },
+    { name = "guardian",                     path = seatOfFaros .. "/ellie-monorepo/guardian" },
     { name = "SwarmDesk",                  path = seatOfMadness .. "/projects/common/SwarmDesk" },
     { name = "Omnispindle",                path = seatOfMadness .. "/projects/common/Omnispindle" },
 
