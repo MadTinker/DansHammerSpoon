@@ -41,6 +41,7 @@ obj.defaultConfig = {
     enabled = true,                     -- Enable the kinetic contraption
     sensitivity = 1.0,                  -- Kinetic sensitivity multiplier
     minWindowSize = { w = 100, h = 100 }, -- Minimum window dimensions
+    throttleMs = 8,                    -- Min ms between setFrame calls (~120fps max, reduces lag)
     debug = false,                      -- Mad scientist debug mode
     autoStart = true                    -- Auto-engage the contraption on load
 }
@@ -57,7 +58,8 @@ obj.draggedWindow = nil
 obj.initialWindowFrame = nil
 obj.initialMousePos = nil
 obj.dragTap = nil
-obj.flagsTap = nil
+obj.lastFrameUpdateTime = 0   -- For throttling setFrame during drag
+obj.THROTTLE_MS = 8          -- ~120fps max - reduces lag from excessive setFrame calls
 
 --- === Internal Functions ===
 
@@ -106,6 +108,10 @@ local function engageKineticDrag(window, mousePos)
     obj.draggedWindow = window
     obj.initialWindowFrame = window:frame()
     obj.initialMousePos = mousePos
+    obj.lastFrameUpdateTime = 0  -- Reset throttle on engage
+
+    -- Disable animations once at engage (not on every frame)
+    hs.window.animationDuration = 0
 
     -- Bring window to the foreground for kinetic manipulation
     window:focus()
@@ -124,6 +130,10 @@ local function engageKineticResize(window, mousePos)
     obj.draggedWindow = window
     obj.initialWindowFrame = window:frame()
     obj.initialMousePos = mousePos
+    obj.lastFrameUpdateTime = 0  -- Reset throttle on engage
+
+    -- Disable animations once at engage (not on every frame)
+    hs.window.animationDuration = 0
 
     -- Bring window to the foreground for kinetic manipulation
     window:focus()
@@ -134,9 +144,16 @@ local function engageKineticResize(window, mousePos)
     return true
 end
 
--- Apply kinetic position transformation
-local function applyKineticPosition(mousePos)
+-- Apply kinetic position transformation (throttled for smoothness)
+local function applyKineticPosition(mousePos, force)
     if not obj.isDragging or not obj.draggedWindow then return end
+
+    if not force then
+        local now = hs.timer.secondsSinceEpoch() * 1000
+        local throttle = obj.config.throttleMs or 8
+        if now - obj.lastFrameUpdateTime < throttle then return end
+        obj.lastFrameUpdateTime = now
+    end
 
     local deltaX = (mousePos.x - obj.initialMousePos.x) * obj.config.sensitivity
     local deltaY = (mousePos.y - obj.initialMousePos.y) * obj.config.sensitivity
@@ -148,14 +165,19 @@ local function applyKineticPosition(mousePos)
         h = obj.initialWindowFrame.h
     }
 
-    -- Disable animations for smooth kinetic motion
-    hs.window.animationDuration = 0
     obj.draggedWindow:setFrame(newFrame, 0)
 end
 
--- Apply kinetic size transformation
-local function applyKineticResize(mousePos)
+-- Apply kinetic size transformation (throttled for smoothness)
+local function applyKineticResize(mousePos, force)
     if not obj.isResizing or not obj.draggedWindow then return end
+
+    if not force then
+        local now = hs.timer.secondsSinceEpoch() * 1000
+        local throttle = obj.config.throttleMs or 8
+        if now - obj.lastFrameUpdateTime < throttle then return end
+        obj.lastFrameUpdateTime = now
+    end
 
     local deltaX = (mousePos.x - obj.initialMousePos.x) * obj.config.sensitivity
     local deltaY = (mousePos.y - obj.initialMousePos.y) * obj.config.sensitivity
@@ -170,8 +192,6 @@ local function applyKineticResize(mousePos)
         h = newHeight
     }
 
-    -- Disable animations for smooth kinetic motion
-    hs.window.animationDuration = 0
     obj.draggedWindow:setFrame(newFrame, 0)
 end
 
@@ -196,12 +216,22 @@ local function disengageKinetics()
     obj.initialMousePos = nil
 end
 
--- Main kinetic event processor
+-- Main kinetic event processor (handles mouse + modifier events in single tap)
 local function processKineticEvent(event)
     if not obj.config.enabled then return false end
 
     local eventType = event:getType()
     local eventFlags = event:getFlags()
+
+    -- Handle modifier changes (flagsChanged) - don't consume
+    if eventType == hs.eventtap.event.types.flagsChanged then
+        if obj.isDragging and not modifiersEngaged(obj.config.moveModifier, eventFlags) then
+            disengageKinetics()
+        elseif obj.isResizing and not modifiersEngaged(obj.config.resizeModifier, eventFlags) then
+            disengageKinetics()
+        end
+        return false
+    end
 
     -- Extract kinetic coordinates from event stream
     local eventLocation = event:location()
@@ -223,7 +253,7 @@ local function processKineticEvent(event)
             end
         end
 
-        -- Process kinetic manipulation events
+    -- Process kinetic manipulation events
     elseif eventType == hs.eventtap.event.types.leftMouseDragged then
         if obj.isDragging then
             applyKineticPosition(mousePos)
@@ -235,40 +265,22 @@ local function processKineticEvent(event)
             return true -- Consume the kinetic event
         end
 
-        -- Process kinetic disengagement events
+    -- Process kinetic disengagement events (apply final position before disengage)
     elseif eventType == hs.eventtap.event.types.leftMouseUp then
         if obj.isDragging then
+            applyKineticPosition(mousePos, true)  -- Force final position on release
             disengageKinetics()
             return true -- Consume the kinetic event
         end
     elseif eventType == hs.eventtap.event.types.rightMouseUp then
         if obj.isResizing then
+            applyKineticResize(mousePos, true)   -- Force final position on release
             disengageKinetics()
             return true -- Consume the kinetic event
         end
     end
 
     return false -- Release the event to the system
-end
-
--- Monitor kinetic modifier state changes
-local function processModifierChanges(event)
-    if not obj.config.enabled then return false end
-
-    local eventFlags = event:getFlags()
-
-    -- Disengage kinetics if required modifiers are no longer active
-    if obj.isDragging then
-        if not modifiersEngaged(obj.config.moveModifier, eventFlags) then
-            disengageKinetics()
-        end
-    elseif obj.isResizing then
-        if not modifiersEngaged(obj.config.resizeModifier, eventFlags) then
-            disengageKinetics()
-        end
-    end
-
-    return false -- Don't consume modifier events
 end
 
 --- === Public API ===
@@ -304,42 +316,33 @@ end
 --- Returns:
 ---  * The KineticLatch object
 function obj:start()
-    if obj.dragTap or obj.flagsTap then
+    if obj.dragTap then
         obj.logger.w('KineticLatch already engaged!')
         return self
     end
 
-    -- Create kinetic event interceptors
+    -- Single event tap for mouse + modifier events (fewer taps = less overhead)
     obj.dragTap = hs.eventtap.new({
         hs.eventtap.event.types.leftMouseDown,
         hs.eventtap.event.types.rightMouseDown,
         hs.eventtap.event.types.leftMouseDragged,
         hs.eventtap.event.types.rightMouseDragged,
         hs.eventtap.event.types.leftMouseUp,
-        hs.eventtap.event.types.rightMouseUp
+        hs.eventtap.event.types.rightMouseUp,
+        hs.eventtap.event.types.flagsChanged
     }, processKineticEvent)
 
-    obj.flagsTap = hs.eventtap.new({
-        hs.eventtap.event.types.flagsChanged
-    }, processModifierChanges)
+    local success = obj.dragTap:start()
 
-    -- Engage the kinetic contraption
-    local success1 = obj.dragTap:start()
-    local success2 = obj.flagsTap:start()
-
-    if success1 and success2 then
+    if success then
         obj.logger.i('KineticLatch engaged! Alt+drag to latch, Alt+right-drag to reshape!')
         hs.alert.show("⚡ KineticLatch ENGAGED! ⚡\nAlt+drag to latch windows, Alt+right-drag to reshape!", 3)
     else
         obj.logger.e('KineticLatch engagement failed! Check accessibility permissions!')
         hs.alert.show("⚠️ KineticLatch FAILED! Check accessibility permissions.", 4)
-
-        -- Emergency cleanup
         if obj.dragTap then
-            obj.dragTap:stop(); obj.dragTap = nil
-        end
-        if obj.flagsTap then
-            obj.flagsTap:stop(); obj.flagsTap = nil
+            obj.dragTap:stop()
+            obj.dragTap = nil
         end
     end
 
@@ -359,11 +362,6 @@ function obj:stop()
     if obj.dragTap then
         obj.dragTap:stop()
         obj.dragTap = nil
-    end
-
-    if obj.flagsTap then
-        obj.flagsTap:stop()
-        obj.flagsTap = nil
     end
 
     -- Emergency disengage any active kinetics
@@ -403,7 +401,7 @@ end
 --- Returns:
 ---  * Boolean - true if running, false otherwise
 function obj:isRunning()
-    return obj.dragTap ~= nil and obj.flagsTap ~= nil
+    return obj.dragTap ~= nil
 end
 
 --- KineticLatch:configure(config)
@@ -507,8 +505,7 @@ function obj:diagnose()
         obj.logger.w('No window detected under kinetic cursor')
     end
 
-    obj.logger.i('Kinetic event tap status - Drag:', obj.dragTap and 'ACTIVE' or 'INACTIVE')
-    obj.logger.i('Kinetic event tap status - Flags:', obj.flagsTap and 'ACTIVE' or 'INACTIVE')
+    obj.logger.i('Kinetic event tap status:', obj.dragTap and 'ACTIVE' or 'INACTIVE')
 
     hs.alert.show("🔬 KineticLatch diagnostics complete!\nCheck console for details.", 3)
     return self
