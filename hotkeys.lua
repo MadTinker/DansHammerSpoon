@@ -138,6 +138,7 @@ hs.hotkey.bind(hammer, "y", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(_hyper, "y", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "u", "Open Most Recent Image Folder", function() FileManager.openMostRecentImageFolder() end)
 hs.hotkey.bind(_hyper, "u", "Temporary Function", function() tempFunction() end)
+-- Original behavior: copy most recent image from Desktop to clipboard
 hs.hotkey.bind(hammer, "i", "Copy Most Recent Image", function() FileManager.copyMostRecentImage() end)
 hs.hotkey.bind(_hyper, "i", "Open Most Recent Image", function() FileManager.openMostRecentImage() end)
 hs.hotkey.bind(hammer, "o", "Restore Window to Location 1", function() WindowToggler.restoreToLocation1() end)
@@ -145,7 +146,8 @@ hs.hotkey.bind(_hyper, "o", "Save Window to Location 1", function() WindowToggle
 -- hs.hotkey.bind(hammer, "p", "Open Antigravity", function() AppManager.open_antigravity() end)
 hs.hotkey.bind(hammer, "p", "Open Postman", function() AppManager.open_postman() end)
 hs.hotkey.bind(_hyper, "p", "Open Cursor", function() AppManager.open_cursor() end)
-hs.hotkey.bind(hammer, "[", "Temporary Function", function() tempFunction() end)
+-- New: dedicated screenshot-to-clipboard hotkey
+hs.hotkey.bind(hammer, "[", "Screenshot to Clipboard", function() FileManager.captureScreenshotToClipboard() end)
 hs.hotkey.bind(_hyper, "[", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "]", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(_hyper, "]", "Temporary Function", function() tempFunction() end)

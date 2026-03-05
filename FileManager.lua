@@ -392,6 +392,29 @@ function FileManager.copyMostRecentImage()
     end
 end
 
+-- Capture a fresh screenshot and copy it directly to the clipboard.
+-- Uses macOS `screencapture` CLI with interactive selection, avoiding
+-- the delay waiting for the Desktop file and floating thumbnail.
+function FileManager.captureScreenshotToClipboard()
+    log:i('Capturing new screenshot directly to clipboard via screencapture')
+
+    -- Use interactive selection (-i), copy to clipboard (-c), and suppress
+    -- the file save UI/ sounds where possible (-x).
+    local cmd = "/usr/sbin/screencapture -i -c -x"
+    log:d('Executing command: ' .. cmd)
+
+    -- Wait for the command to finish so we can report success/failure.
+    local output, status, type, rc = hs.execute(cmd, true)
+
+    if status then
+        log:i('Screenshot captured to clipboard successfully')
+        hs.alert.show("Screenshot captured to clipboard")
+    else
+        log:w('screencapture failed. Status: ' .. tostring(status) .. ', RC: ' .. tostring(rc))
+        hs.alert.show("Screenshot capture failed")
+    end
+end
+
 function FileManager.openMostRecentImageFolder()
     log:i('Attempting to open folder containing most recent image from Desktop')
     local desktopPath = hs.fs.pathToAbsolute(os.getenv("HOME") .. "/Desktop")
