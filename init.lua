@@ -44,13 +44,23 @@ else
     hs.logger.new("init.lua"):e("Failed to initialize HammerGhost spoon.")
 end
 
--- Bind hotkey for HammerGhost toggle
+-- Bind hotkey for HammerGhost macro editor toggle (Cmd+Alt+Ctrl+H)
 hs.hotkey.bind({"cmd", "alt", "ctrl"}, "H", function()
     if hammerghost then
         hammerghost:toggle()
         hs.logger.new("init.lua"):i("HammerGhost toggled via hotkey.")
     else
         hs.logger.new("init.lua"):e("HammerGhost not available for toggle.")
+    end
+end)
+
+-- Bind hotkey for Mad Tinker Dashboard / Control Panel (Cmd+Alt+Ctrl+G)
+hs.hotkey.bind({"cmd", "alt", "ctrl"}, "G", function()
+    if hammerghost then
+        hammerghost:toggleControlPanel()
+        hs.logger.new("init.lua"):i("Mad Tinker Dashboard toggled.")
+    else
+        hs.logger.new("init.lua"):e("HammerGhost not available for control panel.")
     end
 end)
 

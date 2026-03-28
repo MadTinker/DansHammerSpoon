@@ -41,6 +41,7 @@ local action_chooser = dofile(hs.spoons.resourcePath("scripts/action_chooser.lua
 local condition_editor = dofile(hs.spoons.resourcePath("scripts/condition_editor.lua"))
 local plugin_manager = dofile(hs.spoons.resourcePath("scripts/plugin_manager.lua"))
 local xmlparser = dofile(hs.spoons.resourcePath("scripts/xmlparser.lua"))
+local control_panel = dofile(hs.spoons.resourcePath("scripts/control_panel.lua"))
 
 -- Initialize modules with dependencies
 config.init({ xmlparser = xmlparser })
@@ -132,11 +133,32 @@ function obj:toggle()
     end
 end
 
+-- Function to show the Mad Tinker Dashboard (control panel for all spoons)
+function obj:showControlPanel()
+    control_panel.show(self)
+end
+
+-- Function to hide the control panel
+function obj:hideControlPanel()
+    control_panel.hide()
+end
+
+-- Function to toggle the control panel
+function obj:toggleControlPanel()
+    control_panel.toggle(self)
+end
+
+-- Function to refresh the control panel (push updated state)
+function obj:refreshControlPanel()
+    control_panel.refresh()
+end
+
 -- Bind hotkeys for the spoon
 function obj:bindHotkeys(mapping)
     local spec = {
         toggle = function() self:toggle() end,
         showActionEditor = function() self:openActionEditor() end,
+        controlPanel = function() self:toggleControlPanel() end,
     }
     hs.spoons.bindHotkeysToSpec(spec, mapping)
     return self
