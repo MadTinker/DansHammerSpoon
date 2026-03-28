@@ -41,7 +41,7 @@ obj.defaultConfig = {
     enabled = true,                     -- Enable the kinetic contraption
     sensitivity = 1.0,                  -- Kinetic sensitivity multiplier
     minWindowSize = { w = 100, h = 100 }, -- Minimum window dimensions
-    throttleMs = 8,                    -- Min ms between setFrame calls (~120fps max, reduces lag)
+    throttleMs = 200,                    -- Min ms between setFrame calls (~120fps max, reduces lag)
     debug = false,                      -- Mad scientist debug mode
     autoStart = true                    -- Auto-engage the contraption on load
 }

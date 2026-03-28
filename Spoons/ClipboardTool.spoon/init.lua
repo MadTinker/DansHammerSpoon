@@ -395,7 +395,7 @@ function obj:checkAndStorePasteboard()
             current_clipboard = pasteboard.readImage()
             self:pasteboardToClipboard("image", current_clipboard:encodeAsURLString())
             if self.show_copied_alert then
-                hs.alert.show("Copied image")
+                self.logger.df("Copied image")
             end
             self.logger.df("Adding image (hashed) %s to clipboard history clipboard", hashfn(current_clipboard:encodeAsURLString()))
          elseif current_clipboard ~= nil then

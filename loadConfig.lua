@@ -8,7 +8,7 @@ local hspoon_list = {
     "AClock",
     "EmmyLua",
     "ClipShow",
-    "ClipboardTool",
+    -- "ClipboardTool",
     "DragonGrid",
     "Layouts",
     "KineticLatch", -- The Mad Tinker's Window Manipulation Contraption! 🔧⚡
