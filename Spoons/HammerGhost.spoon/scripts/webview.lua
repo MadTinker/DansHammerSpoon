@@ -18,7 +18,8 @@ function M.init(spoon)
         htmlContent = "<html><body><h1>Error</h1><p>" .. tostring(err) .. "</p></body></html>"
     end
 
-    spoon.window:html(htmlContent)
+    local baseURL = hs.spoons.resourcePath("../assets/")
+    spoon.window:html(htmlContent, baseURL)
 end
 
 function M.refresh(spoon)

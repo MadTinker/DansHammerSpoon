@@ -201,8 +201,8 @@ hs.hotkey.bind({"ctrl", "cmd"}, "b", "Open Replit (Work Chrome)", function()
 end)
 hs.hotkey.bind(hammer, "n", "Restore Window to Location 2", function() WindowToggler.restoreToLocation2() end)
 hs.hotkey.bind(_hyper, "n", "Save Window to Location 2", function() WindowToggler.saveToLocation2() end)
-hs.hotkey.bind(hammer, "m", "Toggle HammerGhost", function() spoon.HammerGhost:toggle() end)
-hs.hotkey.bind(_hyper, "m", "HammerGhost Editor", function() spoon.HammerGhost:showActionEditor() end)
+hs.hotkey.bind(hammer, "m", "Toggle HammerGhost", function() spoon.HammerGhost:toggle() end, nil, function() end)
+hs.hotkey.bind(_hyper, "m", "HammerGhost Editor", function() spoon.HammerGhost:showActionEditor() end, nil, function() end)
 
 -- Keybindings - Space Row
 hs.hotkey.bind(hammer, "Space", "Show Hammer Hotkeys", function() showHammerList() end)

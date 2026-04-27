@@ -17,9 +17,12 @@ function M.createMainWindow(spoon)
     spoon.window:attachedToolbar(spoon.toolbar)
 
     webview_manager.init(spoon)
-    webview_manager.refresh(spoon)
-
     spoon.window:show()
+
+    -- Delay refresh so page has time to load before JS injection
+    hs.timer.doAfter(0.3, function()
+        if spoon.window then webview_manager.refresh(spoon) end
+    end)
 end
 
 function M.refresh(spoon)

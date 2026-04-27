@@ -23,10 +23,23 @@ function M.create(spoon)
 
     window:allowTextEntry(true)
     window:darkMode(true)
+    window:windowStyle({ "titled", "closable", "miniaturizable", "resizable" })
+    window:level(hs.drawing.windowLevels.floating)
+    window:allowNewWindows(false)
 
-    -- Set the navigation callback to handle JavaScript-to-Lua communication
-    window:navigationCallback(function(url)
-        return spoon:handleURL(url)
+    -- navigationCallback receives (action, webView, navID, extra)
+    -- For "navigationAction", extra.URL has the actual URL
+    window:navigationCallback(function(action, webView, navID, extra)
+        if action == "navigationAction" then
+            local url = extra and extra.URL or ""
+            if url:match("^hammerspoon://") then
+                spoon:handleURL(url)
+                return false -- block navigation, keep current page
+            end
+            return true -- allow other navigations
+        elseif action == "webViewShouldClose" then
+            return false -- prevent accidental close
+        end
     end)
 
     return window
