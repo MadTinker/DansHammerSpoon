@@ -54,15 +54,7 @@ hs.hotkey.bind({"cmd", "alt", "ctrl"}, "H", function()
     end
 end)
 
--- Bind hotkey for Mad Tinker Dashboard / Control Panel (Cmd+Alt+Ctrl+G)
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "G", function()
-    if hammerghost then
-        hammerghost:toggleControlPanel()
-        hs.logger.new("init.lua"):i("Mad Tinker Dashboard toggled.")
-    else
-        hs.logger.new("init.lua"):e("HammerGhost not available for control panel.")
-    end
-end)
+-- Control panel toggle moved to hotkeys.lua (hammer+g) to avoid conflict with GitHub Desktop binding
 
 -- Configure Console Dark Mode
 log:d('Configuring console appearance', __FILE__, 45)

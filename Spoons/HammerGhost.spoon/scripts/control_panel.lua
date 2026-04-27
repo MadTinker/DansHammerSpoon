@@ -692,7 +692,7 @@ function M.show(spoonObj)
         panelWindow:darkMode(true)
         panelWindow:allowTextEntry(false)
         panelWindow:level(hs.drawing.windowLevels.floating)
-        panelWindow:windowStyle({ "titled", "closable", "nonactivating" })
+        panelWindow:windowStyle({ "titled", "closable", "miniaturizable", "resizable" })
         panelWindow:windowTitle("⚡ Mad Tinker Dashboard")
         panelWindow:allowNewWindows(false)
 

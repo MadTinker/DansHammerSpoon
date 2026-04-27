@@ -164,7 +164,7 @@ hs.hotkey.bind(hammer, "d", "Open AnythingLLM", function() AppManager.open_anyth
 hs.hotkey.bind(_hyper, "d", "Open MongoDB Compass", function() AppManager.open_mongodb() end)
 hs.hotkey.bind(hammer, "f", "Open Scrcpy", function() AppManager.open_scrcpy() end)
 hs.hotkey.bind(_hyper, "f", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "g", "Open GitHub Desktop", function() AppManager.launchGitHubWithProjectSelection() end)
+hs.hotkey.bind(hammer, "g", "Toggle Mad Tinker Dashboard", function() spoon.HammerGhost:toggleControlPanel() end, nil, function() end)
 hs.hotkey.bind(_hyper, "g", "Open just GitHub Desktop", function() AppManager.open_github() end)
 hs.hotkey.bind(hammer, "h", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(_hyper, "h", "Temporary Function", function() tempFunction() end)
