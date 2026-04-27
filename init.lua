@@ -44,15 +44,7 @@ else
     hs.logger.new("init.lua"):e("Failed to initialize HammerGhost spoon.")
 end
 
--- Bind hotkey for HammerGhost macro editor toggle (Cmd+Alt+Ctrl+H)
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "H", function()
-    if hammerghost then
-        hammerghost:toggle()
-        hs.logger.new("init.lua"):i("HammerGhost toggled via hotkey.")
-    else
-        hs.logger.new("init.lua"):e("HammerGhost not available for toggle.")
-    end
-end)
+-- HammerGhost toggle consolidated to hotkeys.lua (hammer+h)
 
 -- Control panel toggle moved to hotkeys.lua (hammer+g) to avoid conflict with GitHub Desktop binding
 

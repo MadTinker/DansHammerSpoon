@@ -37,8 +37,6 @@ function M.create(spoon)
                 return false -- block navigation, keep current page
             end
             return true -- allow other navigations
-        elseif action == "webViewShouldClose" then
-            return false -- prevent accidental close
         end
     end)
 

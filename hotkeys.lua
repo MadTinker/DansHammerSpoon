@@ -166,7 +166,7 @@ hs.hotkey.bind(hammer, "f", "Open Scrcpy", function() AppManager.open_scrcpy() e
 hs.hotkey.bind(_hyper, "f", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "g", "Toggle Mad Tinker Dashboard", function() spoon.HammerGhost:toggleControlPanel() end, nil, function() end)
 hs.hotkey.bind(_hyper, "g", "Open just GitHub Desktop", function() AppManager.open_github() end)
-hs.hotkey.bind(hammer, "h", "Temporary Function", function() tempFunction() end)
+hs.hotkey.bind(hammer, "h", "Toggle HammerGhost", function() spoon.HammerGhost:toggle() end, nil, function() end)
 hs.hotkey.bind(_hyper, "h", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "j", "Toggle Project Manager", function() ProjectManager.toggleProjectManager() end)
 hs.hotkey.bind(_hyper, "j", "Show Active Project Info", function() ProjectManager.showActiveProjectInfo() end)
