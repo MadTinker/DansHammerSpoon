@@ -181,11 +181,11 @@ hs.hotkey.bind(_hyper, "'", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "return", "Toggle Native Fullscreen", function() WindowManager.toggleNativeFullScreen() end)
 
 -- Shift Row
-hs.hotkey.bind(hammer, "z", "Temporary Function", function() tempFunction() end)
+hs.hotkey.bind(hammer, "z", "Open Codex", function() AppManager.open_codex() end)
 hs.hotkey.bind(_hyper, "z", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "x", "Toggle Dragon Grid", function() spoon.DragonGrid:toggleGridDisplay() end)
 hs.hotkey.bind(_hyper, "x", "Dragon Grid Settings", function() spoon.DragonGrid:showSettingsMenu() end)
-hs.hotkey.bind(hammer, "c", "Temporary Function", function() tempFunction() end) -- hs.hotkey.bind(hammer, "c", function() FileManager.showClipboardManager() end) broken
+hs.hotkey.bind(hammer, "c", "Open Claude", function() AppManager.open_claude() end)
 hs.hotkey.bind(_hyper, "c", "Temporary Function", function() tempFunction() end) -- hs.hotkey.bind(_hyper, "c", function() FileManager.clearClipboard() end) broken
 hs.hotkey.bind(hammer, "v", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(_hyper, "v", "Temporary Function", function() tempFunction() end)

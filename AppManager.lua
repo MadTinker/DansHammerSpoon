@@ -51,6 +51,20 @@ function AppManager.madFocus(appName)
         return
     end
 
+    -- Two windows: toggle directly without showing the menu
+    if #windows == 2 then
+        local focused = hs.window.focusedWindow()
+        if focused and focused:application():name() == app:name() then
+            -- Focus the other one
+            local other = (windows[1]:id() == focused:id()) and windows[2] or windows[1]
+            other:focus()
+        else
+            -- App not focused, bring up the first window
+            windows[1]:focus()
+        end
+        return
+    end
+
     local choices = {}
     local openWindowTitles = {}
 
@@ -919,6 +933,14 @@ end
 
 function AppManager.open_windsurf()
     AppManager.madFocus("Windsurf")
+end
+
+function AppManager.open_claude()
+    AppManager.madFocus("Claude")
+end
+
+function AppManager.open_codex()
+    AppManager.madFocus("Codex")
 end
 
 -- scrcpy - Special handling for command-line tools
