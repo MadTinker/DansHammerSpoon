@@ -37,8 +37,9 @@ local fileList = {
     { name = "Global Hotkeys", path = "~/.hammerspoon/hotkeys.lua" },
     { name = "File Manager",   path = "~/.hammerspoon/FileManager.lua" },
     { name = "madcode",         path = "/Users/d.edens/lab/madness_interactive/projects/opencode/Whispermind_Conduit" },
+    { name = "Maddesktop",      path = "/Users/d.edens/lab/madness_interactive/projects/common/madnessDesktop" },
+    { name = "Abzena",         path = "/Users/d.edens/lab/Faros/ellie-monorepo/AEAabzena" },
     { name = "ellie-monorepo",  path = "/Users/d.edens/lab/Faros/ellie-monorepo" },
-
 
     { name = "claude settings", path = "~/.claude/settings.json" },
     { name = "zshenv",         path = "~/.zshenv" },
@@ -61,7 +62,15 @@ local fallback_projects_list = {
     { name = "Inventorium",                path = seatOfMadness .. "/projects/common/Inventorium" },
     { name = "monorepo-ellie",             path = seatOfFaros .. "/ellie-monorepo" },
     { name = "ellie",                       path = seatOfFaros .. "/ellie-monorepo/ellie" },
-    { name = "guardian",                     path = seatOfFaros .. "/ellie-monorepo/guardian" },
+    { name = "guardian",                    path = seatOfFaros .. "/ellie-monorepo/guardian" },
+    { name = "AEAabzena",                   path = seatOfFaros .. "/ellie-monorepo/AEAabzena" },
+    { name = "abzena-optimizer",            path = seatOfFaros .. "/ellie-monorepo/abzena-optimizer" },
+    { name = "DOH-Stable-Kevin",            path = seatOfFaros .. "/ellie-monorepo/DOH-Stable-Kevin" },
+    { name = "ellie-data-sink",             path = seatOfFaros .. "/ellie-monorepo/ellie-data-sink" },
+    { name = "ellie-slack-bot",             path = seatOfFaros .. "/ellie-monorepo/ellie-slack-bot" },
+    { name = "ellie-jobs",                  path = seatOfFaros .. "/ellie-monorepo/jobs" },
+    { name = "ellie-scripts",               path = seatOfFaros .. "/ellie-monorepo/scripts" },
+    { name = "ellie-context",               path = seatOfFaros .. "/ellie-monorepo/context" },
     { name = "SwarmDesk",                  path = seatOfMadness .. "/projects/common/SwarmDesk" },
     { name = "Omnispindle",                path = seatOfMadness .. "/projects/common/Omnispindle" },
 
@@ -72,6 +81,13 @@ local fallback_projects_list = {
     { name = "verified_madness",           path = seatOfMadness .. "/projects/python/verified_madness" },
     { name = "Whispermind_Conduit_old",        path = seatOfMadness .. "/projects/common/Whispermind_Conduit" },
     { name = "Todomill_projectorium",      path = seatOfMadness .. "/projects/common/Omnispindle/Todomill_projectorium" },
+    { name = "DevCrystal-TaskForge",       path = seatOfMadness .. "/projects/common/DevCrystal-TaskForge" },
+    { name = "madman",                     path = seatOfMadness .. "/projects/common/madman" },
+    { name = "madnessscale",               path = seatOfMadness .. "/projects/common/madnessscale" },
+    { name = "mcp_cli_auth_tool",          path = seatOfMadness .. "/projects/common/mcp_cli_auth_tool" },
+    { name = "MechaFiberAtelier",          path = seatOfMadness .. "/projects/common/MechaFiberAtelier" },
+    { name = "Obnubilare",                 path = seatOfMadness .. "/projects/common/Obnubilare" },
+    { name = "Omnispindle-cli-bridge",     path = seatOfMadness .. "/projects/common/Omnispindle-cli-bridge" },
 
     -- RegressionTestKit ecosystem
     { name = "regressiontestkit",          path = seatOfTest },
@@ -92,6 +108,8 @@ local fallback_projects_list = {
 
     -- Other major projects
     { name = "Cogwyrm",                    path = seatOfMadness .. "/projects/mobile/Cogwyrm" },
+    { name = "Cogwyrm2",                   path = seatOfMadness .. "/projects/mobile/Cogwyrm2" },
+    { name = "MQTTCommander",              path = seatOfMadness .. "/projects/mobile/MQTTCommander" },
     -- Rust projects
     { name = "Tinker",                     path = seatOfMadness .. "/projects/rust/Tinker" },
     { name = "EventGhost-Rust",            path = seatOfMadness .. "/projects/rust/EventGhost-Rust" },
@@ -101,6 +119,18 @@ local fallback_projects_list = {
     { name = "mqtt-get-var",               path = seatOfMadness .. "/projects/python/mqtt-get-var" },
     { name = "dvtTestKit",                 path = seatOfMadness .. "/projects/python/dvtTestKit" },
     { name = "EventGhost-py",              path = seatOfMadness .. "/projects/python/EventGhost" },
+    { name = "dans-fastmcp-server-template", path = seatOfMadness .. "/projects/python/dans-fastmcp-server-template" },
+    { name = "fastmcp-balena-cli",         path = seatOfMadness .. "/projects/python/fastmcp-balena-cli" },
+    { name = "LegoScry",                   path = seatOfMadness .. "/projects/python/LegoScry" },
+    { name = "local-ai",                   path = seatOfMadness .. "/projects/python/local-ai" },
+    { name = "mcp-auth-cli",               path = seatOfMadness .. "/projects/python/mcp-auth-cli" },
+    { name = "mcp-personal-jira",          path = seatOfMadness .. "/projects/python/mcp-personal-jira" },
+    { name = "mqtt-ai-analyzer",           path = seatOfMadness .. "/projects/python/mqtt-ai-analyzer" },
+    { name = "MqttLogger",                 path = seatOfMadness .. "/projects/python/MqttLogger" },
+    { name = "SeleniumPageUtilities",      path = seatOfMadness .. "/projects/python/SeleniumPageUtilities" },
+    { name = "simple-mqtt-server-agent",   path = seatOfMadness .. "/projects/python/simple-mqtt-server-agent" },
+    { name = "Spindlewrit",                path = seatOfMadness .. "/projects/python/Spindlewrit" },
+    { name = "wyrmwatch",                  path = seatOfMadness .. "/projects/python/wyrmwatch" },
 
     -- -- Project root directories
     -- { name = "projects-root",              path = seatOfMadness .. "/projects" },
@@ -132,6 +162,7 @@ local fallback_projects_list = {
     -- Typescript projects
     -- { name = "typescript-projects",        path = "~/lab/madness_interactive/projects/typescript" },
     { name = "RaidShadowLegendsButItsMCP", path = seatOfMadness .. "/projects/typescript/RaidShadowLegendsButItsMCP" },
+    { name = "agorventorium",              path = seatOfMadness .. "/projects/typescript/agorventorium" },
 }
 
 local editorList = {
