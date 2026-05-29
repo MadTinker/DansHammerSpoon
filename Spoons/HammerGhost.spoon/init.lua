@@ -43,6 +43,13 @@ local plugin_manager = dofile(hs.spoons.resourcePath("scripts/plugin_manager.lua
 local xmlparser = dofile(hs.spoons.resourcePath("scripts/xmlparser.lua"))
 local control_panel = dofile(hs.spoons.resourcePath("scripts/control_panel.lua"))
 
+-- Percent-decode a URL component. hs.urlevent has no unquote(); the JS side uses
+-- encodeURIComponent (no form-style '+' for spaces), so we only decode %xx bytes.
+local function urlDecode(s)
+    if not s then return s end
+    return (s:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end))
+end
+
 -- Initialize modules with dependencies
 config.init({ xmlparser = xmlparser })
 
@@ -356,7 +363,7 @@ function obj:handleActionEditorURL(url)
         local js = string.format("populateActionTypes(%s)", hs.json.encode(self.actionTypes))
         self.actionEditor:evaluateJavaScript(js)
     elseif cmd == "saveAction" then
-        local actionData = hs.json.decode(hs.urlevent.unquote(args))
+        local actionData = hs.json.decode(urlDecode(args))
         if actionData.id and actionData.id ~= "" then
             -- Update existing action
             local item = treeHelpers.findItem(self.macroTree, actionData.id)
@@ -392,7 +399,7 @@ function obj:handleSequenceEditorURL(url)
     elseif cmd == "addConditionToSequence" then
         self:openConditionEditor()
     elseif cmd == "saveSequence" then
-        local sequenceData = hs.json.decode(hs.urlevent.unquote(args))
+        local sequenceData = hs.json.decode(urlDecode(args))
         local item = self.currentSelection
         if item and item.type == "sequence" then
             item.steps = sequenceData.steps
@@ -425,7 +432,7 @@ function obj:handleActionChooserURL(url)
         local js = string.format("populateActions(%s)", hs.json.encode(actions))
         self.actionChooser:evaluateJavaScript(js)
     elseif cmd == "actionSelected" then
-        local action = hs.json.decode(hs.urlevent.unquote(args))
+        local action = hs.json.decode(urlDecode(args))
         local js = string.format("addStepToSequence(%s)", hs.json.encode({type="action", data=action}))
         self.sequenceEditor:evaluateJavaScript(js)
         self.actionChooser:hide()
@@ -440,7 +447,7 @@ function obj:handleConditionEditorURL(url)
         local js = string.format("populateConditionTypes(%s)", hs.json.encode(self.conditionTypes))
         self.conditionEditor:evaluateJavaScript(js)
     elseif cmd == "saveCondition" then
-        local conditionData = hs.json.decode(hs.urlevent.unquote(args))
+        local conditionData = hs.json.decode(urlDecode(args))
         local js = string.format("addStepToSequence(%s)", hs.json.encode({type="condition", data=conditionData}))
         self.sequenceEditor:evaluateJavaScript(js)
         self.conditionEditor:hide()

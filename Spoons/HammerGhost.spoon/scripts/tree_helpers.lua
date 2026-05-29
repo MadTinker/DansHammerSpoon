@@ -20,18 +20,22 @@ function M.itemToHTML(item, level, currentSelection)
     local stateClass = (selectedClass .. " " .. disabledClass):gsub("^%s+", ""):gsub("%s+$", "")
     local icon = item.type == "folder" and "📁" or (item.type == "sequence" and "📋" or "⚡")
 
+    -- Class names below match app.js event delegation (.tree-item / .toggle-button /
+    -- .edit-button / .delete-button) and styles.css. Action wiring is handled by
+    -- app.js via closest('.tree-item').dataset.id, so no inline onclick is needed.
+    -- NOTE: the ondrag* attributes reference handleDrag* functions that are not yet
+    -- defined anywhere; drag/drop is an unimplemented feature, left as-is.
     local html = string.format([[
-        <div class="item %s" data-id="%s" data-type="%s" style="%s" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
-            <span class="icon" onclick="toggleItem('%s', event)">%s</span>
+        <div class="tree-item %s" data-id="%s" data-type="%s" style="%s" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+            <span class="icon toggle-button">%s</span>
             <span class="name">%s</span>
             <div class="actions">
-                <button class="edit" onclick="editItem('%s', '%s', event)" title="Edit">✏️</button>
-                <button class="delete" onclick="deleteItem('%s', '%s', event)" title="Delete">🗑️</button>
+                <button class="edit-button" title="Edit">✏️</button>
+                <button class="delete-button" title="Delete">🗑️</button>
             </div>
             <div class="drop-indicator"></div>
         </div>
-    ]], stateClass, item.id, item.type, indentStyle, item.id, icon, item.name,
-        item.id, item.name:gsub("'", "\\'"), item.id, item.name:gsub("'", "\\'"))
+    ]], stateClass, item.id, item.type, indentStyle, icon, item.name)
 
     if item.children and #item.children > 0 then
         html = html .. "<div class='children'>"

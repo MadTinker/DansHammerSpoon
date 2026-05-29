@@ -7,6 +7,13 @@ local properties_manager = dofile(hs.spoons.resourcePath("properties.lua"))
 
 local M = {}
 
+-- Percent-decode a URL component. hs.urlevent has no unquote(); the JS side uses
+-- encodeURIComponent (no form-style '+' for spaces), so we only decode %xx bytes.
+local function urlDecode(s)
+    if not s then return s end
+    return (s:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end))
+end
+
 function M.createMainWindow(spoon)
     spoon.window = window_manager.create(spoon)
     if not spoon.window then
@@ -47,7 +54,7 @@ function M.handleURL(spoon, url)
     local params = {}
     if args then
         for k, v in args:gmatch("([^=]+)=([^&]+)") do
-            params[k] = hs.urlevent.unquote(v)
+            params[k] = urlDecode(v)
         end
     end
 
