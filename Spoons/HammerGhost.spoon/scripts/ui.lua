@@ -66,8 +66,12 @@ function M.handleURL(spoon, url)
         spoon:editItem(params.id)
     elseif cmd == "deleteItem" and params.id then
         spoon:deleteItem(params.id)
-    elseif cmd == "saveProperties" and params.id then
-        spoon:saveProperties(params)
+    elseif cmd == "saveProperties" then
+        -- app.js sends the payload as encodeURIComponent(JSON), not k=v pairs.
+        local data = args and args ~= "" and hs.json.decode(urlDecode(args)) or nil
+        if data and data.id then
+            spoon:saveProperties(data)
+        end
     elseif cmd == "cancelEdit" then
         M.clearProperties(spoon)
     elseif cmd == "addFolder" then

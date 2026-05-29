@@ -19,8 +19,10 @@ function M.show(spoon, item)
         -- Sequence specific properties
     end
 
-    html = html .. string.format("<button onclick='saveProperties(\"%s\")'>Save</button>", item.id)
-    html = html .. "<button onclick='cancelEdit()'>Cancel</button>"
+    -- IDs/data-id match app.js event delegation (#save-button reads dataset.id,
+    -- #cancel-button); no inline onclick (those JS functions do not exist).
+    html = html .. string.format("<button id='save-button' data-id='%s'>Save</button>", item.id)
+    html = html .. "<button id='cancel-button'>Cancel</button>"
     html = html .. "</form>"
 
     local js = string.format(
