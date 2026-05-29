@@ -49,6 +49,19 @@ body {
     font-style: italic;
 }
 
+/* Drag-to-reorder drop targets */
+.tree-item.drop-before {
+    box-shadow: inset 0 2px 0 0 #0a84ff;
+}
+
+.tree-item.drop-after {
+    box-shadow: inset 0 -2px 0 0 #0a84ff;
+}
+
+.tree-item.drop-inside {
+    background-color: rgba(10, 132, 255, 0.25);
+}
+
 .tree-item .icon {
     margin-right: 5px;
 }

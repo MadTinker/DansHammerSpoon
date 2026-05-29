@@ -25,6 +25,63 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Drag-to-reorder (delegated; HTML5 drag events bubble to the container) ---
+    let dragSourceId = null;
+
+    const clearDropMarkers = () => {
+        treeContainer.querySelectorAll('.tree-item').forEach((el) => {
+            el.classList.remove('drop-before', 'drop-after', 'drop-inside');
+        });
+    };
+
+    // Decide where a drop lands relative to a row: inside a folder/sequence when
+    // hovering its middle band, otherwise before/after by cursor vertical position.
+    const dropPosition = (row, event) => {
+        const isContainer = row.dataset.type === 'folder' || row.dataset.type === 'sequence';
+        const rect = row.getBoundingClientRect();
+        const offset = event.clientY - rect.top;
+        if (isContainer && offset > rect.height * 0.25 && offset < rect.height * 0.75) {
+            return 'inside';
+        }
+        return offset < rect.height / 2 ? 'before' : 'after';
+    };
+
+    treeContainer.addEventListener('dragstart', (event) => {
+        const row = event.target.closest('.tree-item');
+        if (!row) return;
+        dragSourceId = row.dataset.id;
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', dragSourceId);
+    });
+
+    treeContainer.addEventListener('dragover', (event) => {
+        const row = event.target.closest('.tree-item');
+        if (!row || !dragSourceId) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        clearDropMarkers();
+        row.classList.add('drop-' + dropPosition(row, event));
+    });
+
+    treeContainer.addEventListener('drop', (event) => {
+        const row = event.target.closest('.tree-item');
+        if (!row || !dragSourceId) return;
+        event.preventDefault();
+        const targetId = row.dataset.id;
+        const position = dropPosition(row, event);
+        clearDropMarkers();
+        if (targetId !== dragSourceId) {
+            window.location.href =
+                `hammerspoon://moveItem?source=${dragSourceId}&target=${targetId}&position=${position}`;
+        }
+        dragSourceId = null;
+    });
+
+    treeContainer.addEventListener('dragend', () => {
+        clearDropMarkers();
+        dragSourceId = null;
+    });
+
     // Use event delegation for properties panel actions
     propertiesPanel.addEventListener('click', (event) => {
         const target = event.target;

@@ -21,19 +21,18 @@ function M.itemToHTML(item, level, currentSelection)
     local icon = item.type == "folder" and "📁" or (item.type == "sequence" and "📋" or "⚡")
 
     -- Class names below match app.js event delegation (.tree-item / .toggle-button /
-    -- .edit-button / .delete-button) and styles.css. Action wiring is handled by
-    -- app.js via closest('.tree-item').dataset.id, so no inline onclick is needed.
-    -- NOTE: the ondrag* attributes reference handleDrag* functions that are not yet
-    -- defined anywhere; drag/drop is an unimplemented feature, left as-is.
+    -- .edit-button / .delete-button) and styles.css. Click and drag wiring is handled
+    -- by delegated listeners in app.js via closest('.tree-item').dataset.id, so no
+    -- inline onclick/ondrag handlers are needed. draggable + data-type drive the
+    -- drag-to-reorder behavior (data-type lets the JS decide folder-nesting drops).
     local html = string.format([[
-        <div class="tree-item %s" data-id="%s" data-type="%s" style="%s" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+        <div class="tree-item %s" data-id="%s" data-type="%s" style="%s" draggable="true">
             <span class="icon toggle-button">%s</span>
             <span class="name">%s</span>
             <div class="actions">
                 <button class="edit-button" title="Edit">✏️</button>
                 <button class="delete-button" title="Delete">🗑️</button>
             </div>
-            <div class="drop-indicator"></div>
         </div>
     ]], stateClass, item.id, item.type, indentStyle, icon, item.name)
 

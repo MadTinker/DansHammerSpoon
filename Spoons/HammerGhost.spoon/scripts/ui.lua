@@ -53,7 +53,9 @@ function M.handleURL(spoon, url)
 
     local params = {}
     if args then
-        for k, v in args:gmatch("([^=]+)=([^&]+)") do
+        -- Exclude '&' from the key class so multi-param queries
+        -- (source=a&target=b&position=c) split correctly.
+        for k, v in args:gmatch("([^=&]+)=([^&]+)") do
             params[k] = urlDecode(v)
         end
     end
@@ -66,6 +68,8 @@ function M.handleURL(spoon, url)
         spoon:editItem(params.id)
     elseif cmd == "deleteItem" and params.id then
         spoon:deleteItem(params.id)
+    elseif cmd == "moveItem" and params.source and params.target then
+        spoon:moveItem(params.source, params.target, params.position or "after")
     elseif cmd == "saveProperties" then
         -- app.js sends the payload as encodeURIComponent(JSON), not k=v pairs.
         local data = args and args ~= "" and hs.json.decode(urlDecode(args)) or nil

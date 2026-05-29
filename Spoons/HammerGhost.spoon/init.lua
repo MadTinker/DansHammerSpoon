@@ -340,6 +340,66 @@ function obj:toggleItem(id)
     return item.enabled
 end
 
+-- Function to move/reorder an item in the tree via drag and drop.
+-- position is "before" | "after" (sibling of target) or "inside" (child of target).
+function obj:moveItem(sourceId, targetId, position)
+    if not sourceId or not targetId or sourceId == targetId then return end
+
+    -- Locate an item by id, returning the item, its containing list, and index.
+    local function locate(items, id)
+        for i, item in ipairs(items) do
+            if item.id == id then return item, items, i end
+            if item.children then
+                local it, list, idx = locate(item.children, id)
+                if it then return it, list, idx end
+            end
+        end
+        return nil
+    end
+
+    -- True if `id` is `node` itself or any descendant of it (cycle guard).
+    local function containsId(node, id)
+        if node.id == id then return true end
+        if node.children then
+            for _, child in ipairs(node.children) do
+                if containsId(child, id) then return true end
+            end
+        end
+        return false
+    end
+
+    local source, srcList, srcIdx = locate(self.macroTree, sourceId)
+    if not source then return end
+
+    -- Never drop a node into itself or one of its own descendants.
+    if containsId(source, targetId) then return end
+
+    -- Detach source from its current parent before re-inserting (indices into
+    -- the target list are computed after this removal so they stay valid).
+    table.remove(srcList, srcIdx)
+
+    if position == "inside" then
+        local target = locate(self.macroTree, targetId)
+        if target then
+            target.children = target.children or {}
+            table.insert(target.children, source)
+        else
+            table.insert(self.macroTree, source) -- target vanished; keep at root
+        end
+    else
+        local _, tgtList, tgtIdx = locate(self.macroTree, targetId)
+        if tgtList then
+            local insertIdx = (position == "after") and (tgtIdx + 1) or tgtIdx
+            table.insert(tgtList, insertIdx, source)
+        else
+            table.insert(self.macroTree, source)
+        end
+    end
+
+    self:saveConfig()
+    ui.refresh(self)
+end
+
 -- Function to save properties
 function obj:saveProperties(data)
     local item = treeHelpers.findItem(self.macroTree, data.id)
