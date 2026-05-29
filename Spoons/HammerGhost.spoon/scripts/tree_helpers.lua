@@ -15,6 +15,9 @@ function M.itemToHTML(item, level, currentSelection)
 
     local indentStyle = string.format("padding-left: %dpx;", level * 20)
     local selectedClass = (currentSelection and item.id == currentSelection.id) and "selected" or ""
+    -- item.enabled == false marks a disabled item; nil/true are treated as enabled
+    local disabledClass = (item.enabled == false) and "disabled" or ""
+    local stateClass = (selectedClass .. " " .. disabledClass):gsub("^%s+", ""):gsub("%s+$", "")
     local icon = item.type == "folder" and "📁" or (item.type == "sequence" and "📋" or "⚡")
 
     local html = string.format([[
@@ -27,7 +30,7 @@ function M.itemToHTML(item, level, currentSelection)
             </div>
             <div class="drop-indicator"></div>
         </div>
-    ]], selectedClass, item.id, item.type, indentStyle, item.id, icon, item.name,
+    ]], stateClass, item.id, item.type, indentStyle, item.id, icon, item.name,
         item.id, item.name:gsub("'", "\\'"), item.id, item.name:gsub("'", "\\'"))
 
     if item.children and #item.children > 0 then

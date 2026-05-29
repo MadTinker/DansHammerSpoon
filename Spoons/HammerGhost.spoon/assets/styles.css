@@ -44,6 +44,12 @@ body {
     background-color: var(--selected-color);
 }
 
+.tree-item.disabled,
+.item.disabled {
+    opacity: 0.45;
+    font-style: italic;
+}
+
 .tree-item .icon {
     margin-right: 5px;
 }

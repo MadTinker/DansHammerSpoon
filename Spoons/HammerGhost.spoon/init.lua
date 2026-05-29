@@ -315,6 +315,24 @@ function obj:deleteItem(id)
     end
 end
 
+-- Function to toggle an item's enabled/disabled state
+function obj:toggleItem(id)
+    local item = treeHelpers.findItem(self.macroTree, id)
+    if not item then return end
+
+    -- Items are enabled by default; absence of the flag means enabled
+    if item.enabled == nil then
+        item.enabled = true
+    end
+    item.enabled = not item.enabled
+
+    self:saveConfig()        -- persist state change
+    ui.refresh(self)         -- update visual state
+
+    hs.alert.show(string.format("%s %s", item.name, item.enabled and "enabled" or "disabled"))
+    return item.enabled
+end
+
 -- Function to save properties
 function obj:saveProperties(data)
     local item = treeHelpers.findItem(self.macroTree, data.id)
