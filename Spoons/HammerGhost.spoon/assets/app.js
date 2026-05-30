@@ -1,6 +1,62 @@
+// --- Live event log (global so Lua's evaluateJavaScript can call them) ---
+const LOG_MAX_ROWS = 300;
+
+// Append one event row. entry = { seq, time, name }. Auto-scrolls to the newest
+// row when the view is already pinned to the bottom, so live tailing works but a
+// user who has scrolled up to read history is not yanked back down.
+window.appendLogEntry = (entry) => {
+    const container = document.getElementById('log-entries');
+    if (!container) return;
+
+    const empty = container.querySelector('.log-empty');
+    if (empty) empty.remove();
+
+    const pinned = container.scrollTop + container.clientHeight >= container.scrollHeight - 4;
+
+    const row = document.createElement('div');
+    row.className = 'log-entry fresh';
+    row.dataset.seq = entry.seq;
+
+    const time = document.createElement('span');
+    time.className = 'log-time';
+    time.textContent = entry.time;
+
+    const name = document.createElement('span');
+    name.className = 'log-name';
+    name.textContent = entry.name;
+
+    row.appendChild(time);
+    row.appendChild(name);
+    container.appendChild(row);
+
+    // Cap DOM size by dropping the oldest rows.
+    while (container.childElementCount > LOG_MAX_ROWS) {
+        container.removeChild(container.firstElementChild);
+    }
+
+    if (pinned) container.scrollTop = container.scrollHeight;
+};
+
+window.clearLogEntries = () => {
+    const container = document.getElementById('log-entries');
+    if (container) container.innerHTML = '<div class="log-empty">No events yet.</div>';
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const treeContainer = document.getElementById('tree-container');
     const propertiesPanel = document.getElementById('properties-panel');
+
+    // Clear button wipes both the DOM and the Lua-side ring buffer.
+    const logClear = document.getElementById('log-clear');
+    if (logClear) {
+        logClear.addEventListener('click', () => {
+            window.location.href = 'hammerspoon://clearLog';
+        });
+    }
+
+    // Keep the log pinned to the newest entry on initial load.
+    const logEntries = document.getElementById('log-entries');
+    if (logEntries) logEntries.scrollTop = logEntries.scrollHeight;
 
     // Use event delegation for tree actions
     treeContainer.addEventListener('click', (event) => {

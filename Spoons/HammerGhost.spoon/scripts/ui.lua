@@ -83,6 +83,8 @@ function M.handleURL(spoon, url)
         spoon:addAction()
     elseif cmd == "addSequence" then
         spoon:addSequence()
+    elseif cmd == "clearLog" then
+        spoon:clearLog()
     end
 end
 

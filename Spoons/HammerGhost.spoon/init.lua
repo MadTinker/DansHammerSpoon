@@ -42,6 +42,8 @@ local condition_editor = dofile(hs.spoons.resourcePath("scripts/condition_editor
 local plugin_manager = dofile(hs.spoons.resourcePath("scripts/plugin_manager.lua"))
 local xmlparser = dofile(hs.spoons.resourcePath("scripts/xmlparser.lua"))
 local control_panel = dofile(hs.spoons.resourcePath("scripts/control_panel.lua"))
+local event_bus = dofile(hs.spoons.resourcePath("scripts/event_bus.lua"))
+local event_sources = dofile(hs.spoons.resourcePath("scripts/event_sources.lua"))
 
 -- Percent-decode a URL component. hs.urlevent has no unquote(); the JS side uses
 -- encodeURIComponent (no form-style '+' for spaces), so we only decode %xx bytes.
@@ -114,7 +116,37 @@ function obj:init()
         config.saveMacros(self.configPath, self.macroTree)
     end
 
+    -- Start the event subsystem: system watchers feed the bus, and a forwarder
+    -- pushes each event into the live log panel when the window is open. The
+    -- watcher runs regardless of window state; the bus's ring buffer back-fills
+    -- the panel on open.
+    event_sources.start()
+    self.eventBus = event_bus  -- exposed for console inspection + future triggers
+    self._logUnsub = event_bus.subscribe(function(event)
+        self:_pushLogEntry(event)
+    end)
+
     return self
+end
+
+-- Push a single bus event into the live log panel (no-op when hidden; the ring
+-- buffer is rendered on next open instead).
+function obj:_pushLogEntry(event)
+    if not self.window or not self.window:isVisible() then return end
+    local payload = hs.json.encode({
+        seq = event.seq,
+        time = os.date("%H:%M:%S", event.time),
+        name = event.name,
+    })
+    self.window:evaluateJavaScript(string.format("window.appendLogEntry(%s)", payload))
+end
+
+-- Clear both the bus history and the panel's rows.
+function obj:clearLog()
+    event_bus.clear()
+    if self.window and self.window:isVisible() then
+        self.window:evaluateJavaScript("window.clearLogEntries()")
+    end
 end
 
 -- Function to execute an action

@@ -2,8 +2,34 @@
 
 local tree_helpers = dofile(hs.spoons.resourcePath("tree_helpers.lua"))
 local properties = dofile(hs.spoons.resourcePath("properties.lua"))
+local eventBus = dofile(hs.spoons.resourcePath("event_bus.lua"))
 
 local M = {}
+
+-- Escape text destined for raw HTML insertion.
+local function escapeHTML(s)
+    return (tostring(s or "")
+        :gsub("&", "&amp;")
+        :gsub("<", "&lt;")
+        :gsub(">", "&gt;"))
+end
+
+-- Render the event bus's recent history as log rows (oldest first, matching the
+-- live-append order). Shown when the window opens so the log isn't blank.
+local function buildLogHTML()
+    local recent = eventBus.recent()
+    if #recent == 0 then
+        return '<div class="log-empty">No events yet.</div>'
+    end
+    local rows = {}
+    for _, ev in ipairs(recent) do
+        rows[#rows + 1] = string.format(
+            '<div class="log-entry" data-seq="%d"><span class="log-time">%s</span>' ..
+            '<span class="log-name">%s</span></div>',
+            ev.seq, os.date("%H:%M:%S", ev.time), escapeHTML(ev.name))
+    end
+    return table.concat(rows)
+end
 
 -- Read a file from the assets directory, returning its contents or "" on failure.
 local function readAsset(name)
@@ -83,6 +109,11 @@ function M.init(spoon)
     -- Pre-render the header item count.
     htmlContent = htmlContent:gsub('<!%-%- Item count injected here %-%->', function()
         return itemCountLabel(spoon)
+    end)
+
+    -- Pre-render recent events so the log shows history captured before open.
+    htmlContent = htmlContent:gsub('<!%-%- Log entries injected here %-%->', function()
+        return buildLogHTML()
     end)
 
     -- Assets are inlined above, so baseURL is not needed for resource loading;

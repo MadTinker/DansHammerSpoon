@@ -210,6 +210,90 @@ body {
     border-color: var(--accent-hover);
 }
 
+/* --- Live event log panel (bottom) --- */
+#log-panel {
+    flex: 0 0 180px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-top: 1px solid var(--border-color);
+}
+
+#log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted-color);
+    border-bottom: 1px solid var(--border-color);
+    flex: 0 0 auto;
+    -webkit-user-select: none;
+}
+
+#log-clear {
+    background: transparent;
+    color: var(--muted-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 2px 9px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: color 0.12s ease, border-color 0.12s ease;
+}
+
+#log-clear:hover {
+    color: var(--text-color);
+    border-color: var(--muted-color);
+}
+
+#log-entries {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    padding: 4px 0;
+}
+
+.log-entry {
+    display: flex;
+    gap: 10px;
+    padding: 2px 12px;
+    white-space: nowrap;
+}
+
+.log-entry:hover {
+    background-color: var(--hover-color);
+}
+
+.log-entry .log-time {
+    color: var(--muted-color);
+    flex: 0 0 auto;
+}
+
+.log-entry .log-name {
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.log-entry.fresh {
+    animation: logflash 0.6s ease-out;
+}
+
+@keyframes logflash {
+    from { background-color: rgba(10, 132, 255, 0.30); }
+    to   { background-color: transparent; }
+}
+
+.log-empty {
+    padding: 10px 12px;
+    color: var(--muted-color);
+    font-style: italic;
+}
+
 /* Placeholder shown when no item is selected */
 .empty-state {
     display: flex;
