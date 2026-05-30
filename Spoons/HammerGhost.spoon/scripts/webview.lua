@@ -1,6 +1,7 @@
 -- Spoons/HammerGhost.spoon/scripts/webview.lua
 
 local tree_helpers = dofile(hs.spoons.resourcePath("tree_helpers.lua"))
+local properties = dofile(hs.spoons.resourcePath("properties.lua"))
 
 local M = {}
 
@@ -54,6 +55,11 @@ function M.init(spoon)
     local treeHTML = buildTreeHTML(spoon)
     htmlContent = htmlContent:gsub('<!%-%- Tree content will be injected here %-%->', function()
         return treeHTML
+    end)
+
+    -- Pre-render the properties panel's empty state so a fresh window isn't blank.
+    htmlContent = htmlContent:gsub('<!%-%- Properties content will be injected here %-%->', function()
+        return properties.emptyStateHTML()
     end)
 
     -- Assets are inlined above, so baseURL is not needed for resource loading;

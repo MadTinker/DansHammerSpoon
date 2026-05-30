@@ -5,6 +5,10 @@
     --hover-color: #2d2d2d;
     --active-color: #3d3d3d;
     --selected-color: #094771;
+    --muted-color: #8a8a8a;
+    --input-bg: #252526;
+    --accent-color: #0a84ff;
+    --accent-hover: #3a9bff;
 }
 
 body {
@@ -73,19 +77,88 @@ body {
 .properties-form {
     display: flex;
     flex-direction: column;
+    gap: 14px;
+}
+
+.properties-form h3 {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.properties-form .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .properties-form label {
-    margin-top: 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted-color);
 }
 
 .properties-form input {
-    background-color: var(--bg-color);
+    background-color: var(--input-bg);
     color: var(--text-color);
     border: 1px solid var(--border-color);
-    padding: 5px;
+    border-radius: 6px;
+    padding: 7px 9px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.12s ease;
+}
+
+.properties-form input:focus {
+    border-color: var(--accent-color);
+}
+
+.properties-form input[readonly] {
+    color: var(--muted-color);
 }
 
 .properties-form .buttons {
-    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.properties-form button {
+    background-color: var(--active-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.properties-form button:hover {
+    background-color: var(--hover-color);
+}
+
+.properties-form button.primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #ffffff;
+}
+
+.properties-form button.primary:hover {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+/* Placeholder shown when no item is selected */
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 24px;
+    text-align: center;
+    color: var(--muted-color);
+    font-size: 13px;
 }
