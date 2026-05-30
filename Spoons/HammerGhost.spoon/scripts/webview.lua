@@ -27,6 +27,24 @@ local function buildTreeHTML(spoon)
     return html
 end
 
+-- Total number of items in the tree (folders, sequences, actions; all depths).
+local function countItems(items)
+    local n = 0
+    for _, item in ipairs(items or {}) do
+        n = n + 1
+        if item.children then
+            n = n + countItems(item.children)
+        end
+    end
+    return n
+end
+
+-- Human label for the header item count.
+local function itemCountLabel(spoon)
+    local n = countItems(spoon.macroTree)
+    return n == 1 and "1 item" or (n .. " items")
+end
+
 function M.init(spoon)
     -- WKWebView's html(content, baseURL) does not reliably load external
     -- subresources (cross-origin restrictions apply to file:// stylesheets and
@@ -62,6 +80,11 @@ function M.init(spoon)
         return properties.emptyStateHTML()
     end)
 
+    -- Pre-render the header item count.
+    htmlContent = htmlContent:gsub('<!%-%- Item count injected here %-%->', function()
+        return itemCountLabel(spoon)
+    end)
+
     -- Assets are inlined above, so baseURL is not needed for resource loading;
     -- it is still supplied to give the document a real origin (not about:blank)
     -- so that window.location.href navigations reach the navigationCallback.
@@ -74,10 +97,12 @@ function M.refresh(spoon)
         return
     end
 
-    -- Use JavaScript to update only the tree-container div
+    -- Re-render the tree and keep the header count in sync (single re-render path).
     local js = string.format(
-        "document.getElementById('tree-container').innerHTML = `%s`;",
-        buildTreeHTML(spoon)
+        "document.getElementById('tree-container').innerHTML = `%s`;" ..
+        "var __c = document.getElementById('item-count'); if (__c) __c.textContent = `%s`;",
+        buildTreeHTML(spoon),
+        itemCountLabel(spoon)
     )
     spoon.window:evaluateJavaScript(js)
 end
