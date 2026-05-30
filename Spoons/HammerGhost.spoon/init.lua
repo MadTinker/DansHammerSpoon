@@ -40,6 +40,9 @@ local sequence_editor = dofile(hs.spoons.resourcePath("scripts/sequence_editor.l
 local action_chooser = dofile(hs.spoons.resourcePath("scripts/action_chooser.lua"))
 local condition_editor = dofile(hs.spoons.resourcePath("scripts/condition_editor.lua"))
 local plugin_manager = dofile(hs.spoons.resourcePath("scripts/plugin_manager.lua"))
+-- Reserved for future EventGhost-XML import (.egtree). Persistence is JSON now
+-- (config.lua), so config never calls this -- it's kept wired for the EG-parity
+-- import path, not for saving the tree.
 local xmlparser = dofile(hs.spoons.resourcePath("scripts/xmlparser.lua"))
 local control_panel = dofile(hs.spoons.resourcePath("scripts/control_panel.lua"))
 local event_bus = dofile(hs.spoons.resourcePath("scripts/event_bus.lua"))

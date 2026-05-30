@@ -35,7 +35,8 @@ local function validateMacroTree(macroTree)
     return not hasError
 end
 
--- Initialize the module with dependencies
+-- Initialize the module with dependencies. xmlparser is held for a future
+-- EventGhost-XML import path; load/save below are JSON and do not use it.
 function config.init(deps)
     config.xmlparser = deps.xmlparser
     return config
