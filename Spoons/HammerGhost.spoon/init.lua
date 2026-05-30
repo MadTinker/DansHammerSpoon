@@ -66,6 +66,28 @@ local function safeDecodeArgs(args)
     return decoded
 end
 
+-- EventGhost-style event matching. A trigger's bound eventName may be a literal
+-- (exact match, the common case) or a glob with '*' (any run, crosses dots) and
+-- '?' (exactly one char). e.g. "App.Activated.*" matches any app activation;
+-- "MQTT.status.*.claude.*" matches the device-mid MQTT topics.
+local _globCache = {}  -- glob string -> compiled anchored Lua pattern
+local function matchEvent(pattern, name)
+    if not pattern or not name then return false end
+    -- Fast path: no wildcards -> plain equality, no pattern compile.
+    if not pattern:find("[*?]") then return pattern == name end
+    local compiled = _globCache[pattern]
+    if not compiled then
+        -- Escape every Lua-pattern magic char EXCEPT our wildcards * and ?,
+        -- then expand: * -> ".*", ? -> ".". Anchored so it matches the whole
+        -- event name (an unanchored pattern would match too broadly).
+        local p = pattern:gsub("[%^%$%(%)%%%.%[%]%+%-]", "%%%1")
+        p = p:gsub("%*", ".*"):gsub("%?", ".")
+        compiled = "^" .. p .. "$"
+        _globCache[pattern] = compiled
+    end
+    return name:find(compiled) ~= nil
+end
+
 -- Initialize modules with dependencies
 config.init({ xmlparser = xmlparser })
 
@@ -163,11 +185,14 @@ end
 -- a greyed item never fires. Triggers are NOT runnable here: they are *fired* by
 -- the event dispatcher, which runs their children directly — running a trigger
 -- from a parent folder would bypass its event gate.
-function obj:executeItem(item)
+-- `event` is the bus event that triggered this run (nil for manual runs). It is
+-- threaded to action/condition handlers as a second arg so payload-aware actions
+-- can read event.payload; existing handlers that take only (params) ignore it.
+function obj:executeItem(item, event)
     if not item or item.enabled == false then return end
 
     if item.type == "action" then
-        action_system.executeAction(item)
+        action_system.executeAction(item, event)
     elseif item.type == "sequence" then
         -- Walk steps with a running "gate": a condition opens or closes the
         -- gate for every action that follows it, until the next condition.
@@ -177,14 +202,14 @@ function obj:executeItem(item)
         local gate = true
         for _, step in ipairs(item.steps or {}) do
             if step.type == "condition" then
-                gate = action_system.executeCondition(step) and true or false
+                gate = action_system.executeCondition(step, event) and true or false
             elseif step.type == "action" and gate then
-                action_system.executeAction(step)
+                action_system.executeAction(step, event)
             end
         end
     elseif item.type == "folder" then
         for _, child in ipairs(item.children or {}) do
-            self:executeItem(child)
+            self:executeItem(child, event)
         end
     end
 end
@@ -195,17 +220,16 @@ function obj:executeAction(id)
 end
 
 -- Fire every enabled trigger whose bound eventName matches a fired bus event,
--- running that trigger's children in order. Exact-name match for now; EG-style
--- wildcard matching is a later layer.
+-- running that trigger's children in order. eventName is matched with EG-style
+-- globbing (matchEvent): literals match exactly, '*'/'?' wildcards match broadly.
 function obj:_dispatchEvent(event)
     local function walk(items)
         for _, item in ipairs(items) do
             if item.type == "trigger"
                 and item.enabled ~= false
-                and item.eventName
-                and item.eventName == event.name then
+                and matchEvent(item.eventName, event.name) then
                 for _, child in ipairs(item.children or {}) do
-                    self:executeItem(child)
+                    self:executeItem(child, event)
                 end
             end
             if item.children then walk(item.children) end
