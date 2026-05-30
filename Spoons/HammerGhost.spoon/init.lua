@@ -50,6 +50,20 @@ local function urlDecode(s)
     return (s:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end))
 end
 
+-- Decode a URL-encoded JSON payload from the JS bridge. Returns the decoded
+-- table, or nil after logging + alerting if the payload is malformed — callers
+-- must bail on nil so a bad bridge message can't silently corrupt the tree.
+local function safeDecodeArgs(args)
+    local ok, decoded = pcall(function() return hs.json.decode(urlDecode(args)) end)
+    if not ok or type(decoded) ~= "table" then
+        local msg = "HammerGhost: failed to decode bridge payload"
+        if _G.AppLogger then _G.AppLogger:e(msg, "init.lua", 0) end
+        hs.alert.show(msg)
+        return nil
+    end
+    return decoded
+end
+
 -- Initialize modules with dependencies
 config.init({ xmlparser = xmlparser })
 
@@ -110,19 +124,17 @@ function obj:executeAction(id)
         if item.type == "action" then
             action_system.executeAction(item)
         elseif item.type == "sequence" then
-            for i, step in ipairs(item.steps) do
+            -- Walk steps with a running "gate": a condition opens or closes the
+            -- gate for every action that follows it, until the next condition.
+            -- Actions run only while the gate is open (default open at start).
+            -- Steps are executed directly; findItem only walks .children, not
+            -- .steps, so an id round-trip would never resolve a step.
+            local gate = true
+            for _, step in ipairs(item.steps) do
                 if step.type == "condition" then
-                    if action_system.executeCondition(step) then
-                        -- If condition is true, execute the next step if it's an action
-                        if item.steps[i+1] and item.steps[i+1].type == "action" then
-                            self:executeAction(item.steps[i+1].id)
-                        end
-                    end
-                elseif step.type == "action" then
-                     -- Check if the previous step was a condition, if so, it was handled above
-                    if i == 1 or not item.steps[i-1] or item.steps[i-1].type ~= "condition" then
-                       self:executeAction(step.id)
-                    end
+                    gate = action_system.executeCondition(step) and true or false
+                elseif step.type == "action" and gate then
+                    action_system.executeAction(step)
                 end
             end
         end
@@ -439,7 +451,8 @@ function obj:handleActionEditorURL(url)
         local js = string.format("populateActionTypes(%s)", hs.json.encode(self.actionTypes))
         self.actionEditor:evaluateJavaScript(js)
     elseif cmd == "saveAction" then
-        local actionData = hs.json.decode(urlDecode(args))
+        local actionData = safeDecodeArgs(args)
+        if not actionData then return end
         if actionData.id and actionData.id ~= "" then
             -- Update existing action
             local item = treeHelpers.findItem(self.macroTree, actionData.id)
@@ -475,7 +488,8 @@ function obj:handleSequenceEditorURL(url)
     elseif cmd == "addConditionToSequence" then
         self:openConditionEditor()
     elseif cmd == "saveSequence" then
-        local sequenceData = hs.json.decode(urlDecode(args))
+        local sequenceData = safeDecodeArgs(args)
+        if not sequenceData then return end
         local item = self.currentSelection
         if item and item.type == "sequence" then
             item.steps = sequenceData.steps
@@ -508,7 +522,8 @@ function obj:handleActionChooserURL(url)
         local js = string.format("populateActions(%s)", hs.json.encode(actions))
         self.actionChooser:evaluateJavaScript(js)
     elseif cmd == "actionSelected" then
-        local action = hs.json.decode(urlDecode(args))
+        local action = safeDecodeArgs(args)
+        if not action then return end
         local js = string.format("addStepToSequence(%s)", hs.json.encode({type="action", data=action}))
         self.sequenceEditor:evaluateJavaScript(js)
         self.actionChooser:hide()
@@ -523,7 +538,8 @@ function obj:handleConditionEditorURL(url)
         local js = string.format("populateConditionTypes(%s)", hs.json.encode(self.conditionTypes))
         self.conditionEditor:evaluateJavaScript(js)
     elseif cmd == "saveCondition" then
-        local conditionData = hs.json.decode(urlDecode(args))
+        local conditionData = safeDecodeArgs(args)
+        if not conditionData then return end
         local js = string.format("addStepToSequence(%s)", hs.json.encode({type="condition", data=conditionData}))
         self.sequenceEditor:evaluateJavaScript(js)
         self.conditionEditor:hide()
