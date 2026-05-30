@@ -311,6 +311,28 @@ function WindowMenu.createMovementSubmenu()
         { title = "-" },
 
         {
+            title = "🖱 Mouse → Monitor 1  (⌘⌃⌥ ])",
+            fn = function() WindowManager.moveMouseToScreen(1) end
+        },
+        {
+            title = "🖱 Mouse → Monitor 2  (⌘⌃⌥ \\)",
+            fn = function() WindowManager.moveMouseToScreen(2) end
+        },
+        {
+            title = "🖱 Mouse → Monitor 3  (⌘⇧⌃⌥ ])",
+            fn = function() WindowManager.moveMouseToScreen(3) end
+        },
+        {
+            title = "🖱 Mouse → Previous Monitor  (⌘⇧⌃⌥ [)",
+            fn = function() WindowManager.moveMouseToScreenRelative("previous") end
+        },
+        {
+            title = "🖱 Mouse → Next Monitor  (⌘⇧⌃⌥ \\)",
+            fn = function() WindowManager.moveMouseToScreenRelative("next") end
+        },
+        { title = "-" },
+
+        {
             title = "Move Step Settings",
             disabled = true
         },
