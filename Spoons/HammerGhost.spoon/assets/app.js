@@ -84,6 +84,35 @@ document.addEventListener('DOMContentLoaded', () => {
         dragSourceId = null;
     });
 
+    // --- Resizable divider between the tree and properties panels ---
+    // Sets tree-container's width (a style attribute), which survives the
+    // innerHTML re-renders that refresh performs on the tree.
+    const divider = document.getElementById('divider');
+    if (divider) {
+        let resizing = false;
+        divider.addEventListener('mousedown', (event) => {
+            resizing = true;
+            divider.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            event.preventDefault();
+        });
+        document.addEventListener('mousemove', (event) => {
+            if (!resizing) return;
+            const min = 150;
+            const max = window.innerWidth - 200;
+            let width = event.clientX;
+            if (width < min) width = min;
+            if (width > max) width = max;
+            treeContainer.style.width = width + 'px';
+        });
+        document.addEventListener('mouseup', () => {
+            if (!resizing) return;
+            resizing = false;
+            divider.classList.remove('dragging');
+            document.body.style.cursor = '';
+        });
+    }
+
     // Use event delegation for properties panel actions
     propertiesPanel.addEventListener('click', (event) => {
         const target = event.target;
