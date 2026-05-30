@@ -21,6 +21,12 @@ function M.show(spoon, item)
     if not spoon.window then
         return
     end
+    -- Item id can resolve to nil (stale selection, deleted node). Fall back to
+    -- the empty state instead of indexing a nil and crashing the URL callback.
+    if not item then
+        M.clear(spoon)
+        return
+    end
 
     local html = [[<form class="properties-form" onsubmit="return false;">]]
     html = html .. "<h3>Properties</h3>"
