@@ -20,7 +20,7 @@ local seatOfMadness = "/Users/d.edens/lab/madness_interactive"
 -- local seatOfTest = os.getenv("SEAT_OF_TEST")
 local seatOfTest = "/Users/d.edens/lab/regressiontestkit"
 
-local seatOfFaros = "/Users/d.edens/lab/Faros"
+local seatOfAlloy = "/Users/d.edens/lab/alloy"
 local seatOfLight = "/Users/d.edens/lab"
 
 -- State
@@ -39,9 +39,8 @@ local fileList = {
     { name = "madcode",         path = "/Users/d.edens/lab/madness_interactive/projects/opencode/Whispermind_Conduit" },
     { name = "Maddesktop",      path = "/Users/d.edens/lab/madness_interactive/projects/common/madnessDesktop" },
     { name = "MadQTT",         path = "/Users/d.edens/lab/madness_interactive/projects/common/MadQTT" },
-    { name = "Abzena",         path = "/Users/d.edens/lab/Faros/AlloyMonorepo/AEAabzena" },
     { name = "AlloyMonorepo",  path = "/Users/d.edens/lab/Faros/AlloyMonorepo" },
-
+    { name = "GatewayFleetExplorer",  path = "/Users/d.edens/lab/Faros/AlloyMonorepo/projects/GatewayFleetExplorer" },
     { name = "claude settings", path = "~/.claude/settings.json" },
     { name = "zshenv",         path = "~/.zshenv" },
     { name = "zshrc",          path = "~/.zshrc" },
@@ -61,15 +60,15 @@ local fallback_projects_list = {
     { name = ".hammerspoon",        path = "~/.hammerspoon" },
     { name = "Chat History",               path = seatOfMadness .. "/docs/cursor_chathistory" },
     { name = "Inventorium",                path = seatOfMadness .. "/projects/common/Inventorium" },
-    { name = "monorepo-ellie",             path = seatOfFaros .. "/AlloyMonorepo" },
-    { name = "ellie",                       path = seatOfFaros .. "/AlloyMonorepo/ellie" },
-    { name = "guardian",                    path = seatOfFaros .. "/AlloyMonorepo/guardian" },
-    { name = "AEAabzena",                   path = seatOfFaros .. "/AlloyMonorepo/AEAabzena" },
-    { name = "abzena-optimizer",            path = seatOfFaros .. "/AlloyMonorepo/abzena-optimizer" },
-    { name = "DOH-Stable-Kevin",            path = seatOfFaros .. "/AlloyMonorepo/DOH-Stable-Kevin" },
-    { name = "ellie-data-sink",             path = seatOfFaros .. "/AlloyMonorepo/ellie-data-sink" },
-    { name = "ellie-scripts",               path = seatOfFaros .. "/AlloyMonorepo/scripts" },
-    { name = "ellie-context",               path = seatOfFaros .. "/AlloyMonorepo/context" },
+    { name = "monorepo-ellie",             path = seatOfAlloy .. "/AlloyMonorepo" },
+    { name = "ellie",                       path = seatOfAlloy .. "/AlloyMonorepo/ellie" },
+    { name = "guardian",                    path = seatOfAlloy .. "/AlloyMonorepo/guardian" },
+    { name = "AEAabzena",                   path = seatOfAlloy .. "/AlloyMonorepo/AEAabzena" },
+    { name = "abzena-optimizer",            path = seatOfAlloy .. "/AlloyMonorepo/abzena-optimizer" },
+    { name = "DOH-Stable-Kevin",            path = seatOfAlloy .. "/AlloyMonorepo/DOH-Stable-Kevin" },
+    { name = "ellie-data-sink",             path = seatOfAlloy .. "/AlloyMonorepo/ellie-data-sink" },
+    { name = "ellie-scripts",               path = seatOfAlloy .. "/AlloyMonorepo/scripts" },
+    { name = "ellie-context",               path = seatOfAlloy .. "/AlloyMonorepo/context" },
     { name = "SwarmDesk",                  path = seatOfMadness .. "/projects/common/SwarmDesk" },
     { name = "Omnispindle",                path = seatOfMadness .. "/projects/common/Omnispindle" },
 
