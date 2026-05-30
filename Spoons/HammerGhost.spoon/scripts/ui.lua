@@ -79,12 +79,16 @@ function M.handleURL(spoon, url)
         M.clearProperties(spoon)
     elseif cmd == "addFolder" then
         spoon:addFolder()
+    elseif cmd == "addTrigger" then
+        spoon:addTrigger()
     elseif cmd == "addAction" then
         spoon:addAction()
     elseif cmd == "addSequence" then
         spoon:addSequence()
     elseif cmd == "clearLog" then
         spoon:clearLog()
+    elseif cmd == "bindEvent" and params.name then
+        spoon:bindEvent(params.name)
     end
 end
 

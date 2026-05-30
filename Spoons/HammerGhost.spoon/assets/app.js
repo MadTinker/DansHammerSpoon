@@ -56,7 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Keep the log pinned to the newest entry on initial load.
     const logEntries = document.getElementById('log-entries');
-    if (logEntries) logEntries.scrollTop = logEntries.scrollHeight;
+    if (logEntries) {
+        logEntries.scrollTop = logEntries.scrollHeight;
+        // Click a log row to bind its event to the selected trigger.
+        logEntries.addEventListener('click', (event) => {
+            const row = event.target.closest('.log-entry');
+            const nameEl = row && row.querySelector('.log-name');
+            if (!nameEl) return;
+            window.location.href = `hammerspoon://bindEvent?name=${encodeURIComponent(nameEl.textContent)}`;
+        });
+    }
 
     // Use event delegation for tree actions
     treeContainer.addEventListener('click', (event) => {
@@ -177,6 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = target.dataset.id;
             const name = document.getElementById('name').value;
             const data = { id, name };
+            const eventNameInput = document.getElementById('eventName');
+            if (eventNameInput) data.eventName = eventNameInput.value;
             window.location.href = `hammerspoon://saveProperties?${encodeURIComponent(JSON.stringify(data))}`;
         } else if (target.matches('#cancel-button')) {
             window.location.href = 'hammerspoon://cancelEdit';

@@ -31,7 +31,15 @@ function M.show(spoon, item)
         [[<div class="field"><label for="type">Type</label><input type="text" id="type" value="%s" readonly></div>]],
         esc(item.type))
 
-    -- Type-specific properties can be appended here in the future.
+    -- Triggers expose the event they fire on. Edit directly, or select the
+    -- trigger and click an event in the log to bind it.
+    if item.type == "trigger" then
+        html = html .. string.format(
+            [[<div class="field"><label for="eventName">Event Name</label>]] ..
+            [[<input type="text" id="eventName" value="%s" placeholder="e.g. App.Activated.Safari"></div>]],
+            esc(item.eventName))
+        html = html .. [[<div class="field-hint">Tip: click an event in the log below to bind it.</div>]]
+    end
 
     html = html .. string.format(
         [[<div class="buttons"><button id="save-button" class="primary" data-id="%s">Save</button>]] ..

@@ -18,7 +18,13 @@ function M.itemToHTML(item, level, currentSelection)
     -- item.enabled == false marks a disabled item; nil/true are treated as enabled
     local disabledClass = (item.enabled == false) and "disabled" or ""
     local stateClass = (selectedClass .. " " .. disabledClass):gsub("^%s+", ""):gsub("%s+$", "")
-    local icon = item.type == "folder" and "📁" or (item.type == "sequence" and "📋" or "⚡")
+    -- Per-type glyphs: trigger ⚡ fires on an event, action ⚙️ does work,
+    -- sequence 📋 runs gated steps, condition ❓ gates, folder 📁 groups.
+    local icons = {
+        folder = "📁", sequence = "📋", trigger = "⚡",
+        action = "⚙️", condition = "❓",
+    }
+    local icon = icons[item.type] or "⚙️"
 
     -- Containers with children get a disclosure triangle; expanded unless the
     -- model explicitly stores expanded == false (nil/true render expanded). Items

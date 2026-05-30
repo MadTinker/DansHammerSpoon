@@ -152,6 +152,12 @@ body {
     gap: 5px;
 }
 
+.properties-form .field-hint {
+    font-size: 11px;
+    color: var(--muted-color);
+    font-style: italic;
+}
+
 .properties-form label {
     font-size: 11px;
     text-transform: uppercase;
@@ -262,6 +268,7 @@ body {
     gap: 10px;
     padding: 2px 12px;
     white-space: nowrap;
+    cursor: pointer;
 }
 
 .log-entry:hover {

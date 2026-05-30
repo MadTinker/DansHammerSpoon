@@ -16,6 +16,7 @@ hammerghost_actions.json
 /Spoons/EmmyLua.spoon/annotations
 hammerghost_actions.json
 *.backup
+hammerghost_config.json
 .claude_temp/
 .DS_Store
 /.claude/data

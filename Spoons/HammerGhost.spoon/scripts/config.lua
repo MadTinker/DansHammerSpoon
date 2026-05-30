@@ -41,117 +41,49 @@ function config.init(deps)
     return config
 end
 
--- Load macros from XML file
+-- Load the macro tree from a JSON file. Returns (macros, lastId).
+--
+-- JSON (not the old XML) is the store because the model is a nested table of
+-- arbitrary fields — actionType, params, steps, eventName, enabled, expanded —
+-- and the previous XML serializer only persisted id/name/type, silently
+-- dropping every item's actual behavior on reload. JSON round-trips the whole
+-- tree.
 function config.loadMacros(filepath)
     local file = io.open(filepath, "r")
     if not file then
-        -- Return empty configuration if file doesn't exist
+        -- No config yet; caller seeds a default tree.
         return {}, 0
     end
-    
+
     local content = file:read("*all")
     file:close()
-    
-    local parsed = config.xmlparser.fromXML(content)
-    if not parsed then
+
+    local ok, decoded = pcall(function() return hs.json.decode(content) end)
+    if not ok or type(decoded) ~= "table" then
+        hs.logger.new("HammerGhost"):e("Could not parse config JSON; starting empty")
         return {}, 0
     end
-    
-    -- Convert XML structure to macro structure
-    local function convertToMacro(item)
-        if not item then return nil end
-        
-        local macro = {
-            id = item.attributes and item.attributes.id,
-            name = item.attributes and item.attributes.name,
-            type = item.attributes and item.attributes.type,
-            tag = item.tag,
-            expanded = false,
-            children = {}
-        }
-        
-        if item.children then
-            for _, child in ipairs(item.children) do
-                local converted = convertToMacro(child)
-                if converted then
-                    table.insert(macro.children, converted)
-                end
-            end
-        end
-        
-        return macro
-    end
-    
-    local macros = {}
-    local lastId = 0
-    
-    if parsed.children then
-        for _, item in ipairs(parsed.children) do
-            local macro = convertToMacro(item)
-            if macro then
-                table.insert(macros, macro)
-                -- Update lastId
-                if macro.id then
-                    local numId = tonumber(macro.id)
-                    if numId and numId > lastId then
-                        lastId = numId
-                    end
-                end
-            end
-        end
-    end
-    
-    return macros, lastId
+
+    return decoded, findHighestId(decoded)
 end
 
--- Save macros to XML file
+-- Save the macro tree to a JSON file. The whole tree is persisted verbatim.
 function config.saveMacros(filepath, macros)
-    -- Convert macro structure to XML structure
-    local function convertToXML(item)
-        if not item then return nil end
-        
-        local xmlItem = {
-            tag = item.tag or "macro",
-            attributes = {
-                id = item.id,
-                name = item.name,
-                type = item.type
-            },
-            children = {}
-        }
-        
-        if item.children then
-            for _, child in ipairs(item.children) do
-                local converted = convertToXML(child)
-                if converted then
-                    table.insert(xmlItem.children, converted)
-                end
-            end
-        end
-        
-        return xmlItem
+    -- Encode BEFORE opening the file: if encoding fails, the existing config
+    -- (now the real macro data) must not be truncated to empty.
+    local ok, json = pcall(function() return hs.json.encode(macros, true) end)
+    if not ok or type(json) ~= "string" then
+        hs.logger.new("HammerGhost"):e("Could not encode macro tree; not saving")
+        return false
     end
-    
-    local root = {
-        tag = "macros",
-        children = {}
-    }
-    
-    for _, macro in ipairs(macros) do
-        local xmlMacro = convertToXML(macro)
-        if xmlMacro then
-            table.insert(root.children, xmlMacro)
-        end
-    end
-    
-    local xml = config.xmlparser.toXML(root)
+
     local file = io.open(filepath, "w")
-    if file then
-        file:write(xml)
-        file:close()
-        return true
+    if not file then
+        return false
     end
-    return false
+    file:write(json)
+    file:close()
+    return true
 end
 
 return config

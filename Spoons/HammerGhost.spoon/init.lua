@@ -76,7 +76,7 @@ obj.actionEditor = nil
 obj.sequenceEditor = nil
 obj.actionChooser = nil
 obj.conditionEditor = nil
-obj.configPath = hs.configdir .. "/hammerghost_config.xml"
+obj.configPath = hs.configdir .. "/hammerghost_config.json"
 obj.macroTree = {}
 obj.currentSelection = nil
 obj.lastId = 0
@@ -120,10 +120,19 @@ function obj:init()
     -- pushes each event into the live log panel when the window is open. The
     -- watcher runs regardless of window state; the bus's ring buffer back-fills
     -- the panel on open.
+    -- Idempotent: hs.loadSpoon auto-calls init() AND the user's init.lua calls
+    -- it explicitly, so this runs twice. event_sources.start() self-guards;
+    -- drop any prior subscriptions before re-subscribing so events aren't logged
+    -- or dispatched twice.
     event_sources.start()
-    self.eventBus = event_bus  -- exposed for console inspection + future triggers
+    self.eventBus = event_bus  -- exposed for console inspection + triggers
+    if self._logUnsub then self._logUnsub() end
+    if self._dispatchUnsub then self._dispatchUnsub() end
     self._logUnsub = event_bus.subscribe(function(event)
         self:_pushLogEntry(event)
+    end)
+    self._dispatchUnsub = event_bus.subscribe(function(event)
+        self:_dispatchEvent(event)
     end)
 
     return self
@@ -149,28 +158,60 @@ function obj:clearLog()
     end
 end
 
--- Function to execute an action
-function obj:executeAction(id)
-    local item = treeHelpers.findItem(self.macroTree, id)
-    if item then
-        if item.type == "action" then
-            action_system.executeAction(item)
-        elseif item.type == "sequence" then
-            -- Walk steps with a running "gate": a condition opens or closes the
-            -- gate for every action that follows it, until the next condition.
-            -- Actions run only while the gate is open (default open at start).
-            -- Steps are executed directly; findItem only walks .children, not
-            -- .steps, so an id round-trip would never resolve a step.
-            local gate = true
-            for _, step in ipairs(item.steps) do
-                if step.type == "condition" then
-                    gate = action_system.executeCondition(step) and true or false
-                elseif step.type == "action" and gate then
-                    action_system.executeAction(step)
-                end
+-- Run a tree item. Actions execute, sequences run their gated steps, folders
+-- run their children in order. Disabled items (enabled == false) are skipped, so
+-- a greyed item never fires. Triggers are NOT runnable here: they are *fired* by
+-- the event dispatcher, which runs their children directly — running a trigger
+-- from a parent folder would bypass its event gate.
+function obj:executeItem(item)
+    if not item or item.enabled == false then return end
+
+    if item.type == "action" then
+        action_system.executeAction(item)
+    elseif item.type == "sequence" then
+        -- Walk steps with a running "gate": a condition opens or closes the
+        -- gate for every action that follows it, until the next condition.
+        -- Actions run only while the gate is open (default open at start).
+        -- Steps are executed directly; findItem only walks .children, not
+        -- .steps, so an id round-trip would never resolve a step.
+        local gate = true
+        for _, step in ipairs(item.steps or {}) do
+            if step.type == "condition" then
+                gate = action_system.executeCondition(step) and true or false
+            elseif step.type == "action" and gate then
+                action_system.executeAction(step)
             end
         end
+    elseif item.type == "folder" then
+        for _, child in ipairs(item.children or {}) do
+            self:executeItem(child)
+        end
     end
+end
+
+-- Execute an item by id (e.g. a future "run" button). Triggers fire via events.
+function obj:executeAction(id)
+    self:executeItem(treeHelpers.findItem(self.macroTree, id))
+end
+
+-- Fire every enabled trigger whose bound eventName matches a fired bus event,
+-- running that trigger's children in order. Exact-name match for now; EG-style
+-- wildcard matching is a later layer.
+function obj:_dispatchEvent(event)
+    local function walk(items)
+        for _, item in ipairs(items) do
+            if item.type == "trigger"
+                and item.enabled ~= false
+                and item.eventName
+                and item.eventName == event.name then
+                for _, child in ipairs(item.children or {}) do
+                    self:executeItem(child)
+                end
+            end
+            if item.children then walk(item.children) end
+        end
+    end
+    walk(self.macroTree)
 end
 
 -- Function to toggle the main window
@@ -270,6 +311,14 @@ function obj:addFolder()
     ui.refresh(self)
 end
 
+-- Function to add a new trigger (an event-bound container for actions)
+function obj:addTrigger()
+    local item = self:createMacroItem("New Trigger", "trigger", self:getCurrentSelection())
+    self.currentSelection = item
+    ui.refresh(self)
+    ui.showProperties(self, item)
+end
+
 -- Function to add a new action
 function obj:addAction()
     self:openActionEditor()
@@ -292,8 +341,12 @@ function obj:createMacroItem(name, type, parent, data)
         name = name,
         type = type,
         expanded = true,  -- new containers start expanded so added children are visible
-        children = (type == "folder" or type == "sequence") and {} or nil,
+        children = (type == "folder" or type == "sequence" or type == "trigger") and {} or nil,
     }
+    -- Triggers carry the event name they fire on; empty until bound.
+    if type == "trigger" then
+        item.eventName = ""
+    end
     if data then
         for k, v in pairs(data) do
             item[k] = v
@@ -465,10 +518,29 @@ function obj:saveProperties(data)
     local item = treeHelpers.findItem(self.macroTree, data.id)
     if item then
         item.name = data.name
+        -- Triggers carry an event name; persist it when the form supplied one.
+        if item.type == "trigger" and data.eventName ~= nil then
+            item.eventName = data.eventName
+        end
         self:saveConfig()
         ui.refresh(self)
         ui.clearProperties(self)
     end
+end
+
+-- Bind a logged event name to the currently selected trigger (click a log row).
+-- Closes the discovery->bind loop: see the event fire, click it onto a trigger.
+function obj:bindEvent(eventName)
+    local item = self.currentSelection
+    if not item or item.type ~= "trigger" then
+        hs.alert.show("Select a trigger first, then click an event to bind it")
+        return
+    end
+    item.eventName = eventName
+    self:saveConfig()
+    ui.refresh(self)
+    ui.showProperties(self, item)
+    hs.alert.show(string.format("Bound %s -> %s", item.name, eventName))
 end
 
 function obj:handleURL(url)
