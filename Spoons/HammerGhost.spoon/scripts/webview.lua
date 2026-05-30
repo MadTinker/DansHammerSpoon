@@ -17,6 +17,15 @@ local function readAsset(name)
     return contents
 end
 
+-- Build the macro tree's HTML from the current model.
+local function buildTreeHTML(spoon)
+    local html = ""
+    for _, item in ipairs(spoon.macroTree) do
+        html = html .. tree_helpers.itemToHTML(item, 0, spoon.currentSelection)
+    end
+    return html
+end
+
 function M.init(spoon)
     -- WKWebView's html(content, baseURL) does not reliably load external
     -- subresources (cross-origin restrictions apply to file:// stylesheets and
@@ -38,6 +47,15 @@ function M.init(spoon)
         return "<script>\n" .. js .. "\n</script>"
     end)
 
+    -- Pre-render the tree into #tree-container before the document loads. This
+    -- avoids racing the DOM with a timed evaluateJavaScript injection (which left
+    -- the tree blank on cold open until some action forced a refresh) - the window
+    -- now appears fully populated. Function replacement keeps tree HTML literal.
+    local treeHTML = buildTreeHTML(spoon)
+    htmlContent = htmlContent:gsub('<!%-%- Tree content will be injected here %-%->', function()
+        return treeHTML
+    end)
+
     -- Assets are inlined above, so baseURL is not needed for resource loading;
     -- it is still supplied to give the document a real origin (not about:blank)
     -- so that window.location.href navigations reach the navigationCallback.
@@ -50,16 +68,10 @@ function M.refresh(spoon)
         return
     end
 
-    -- Generate HTML for the macro tree
-    local html = ""
-    for _, item in ipairs(spoon.macroTree) do
-        html = html .. tree_helpers.itemToHTML(item, 0, spoon.currentSelection)
-    end
-
     -- Use JavaScript to update only the tree-container div
     local js = string.format(
         "document.getElementById('tree-container').innerHTML = `%s`;",
-        html
+        buildTreeHTML(spoon)
     )
     spoon.window:evaluateJavaScript(js)
 end

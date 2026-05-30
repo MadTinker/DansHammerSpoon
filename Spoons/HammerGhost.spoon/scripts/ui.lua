@@ -23,13 +23,10 @@ function M.createMainWindow(spoon)
     spoon.toolbar = toolbar_manager.create(spoon)
     spoon.window:attachedToolbar(spoon.toolbar)
 
+    -- webview_manager.init pre-renders the macro tree into the HTML, so the
+    -- window is fully populated on show without a timed JS injection.
     webview_manager.init(spoon)
     spoon.window:show()
-
-    -- Delay refresh so page has time to load before JS injection
-    hs.timer.doAfter(0.3, function()
-        if spoon.window then webview_manager.refresh(spoon) end
-    end)
 end
 
 function M.refresh(spoon)
