@@ -20,13 +20,26 @@ function M.itemToHTML(item, level, currentSelection)
     local stateClass = (selectedClass .. " " .. disabledClass):gsub("^%s+", ""):gsub("%s+$", "")
     local icon = item.type == "folder" and "📁" or (item.type == "sequence" and "📋" or "⚡")
 
-    -- Class names below match app.js event delegation (.tree-item / .toggle-button /
-    -- .edit-button / .delete-button) and styles.css. Click and drag wiring is handled
-    -- by delegated listeners in app.js via closest('.tree-item').dataset.id, so no
-    -- inline onclick/ondrag handlers are needed. draggable + data-type drive the
-    -- drag-to-reorder behavior (data-type lets the JS decide folder-nesting drops).
+    -- Containers with children get a disclosure triangle; expanded unless the
+    -- model explicitly stores expanded == false (nil/true render expanded). Items
+    -- without children get a spacer so names stay vertically aligned.
+    local hasChildren = item.children and #item.children > 0
+    local isExpanded = item.expanded ~= false
+    local disclosure
+    if hasChildren then
+        disclosure = string.format('<span class="disclosure">%s</span>', isExpanded and "▾" or "▸")
+    else
+        disclosure = '<span class="disclosure-spacer"></span>'
+    end
+
+    -- Class names below match app.js event delegation (.tree-item / .disclosure /
+    -- .toggle-button / .edit-button / .delete-button) and styles.css. Click and drag
+    -- wiring is handled by delegated listeners in app.js via
+    -- closest('.tree-item').dataset.id, so no inline onclick/ondrag handlers are
+    -- needed. draggable + data-type drive the drag-to-reorder behavior.
     local html = string.format([[
         <div class="tree-item %s" data-id="%s" data-type="%s" style="%s" draggable="true">
+            %s
             <span class="icon toggle-button">%s</span>
             <span class="name">%s</span>
             <div class="actions">
@@ -34,9 +47,9 @@ function M.itemToHTML(item, level, currentSelection)
                 <button class="delete-button" title="Delete">🗑️</button>
             </div>
         </div>
-    ]], stateClass, item.id, item.type, indentStyle, icon, item.name)
+    ]], stateClass, item.id, item.type, indentStyle, disclosure, icon, item.name)
 
-    if item.children and #item.children > 0 then
+    if hasChildren and isExpanded then
         html = html .. "<div class='children'>"
         for _, child in ipairs(item.children) do
             html = html .. M.itemToHTML(child, level + 1, currentSelection)

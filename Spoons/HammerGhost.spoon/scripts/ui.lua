@@ -61,6 +61,8 @@ function M.handleURL(spoon, url)
         spoon:selectItem(params.id)
     elseif cmd == "toggleItem" and params.id then
         spoon:toggleItem(params.id)
+    elseif cmd == "toggleExpand" and params.id then
+        spoon:toggleExpand(params.id)
     elseif cmd == "editItem" and params.id then
         spoon:editItem(params.id)
     elseif cmd == "deleteItem" and params.id then

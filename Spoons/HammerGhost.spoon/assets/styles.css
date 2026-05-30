@@ -102,6 +102,24 @@ body {
     flex-grow: 1;
 }
 
+.tree-item .disclosure,
+.tree-item .disclosure-spacer {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted-color);
+    flex: 0 0 auto;
+}
+
+.tree-item .disclosure {
+    cursor: pointer;
+}
+
+.tree-item .disclosure:hover {
+    color: var(--text-color);
+}
+
 .properties-form {
     display: flex;
     flex-direction: column;

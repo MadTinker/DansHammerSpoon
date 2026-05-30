@@ -247,7 +247,7 @@ function obj:createMacroItem(name, type, parent, data)
         id = tostring(self.lastId),
         name = name,
         type = type,
-        expanded = false,
+        expanded = true,  -- new containers start expanded so added children are visible
         children = (type == "folder" or type == "sequence") and {} or nil,
     }
     if data then
@@ -338,6 +338,22 @@ function obj:toggleItem(id)
 
     hs.alert.show(string.format("%s %s", item.name, item.enabled and "enabled" or "disabled"))
     return item.enabled
+end
+
+-- Function to expand/collapse a folder or sequence in the tree.
+function obj:toggleExpand(id)
+    local item = treeHelpers.findItem(self.macroTree, id)
+    if not item then return end
+
+    -- expanded defaults to true (nil/true render expanded); toggle flips it.
+    if item.expanded == nil then
+        item.expanded = true
+    end
+    item.expanded = not item.expanded
+
+    self:saveConfig()  -- persist collapse state across reloads
+    ui.refresh(self)
+    return item.expanded
 end
 
 -- Function to move/reorder an item in the tree via drag and drop.

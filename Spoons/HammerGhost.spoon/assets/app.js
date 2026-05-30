@@ -12,7 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const id = itemElement.dataset.id;
 
-        if (target.matches('.toggle-button')) {
+        if (target.matches('.disclosure')) {
+            window.location.href = `hammerspoon://toggleExpand?id=${id}`;
+        } else if (target.matches('.toggle-button')) {
             window.location.href = `hammerspoon://toggleItem?id=${id}`;
         } else if (target.matches('.edit-button')) {
             window.location.href = `hammerspoon://editItem?id=${id}`;
