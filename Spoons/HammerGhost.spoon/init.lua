@@ -1,14 +1,18 @@
 --- === HammerGhost ===
 ---
---- EventGhost-like macro editor for Hammerspoon
+--- EventGhost-like, event-driven automation GUI for Hammerspoon.
+---
+--- System events (app/window/USB/power, MQTT) flow onto a shared event bus;
+--- triggers bound to those events run their child actions on a match.
 ---
 --- Features:
---- * Tree-based macro organization
---- * Visual macro editor
---- * Support for actions, sequences, and folders
---- * Dark theme matching EventGhost
+--- * Event bus fed by app/window/USB/system-power/MQTT sources
+--- * Triggers with EventGhost-style wildcard (*/?) event matching
+--- * Action library + payload templating ({event.name}, {payload.app})
+--- * Tree-based macro organization (folders, sequences, conditions)
+--- * Visual webview editor with a live event log; JSON persistence
 ---
---- Download: [https://github.com/Hammerspoon/Spoons/raw/master/Spoons/HammerGhost.spoon.zip](https://github.com/Hammerspoon/Spoons/raw/master/Spoons/HammerGhost.spoon.zip)
+--- See README.md for the model, event names, and how to wire a macro.
 
 local obj = {}
 obj.__index = obj
