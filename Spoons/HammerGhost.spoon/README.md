@@ -25,6 +25,9 @@ actions.
 The connection is **parent → child**: actions live *inside* a trigger. The chain
 is **Event → (matches) → Trigger → (runs) → its child Actions**.
 
+> **New to the window?** The [Interface Guide](docs/README.md) walks through every
+> section (toolbar, tree, properties, event log, editors) with a layout map.
+
 ## Wiring up a macro (in the GUI)
 
 1. **Add Trigger** → in Properties set **Event Name** (e.g. `Window.Created.Warp`)
