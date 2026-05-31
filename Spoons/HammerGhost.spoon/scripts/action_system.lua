@@ -20,20 +20,62 @@ function M.getConditionTypes()
     return M.conditionTypes
 end
 
+-- Substitute {event.X} / {payload.X.Y} tokens in a string against the firing
+-- event. e.g. "{payload.app} woke" with payload.app="Safari" -> "Safari woke".
+--   - missing key ({payload.nope})  -> "" (so partial payloads don't error)
+--   - unknown root ({HOME}, ${HOME}) -> left LITERAL. This is load-bearing, not
+--     cosmetic: shell ${VAR} expansions in runShell must survive untouched.
+--     Do NOT "simplify" this to return "" or every ${VAR} silently corrupts.
+-- Non-strings and the no-event (manual run) case pass through unchanged.
+local function tmpl(s, event)
+    if type(s) ~= "string" or not event then return s end
+    return (s:gsub("{([%w_%.]+)}", function(path)
+        local segs = {}
+        for seg in path:gmatch("[^.]+") do segs[#segs + 1] = seg end
+        local cur
+        if segs[1] == "event" then
+            cur = event
+        elseif segs[1] == "payload" then
+            cur = event.payload
+        else
+            return "{" .. path .. "}"  -- unknown root: leave literal (see above)
+        end
+        for i = 2, #segs do
+            if type(cur) ~= "table" then return "" end
+            cur = cur[segs[i]]
+        end
+        if cur == nil then return "" end
+        return tostring(cur)
+    end))
+end
+
+-- Return a shallow copy of params with every string value templated against
+-- event. Copy, never mutate: the original params live in the persisted tree and
+-- must keep their {payload.app} literals for the next run.
+local function expandParams(params, event)
+    local out = {}
+    for k, v in pairs(params or {}) do out[k] = tmpl(v, event) end
+    return out
+end
+
 -- `event` is the bus event that fired the enclosing trigger (nil for manual
--- runs). Passed as the handler's 2nd arg so payload-aware actions can read
--- event.payload / event.name; handlers that take only (params) ignore it.
+-- runs). String params are templated against it (see tmpl); handlers also get
+-- event as a 2nd arg. executeScript is exempt from templating -- '{...}' is Lua
+-- table syntax -- and instead receives event as a call arg (read via `...`).
 function M.executeAction(action, event)
     local def = M.actionTypes[action.actionType]
-    if def and def.handler then
+    if not (def and def.handler) then return end
+    if action.actionType == "executeScript" then
         def.handler(action.params or {}, event)
+    else
+        def.handler(expandParams(action.params, event), event)
     end
 end
 
 function M.executeCondition(condition, event)
     local def = M.conditionTypes[condition.conditionType]
     if def and def.handler then
-        return def.handler(condition.params or {}, event)
+        return def.handler(expandParams(condition.params, event), event)
     end
     return false
 end
@@ -51,13 +93,16 @@ M.registerActionType("alert", {
 
 M.registerActionType("executeScript", {
     name = "Execute Lua Script",
+    -- The script is NOT templated (it's Lua -- '{...}' is table syntax). Instead
+    -- the firing event is passed as the call arg: read it with `local event = ...`
+    -- then event.name / event.payload.foo. (nil on a manual run.)
     parameters = {
-        script = { type = "textarea", required = true, default = "print('Hello from Lua!')" }
+        script = { type = "textarea", required = true, default = "local event = ...\nprint(event and event.name)" }
     },
-    handler = function(params)
+    handler = function(params, event)
         local fn, err = load(params.script)
         if fn then
-            fn()
+            fn(event)
         else
             hs.alert.show("Error in script: " .. tostring(err))
         end
