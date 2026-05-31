@@ -380,7 +380,12 @@ function obj:createMacroItem(name, type, parent, data)
         end
     end
 
-    if parent and parent.children then
+    -- Only nest into the selection if it's a real container AND still reachable
+    -- in the live tree (identity match, not just same id). A detached selection
+    -- would swallow the new item into an orphan -> it never appears. Fall back
+    -- to top level in that case.
+    if parent and parent.children
+        and treeHelpers.findItem(self.macroTree, parent.id) == parent then
         table.insert(parent.children, item)
     else
         table.insert(self.macroTree, item)
@@ -404,6 +409,10 @@ end
 -- Function to reload configuration
 function obj:reloadConfig()
     self.macroTree, self.lastId = config.loadMacros(self.configPath)
+    -- The tree object was replaced; the old selection now points at a detached
+    -- node. Drop it so Add/Save operate on the live tree.
+    self.currentSelection = nil
+    ui.clearProperties(self)
     ui.refresh(self)
     hs.alert.show("Configuration reloaded")
 end
@@ -441,6 +450,12 @@ function obj:deleteItem(id)
     end
 
     if removeItem(self.macroTree, id) then
+        -- Removing the node must not leave currentSelection dangling: a later
+        -- Add would insert into the orphan and Save would silently miss it.
+        if self.currentSelection and not treeHelpers.findItem(self.macroTree, self.currentSelection.id) then
+            self.currentSelection = nil
+            ui.clearProperties(self)
+        end
         self:saveConfig()
         ui.refresh(self)
     end
@@ -543,16 +558,25 @@ end
 -- Function to save properties
 function obj:saveProperties(data)
     local item = treeHelpers.findItem(self.macroTree, data.id)
-    if item then
-        item.name = data.name
-        -- Triggers carry an event name; persist it when the form supplied one.
-        if item.type == "trigger" and data.eventName ~= nil then
-            item.eventName = data.eventName
+    if not item then
+        -- The edited item is no longer in the tree (e.g. it was a stale/detached
+        -- selection). Don't silently swallow the Save -- tell the user why their
+        -- edit didn't stick instead of leaving "0 items" with no feedback.
+        hs.alert.show("Couldn't save: that item is no longer in the tree. Re-add it.")
+        if _G.AppLogger then
+            _G.AppLogger:w("saveProperties: id " .. tostring(data.id) .. " not found in tree", "init.lua", 0)
         end
-        self:saveConfig()
-        ui.refresh(self)
         ui.clearProperties(self)
+        return
     end
+    item.name = data.name
+    -- Triggers carry an event name; persist it when the form supplied one.
+    if item.type == "trigger" and data.eventName ~= nil then
+        item.eventName = data.eventName
+    end
+    self:saveConfig()
+    ui.refresh(self)
+    ui.clearProperties(self)
 end
 
 -- Bind a logged event name to the currently selected trigger (click a log row).
