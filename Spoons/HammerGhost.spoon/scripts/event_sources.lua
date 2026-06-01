@@ -15,6 +15,7 @@ M.windowFilter = nil
 M.usbWatcher = nil
 M.caffeinateWatcher = nil
 M.screenWatcher = nil
+M.wifiWatcher = nil
 M.mqttTask = nil
 
 -- Last seen title per window id, so window.filter's chatty title-changed stream
@@ -24,6 +25,10 @@ M._winTitles = {}
 -- Last seen screens (id -> name), so the screen watcher can diff added/removed
 -- displays. Snapshot at start; wiped on stop.
 M._screens = {}
+
+-- Last seen Wi-Fi SSID (nil = disconnected), so the wifi watcher can emit
+-- join/disconnect transitions. Snapshot at start; cleared on stop.
+M._wifiSSID = nil
 
 -- MQTT source state. Hammerspoon has no native MQTT, so we tail mosquitto_sub
 -- as a long-lived hs.task and turn each "topic {json}" line into a bus event.
@@ -200,6 +205,26 @@ local function startScreenWatcher()
     M.screenWatcher:start()
 end
 
+local function startWifiWatcher()
+    if M.wifiWatcher then return end
+    M._wifiSSID = hs.wifi.currentNetwork()  -- baseline (nil if off/ethernet)
+    -- Default hs.wifi.watcher fires on SSID change; the callback carries no
+    -- useful detail, so we query currentNetwork() and diff against the last SSID
+    -- to tell join from disconnect.
+    M.wifiWatcher = hs.wifi.watcher.new(function()
+        local cur = hs.wifi.currentNetwork()
+        local prev = M._wifiSSID
+        if cur and cur ~= prev then
+            eventBus.emit("WiFi.Joined." .. cur, { ssid = cur, previous = prev })
+        elseif not cur and prev then
+            eventBus.emit("WiFi.Disconnected", { previous = prev })
+        end
+        M._wifiSSID = cur
+        eventBus.emit("WiFi.SSIDChanged", { ssid = cur, previous = prev })
+    end)
+    M.wifiWatcher:start()
+end
+
 -- Resolve mosquitto_sub: Homebrew (arm/intel) first, then PATH.
 local function resolveMosquittoSub()
     for _, c in ipairs({ "/opt/homebrew/bin/mosquitto_sub", "/usr/local/bin/mosquitto_sub" }) do
@@ -279,6 +304,7 @@ function M.start()
     startUsbWatcher()
     startCaffeinateWatcher()
     startScreenWatcher()
+    startWifiWatcher()
     M._mqttStopping = false
     startMqttTask()
 end
@@ -307,6 +333,11 @@ function M.stop()
         M.screenWatcher = nil
     end
     M._screens = {}
+    if M.wifiWatcher then
+        M.wifiWatcher:stop()
+        M.wifiWatcher = nil
+    end
+    M._wifiSSID = nil
     -- MQTT: flag first so the exit handler doesn't respawn, then tear down.
     M._mqttStopping = true
     if M._mqttRespawn then
