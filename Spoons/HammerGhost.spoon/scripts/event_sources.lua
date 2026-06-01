@@ -14,11 +14,16 @@ M.appWatcher = nil
 M.windowFilter = nil
 M.usbWatcher = nil
 M.caffeinateWatcher = nil
+M.screenWatcher = nil
 M.mqttTask = nil
 
 -- Last seen title per window id, so window.filter's chatty title-changed stream
 -- only emits on an actual change. Pruned on windowDestroyed; wiped on stop.
 M._winTitles = {}
+
+-- Last seen screens (id -> name), so the screen watcher can diff added/removed
+-- displays. Snapshot at start; wiped on stop.
+M._screens = {}
 
 -- MQTT source state. Hammerspoon has no native MQTT, so we tail mosquitto_sub
 -- as a long-lived hs.task and turn each "topic {json}" line into a bus event.
@@ -164,6 +169,37 @@ local function startCaffeinateWatcher()
     M.caffeinateWatcher:start()
 end
 
+-- Snapshot current displays as { [id]=name }.
+local function snapshotScreens()
+    local snap = {}
+    for _, s in ipairs(hs.screen.allScreens()) do
+        snap[s:id()] = s:name() or tostring(s:id())
+    end
+    return snap
+end
+
+local function startScreenWatcher()
+    if M.screenWatcher then return end
+    M._screens = snapshotScreens()  -- baseline so the first change diffs cleanly
+    -- hs.screen.watcher fires on any display add/remove/rearrange/resolution
+    -- change. It carries no detail, so we diff against the last snapshot to tell
+    -- which displays appeared or disappeared, then always emit LayoutChanged.
+    M.screenWatcher = hs.screen.watcher.new(function()
+        local now = snapshotScreens()
+        for id, name in pairs(now) do
+            if not M._screens[id] then eventBus.emit("Screen.Added." .. name, { name = name, id = id }) end
+        end
+        for id, name in pairs(M._screens) do
+            if not now[id] then eventBus.emit("Screen.Removed." .. name, { name = name, id = id }) end
+        end
+        M._screens = now
+        local names = {}
+        for _, n in pairs(now) do names[#names + 1] = n end
+        eventBus.emit("Screen.LayoutChanged", { count = #names, screens = names })
+    end)
+    M.screenWatcher:start()
+end
+
 -- Resolve mosquitto_sub: Homebrew (arm/intel) first, then PATH.
 local function resolveMosquittoSub()
     for _, c in ipairs({ "/opt/homebrew/bin/mosquitto_sub", "/usr/local/bin/mosquitto_sub" }) do
@@ -242,6 +278,7 @@ function M.start()
     startWindowFilter()
     startUsbWatcher()
     startCaffeinateWatcher()
+    startScreenWatcher()
     M._mqttStopping = false
     startMqttTask()
 end
@@ -265,6 +302,11 @@ function M.stop()
         M.caffeinateWatcher:stop()
         M.caffeinateWatcher = nil
     end
+    if M.screenWatcher then
+        M.screenWatcher:stop()
+        M.screenWatcher = nil
+    end
+    M._screens = {}
     -- MQTT: flag first so the exit handler doesn't respawn, then tear down.
     M._mqttStopping = true
     if M._mqttRespawn then
