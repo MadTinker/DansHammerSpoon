@@ -287,44 +287,52 @@ function obj:bindHotkeys(mapping)
     return self
 end
 
+-- The editor windows are recreated on every open rather than cached. Their
+-- contents are pushed by the page itself: on load each page navigates to a
+-- hammerspoon:// "get..." URL and the handler answers with the data + prefill.
+-- A cached window never re-fires that on-load handshake (DOMContentLoaded runs
+-- once per page), and pushing right after show() races the page load (the JS
+-- entry points aren't defined yet, so the push is silently dropped -> blank
+-- form, and on Save an empty id takes the "create" branch, duplicating the node
+-- instead of updating it). A fresh page each open dodges both problems.
+
+-- The node currently being edited, read back by the get* handshake handlers to
+-- prefill the form. nil means a fresh "add".
+obj.editingAction = nil
+obj.editingCondition = nil
+obj.editingSequence = nil
+
+-- Drop a previous editor window. pcall because the user may have closed it with
+-- the title-bar button, leaving stale userdata that errors on :delete().
+local function discard(win)
+    if win then pcall(function() win:delete() end) end
+end
+
 function obj:openActionEditor(action)
-    if not self.actionEditor then
-        self.actionEditor = action_editor.create(self)
-    end
+    self.editingAction = action
+    discard(self.actionEditor)
+    self.actionEditor = action_editor.create(self)
     self.actionEditor:show()
-    if action then
-        local js = string.format("populateEditor(%s)", hs.json.encode(action))
-        self.actionEditor:evaluateJavaScript(js)
-    end
 end
 
 function obj:openSequenceEditor(sequence)
-    if not self.sequenceEditor then
-        self.sequenceEditor = sequence_editor.create(self)
-    end
+    self.editingSequence = sequence
+    discard(self.sequenceEditor)
+    self.sequenceEditor = sequence_editor.create(self)
     self.sequenceEditor:show()
-    if sequence then
-        local js = string.format("populateEditor(%s)", hs.json.encode(sequence))
-        self.sequenceEditor:evaluateJavaScript(js)
-    end
 end
 
 function obj:openActionChooser()
-    if not self.actionChooser then
-        self.actionChooser = action_chooser.create(self)
-    end
+    discard(self.actionChooser)
+    self.actionChooser = action_chooser.create(self)
     self.actionChooser:show()
 end
 
 function obj:openConditionEditor(condition)
-    if not self.conditionEditor then
-        self.conditionEditor = condition_editor.create(self)
-    end
+    self.editingCondition = condition
+    discard(self.conditionEditor)
+    self.conditionEditor = condition_editor.create(self)
     self.conditionEditor:show()
-    if condition then
-        local js = string.format("populateEditor(%s)", hs.json.encode(condition))
-        self.conditionEditor:evaluateJavaScript(js)
-    end
 end
 
 
@@ -607,8 +615,15 @@ function obj:handleActionEditorURL(url)
     if not cmd then return end
 
     if cmd == "getActionTypes" then
-        local js = string.format("populateActionTypes(%s)", hs.json.encode(self.actionTypes))
-        self.actionEditor:evaluateJavaScript(js)
+        -- Page-load handshake: fill the type dropdown, then prefill if editing.
+        -- Back-to-back evaluateJavaScript calls run in order, so types land
+        -- before populateEditor reads them.
+        self.actionEditor:evaluateJavaScript(
+            string.format("populateActionTypes(%s)", hs.json.encode(self.actionTypes)))
+        if self.editingAction then
+            self.actionEditor:evaluateJavaScript(
+                string.format("populateEditor(%s)", hs.json.encode(self.editingAction)))
+        end
     elseif cmd == "saveAction" then
         local actionData = safeDecodeArgs(args)
         if not actionData then return end
@@ -640,7 +655,9 @@ function obj:handleSequenceEditorURL(url)
     if not cmd then return end
 
     if cmd == "getSequenceData" then
-        local js = string.format("populateEditor(%s)", hs.json.encode(self.currentSelection))
+        -- Page-load handshake. editingSequence is the node passed to the editor
+        -- (nil for a fresh add); {} gives the page an empty step list.
+        local js = string.format("populateEditor(%s)", hs.json.encode(self.editingSequence or {}))
         self.sequenceEditor:evaluateJavaScript(js)
     elseif cmd == "selectActionForSequence" then
         self:openActionChooser()
@@ -694,8 +711,13 @@ function obj:handleConditionEditorURL(url)
     if not cmd then return end
 
     if cmd == "getConditionTypes" then
-        local js = string.format("populateConditionTypes(%s)", hs.json.encode(self.conditionTypes))
-        self.conditionEditor:evaluateJavaScript(js)
+        -- Page-load handshake: fill the type dropdown, then prefill if editing.
+        self.conditionEditor:evaluateJavaScript(
+            string.format("populateConditionTypes(%s)", hs.json.encode(self.conditionTypes)))
+        if self.editingCondition then
+            self.conditionEditor:evaluateJavaScript(
+                string.format("populateEditor(%s)", hs.json.encode(self.editingCondition)))
+        end
     elseif cmd == "saveCondition" then
         local conditionData = safeDecodeArgs(args)
         if not conditionData then return end
