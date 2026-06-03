@@ -312,11 +312,11 @@ function WindowMenu.createMovementSubmenu()
 
         {
             title = "🖱 Mouse → Monitor 1  (⌘⌃⌥ -)",
-            fn = function() WindowManager.moveMouseToScreen(1) end
+            fn = function() WindowManager.moveMouseToScreen(2) end
         },
         {
             title = "🖱 Mouse → Monitor 2  (⌘⇧⌃⌥ -)",
-            fn = function() WindowManager.moveMouseToScreen(2) end
+            fn = function() WindowManager.moveMouseToScreen(1) end
         },
         {
             title = "🖱 Mouse → Monitor 3  (⌘⌃⌥ =)",

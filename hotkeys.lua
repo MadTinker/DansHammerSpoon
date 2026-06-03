@@ -111,8 +111,9 @@ hs.hotkey.bind(_hyper, "9", "Open Selected File", function() FileManager.openSel
 hs.hotkey.bind(hammer, "0", "Horizontal Shuffle", function() WindowManager.halfShuffle(4, 4) end)
 hs.hotkey.bind(_hyper, "0", "Vertical Shuffle", function() WindowManager.halfShuffle(1, 4) end)
 -- add - and = and backspace
-hs.hotkey.bind(hammer, "-", "Mouse: Monitor 1", function() WindowManager.moveMouseToScreen(1) end)
-hs.hotkey.bind(_hyper, "-", "Mouse: Monitor 2", function() WindowManager.moveMouseToScreen(2) end)
+-- 1/2 swapped: screen index 1 (PHL 278E1 #1) sits lower on desk than index 2, felt flipped
+hs.hotkey.bind(hammer, "-", "Mouse: Monitor 1", function() WindowManager.moveMouseToScreen(2) end)
+hs.hotkey.bind(_hyper, "-", "Mouse: Monitor 2", function() WindowManager.moveMouseToScreen(1) end)
 hs.hotkey.bind(hammer, "=", "Mouse: Monitor 3", function() WindowManager.moveMouseToScreen(3) end)
 hs.hotkey.bind(_hyper, "=", "Mouse: Monitor 4", function() WindowManager.moveMouseToScreen(4) end)
 -- hs.hotkey.bind(hammer, "delete", "Temporary Function", function() tempFunction() end) (cant bind while modifier is down)
