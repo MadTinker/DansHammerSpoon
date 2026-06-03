@@ -111,10 +111,10 @@ hs.hotkey.bind(_hyper, "9", "Open Selected File", function() FileManager.openSel
 hs.hotkey.bind(hammer, "0", "Horizontal Shuffle", function() WindowManager.halfShuffle(4, 4) end)
 hs.hotkey.bind(_hyper, "0", "Vertical Shuffle", function() WindowManager.halfShuffle(1, 4) end)
 -- add - and = and backspace
-hs.hotkey.bind(hammer, "-", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "-", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "=", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "=", "Temporary Function", function() tempFunction() end)
+hs.hotkey.bind(hammer, "-", "Mouse: Monitor 1", function() WindowManager.moveMouseToScreen(1) end)
+hs.hotkey.bind(_hyper, "-", "Mouse: Monitor 2", function() WindowManager.moveMouseToScreen(2) end)
+hs.hotkey.bind(hammer, "=", "Mouse: Monitor 3", function() WindowManager.moveMouseToScreen(3) end)
+hs.hotkey.bind(_hyper, "=", "Mouse: Monitor 4", function() WindowManager.moveMouseToScreen(4) end)
 -- hs.hotkey.bind(hammer, "delete", "Temporary Function", function() tempFunction() end) (cant bind while modifier is down)
 -- hs.hotkey.bind(_hyper, "delete", "Temporary Function", function() tempFunction() end)
 -- hs.hotkey.bind(hammer, "u", "Save Current Layout", function() saveLayoutWithDialog() end)
@@ -149,9 +149,10 @@ hs.hotkey.bind(_hyper, "p", "Open Cursor", function() AppManager.open_cursor() e
 -- New: dedicated screenshot-to-clipboard hotkey
 hs.hotkey.bind(hammer, "[", "Screenshot to Clipboard", function() FileManager.captureScreenshotToClipboard() end)
 hs.hotkey.bind(_hyper, "[", "Mouse: Previous Monitor", function() WindowManager.moveMouseToScreenRelative("previous") end)
-hs.hotkey.bind(hammer, "]", "Mouse: Monitor 1", function() WindowManager.moveMouseToScreen(1) end)
-hs.hotkey.bind(_hyper, "]", "Mouse: Monitor 3", function() WindowManager.moveMouseToScreen(3) end)
-hs.hotkey.bind(hammer, "\\", "Mouse: Monitor 2", function() WindowManager.moveMouseToScreen(2) end)
+-- ] freed: was Mouse Monitor 1, collided with system/app screenshot tool on cmd+ctrl+alt+]. Monitor jumps now live on -/= (see Number Row above).
+hs.hotkey.bind(hammer, "]", "Temporary Function", function() tempFunction() end)
+hs.hotkey.bind(_hyper, "]", "Temporary Function", function() tempFunction() end)
+hs.hotkey.bind(hammer, "\\", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(_hyper, "\\", "Mouse: Next Monitor", function() WindowManager.moveMouseToScreenRelative("next") end)
 
 -- Keybindings - Caps Lock Row
