@@ -67,6 +67,8 @@ function M.handleURL(spoon, url)
         spoon:editItem(params.id)
     elseif cmd == "deleteItem" and params.id then
         spoon:deleteItem(params.id)
+    elseif cmd == "runItem" and params.id then
+        spoon:runItem(params.id)
     elseif cmd == "moveItem" and params.source and params.target then
         spoon:moveItem(params.source, params.target, params.position or "after")
     elseif cmd == "saveProperties" then

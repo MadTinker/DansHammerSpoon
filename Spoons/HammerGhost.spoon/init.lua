@@ -129,14 +129,16 @@ function obj:init()
 
     -- Check if the loaded configuration is empty or nil
     if not self.macroTree or #self.macroTree == 0 then
-        -- Set up a default configuration
+        -- Seed a fresh install with one runnable action: hit ▶️ and it opens the
+        -- HammerGhost repo in the default browser. Doubles as the "this is what an
+        -- action is" sample and proves the manual-run path end to end.
         self.macroTree = {
             {
                 id = "1",
-                name = "Default Macro",
+                name = "Open DansHammerSpoon repo",
                 type = "action",
-                actionType = "alert",
-                params = { text = "Default Action Triggered" },
+                actionType = "openURL",
+                params = { url = "https://github.com/MadTinker/DansHammerSpoon.git" },
                 expanded = false,
                 children = {},
             }
@@ -224,6 +226,24 @@ end
 -- Execute an item by id (e.g. a future "run" button). Triggers fire via events.
 function obj:executeAction(id)
     self:executeItem(treeHelpers.findItem(self.macroTree, id))
+end
+
+-- Manual run from the UI (▶️ row button / "Run Selected"). Lets you test an item
+-- without producing its real system event; the firing event is nil, so
+-- payload-templated params ({payload.app}) resolve to "". A trigger isn't itself
+-- runnable in executeItem (it's gated by the dispatcher), so a manual run on a
+-- trigger means "fire what it would fire" -> run its children, mirroring
+-- _dispatchEvent. Everything else runs directly.
+function obj:runItem(id)
+    local item = treeHelpers.findItem(self.macroTree, id)
+    if not item then return end
+    if item.type == "trigger" then
+        for _, child in ipairs(item.children or {}) do
+            self:executeItem(child, nil)
+        end
+    else
+        self:executeItem(item, nil)
+    end
 end
 
 -- Fire every enabled trigger whose bound eventName matches a fired bus event,

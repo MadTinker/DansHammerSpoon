@@ -49,6 +49,7 @@ function M.itemToHTML(item, level, currentSelection)
             <span class="icon toggle-button">%s</span>
             <span class="name">%s</span>
             <div class="actions">
+                <button class="run-button" title="Run">▶️</button>
                 <button class="edit-button" title="Edit">✏️</button>
                 <button class="delete-button" title="Delete">🗑️</button>
             </div>

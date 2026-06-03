@@ -81,6 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = `hammerspoon://toggleExpand?id=${id}`;
         } else if (target.matches('.toggle-button')) {
             window.location.href = `hammerspoon://toggleItem?id=${id}`;
+        } else if (target.matches('.run-button')) {
+            window.location.href = `hammerspoon://runItem?id=${id}`;
         } else if (target.matches('.edit-button')) {
             window.location.href = `hammerspoon://editItem?id=${id}`;
         } else if (target.matches('.delete-button')) {

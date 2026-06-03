@@ -36,6 +36,21 @@ function M.create(spoon)
                 spoon:addSequence()
             end,
         },
+        {
+            id = "runSelected",
+            label = "Run Selected",
+            image = hs.image.imageFromName("NSTouchBarPlayTemplate")
+                or hs.image.imageFromName("NSGoRightTemplate")
+                or hs.image.imageFromName("NSActionTemplate"),
+            fn = function()
+                local sel = spoon:getCurrentSelection()
+                if sel then
+                    spoon:runItem(sel.id)
+                else
+                    hs.alert.show("Select an item to run")
+                end
+            end,
+        },
         { id = "flexibleSpace" },
         {
             id = "save",
