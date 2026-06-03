@@ -104,7 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Decide where a drop lands relative to a row: inside a folder/sequence when
     // hovering its middle band, otherwise before/after by cursor vertical position.
     const dropPosition = (row, event) => {
-        const isContainer = row.dataset.type === 'folder' || row.dataset.type === 'sequence';
+        const isContainer = row.dataset.type === 'folder'
+            || row.dataset.type === 'sequence'
+            || row.dataset.type === 'trigger';
         const rect = row.getBoundingClientRect();
         const offset = event.clientY - rect.top;
         if (isContainer && offset > rect.height * 0.25 && offset < rect.height * 0.75) {
