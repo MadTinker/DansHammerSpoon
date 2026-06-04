@@ -4,6 +4,11 @@ local M = {}
 M.actionTypes = {}
 M.conditionTypes = {}
 
+-- Runtime variable store. setVariable writes here; any non-script param can read
+-- a value back with the {var.name} token (see tmpl). Not persisted across
+-- reloads yet -- these are live macro state, like EventGhost's eg.globals.
+M.variables = {}
+
 function M.registerActionType(name, def)
     M.actionTypes[name] = def
 end
@@ -40,22 +45,32 @@ function M.getConditionTypesForUI()
     return uiCopy(M.conditionTypes)
 end
 
--- Substitute {event.X} / {payload.X.Y} tokens in a string against the firing
--- event. e.g. "{payload.app} woke" with payload.app="Safari" -> "Safari woke".
---   - missing key ({payload.nope})  -> "" (so partial payloads don't error)
---   - unknown root ({HOME}, ${HOME}) -> left LITERAL. This is load-bearing, not
---     cosmetic: shell ${VAR} expansions in runShell must survive untouched.
---     Do NOT "simplify" this to return "" or every ${VAR} silently corrupts.
--- Non-strings and the no-event (manual run) case pass through unchanged.
+-- Substitute tokens in a string. Three roots:
+--   {event.X}     - the firing event (event.name, ...)
+--   {payload.X.Y} - the event payload (e.g. {payload.app})
+--   {var.X}       - the runtime variable store (M.variables), works even on a
+--                   manual run with no event.
+-- Rules:
+--   - missing key ({payload.nope}) -> "" (partial payloads don't error)
+--   - event/payload tokens on a no-event (manual) run -> left LITERAL, so a
+--     literal "{payload.app}" round-trips instead of vanishing.
+--   - unknown root ({HOME}, ${HOME}) -> left LITERAL. Load-bearing, not cosmetic:
+--     shell ${VAR} expansions in runShell must survive untouched. Do NOT
+--     "simplify" this to return "".
+-- Non-strings pass through unchanged.
 local function tmpl(s, event)
-    if type(s) ~= "string" or not event then return s end
+    if type(s) ~= "string" then return s end
     return (s:gsub("{([%w_%.]+)}", function(path)
         local segs = {}
         for seg in path:gmatch("[^.]+") do segs[#segs + 1] = seg end
         local cur
-        if segs[1] == "event" then
+        if segs[1] == "var" then
+            cur = M.variables
+        elseif segs[1] == "event" then
+            if not event then return "{" .. path .. "}" end
             cur = event
         elseif segs[1] == "payload" then
+            if not event then return "{" .. path .. "}" end
             cur = event.payload
         else
             return "{" .. path .. "}"  -- unknown root: leave literal (see above)
@@ -85,10 +100,12 @@ end
 function M.executeAction(action, event)
     local def = M.actionTypes[action.actionType]
     if not (def and def.handler) then return end
-    -- executeScript (Lua) and runScript (sh/python/node) take their body raw:
-    -- templating would corrupt '{...}' literals (Lua tables, Python/JS dicts).
-    -- Both instead receive the event as a call arg / can read it via their host.
-    if action.actionType == "executeScript" or action.actionType == "runScript" then
+    -- Script-body actions take their body raw: templating would corrupt '{...}'
+    -- literals (Lua tables, Python/JS dicts, AppleScript records). executeScript
+    -- receives the event as a call arg; the others run in their own interpreter.
+    if action.actionType == "executeScript"
+        or action.actionType == "runScript"
+        or action.actionType == "appleScript" then
         def.handler(action.params or {}, event)
     else
         def.handler(expandParams(action.params, event), event)
@@ -307,6 +324,78 @@ M.registerActionType("mqttPublish", {
             "-h", host, "-p", port,
             "-t", params.topic, "-m", tostring(params.message or ""),
         }):start()
+    end
+})
+
+-- Store a value in the runtime variable store, readable elsewhere as {var.name}.
+-- value is templated before we get here, so value="{payload.app}" captures the
+-- firing app, "{var.count}" chains off another variable, etc.
+M.registerActionType("setVariable", {
+    name = "Set Variable",
+    parameters = {
+        name  = { type = "text", required = true, default = "myVar" },
+        value = { type = "text", required = false, default = "" },
+    },
+    handler = function(params)
+        if params.name and params.name ~= "" then
+            M.variables[params.name] = params.value or ""
+        end
+    end
+})
+
+-- Run an AppleScript. Body is raw (exempt from templating); errors alert.
+M.registerActionType("appleScript", {
+    name = "Run AppleScript",
+    parameters = {
+        script = { type = "textarea", required = true, default = 'display notification "hi from HammerGhost"' }
+    },
+    handler = function(params)
+        local ok, _result, raw = hs.osascript.applescript(params.script or "")
+        if not ok then
+            local msg = (type(raw) == "table" and raw.NSLocalizedDescription) or "AppleScript failed"
+            hs.alert.show("AppleScript error: " .. tostring(msg))
+        end
+    end
+})
+
+-- Fire an HTTP request (async, non-blocking). Optionally stash the response body
+-- in a variable (resultVar) so a later action can use {var.<resultVar>}.
+M.registerActionType("httpRequest", {
+    name = "HTTP Request",
+    parameters = {
+        url       = { type = "text", required = true, default = "https://" },
+        method    = { type = "select", options = { "GET", "POST" }, required = true },
+        body      = { type = "textarea", required = false, default = "" },
+        resultVar = { type = "text", required = false, default = "" },
+    },
+    handler = function(params)
+        local url = params.url or ""
+        if url == "" then return end
+        local method = string.upper(params.method or "GET")
+        local function onResp(status, respBody)
+            if params.resultVar and params.resultVar ~= "" then
+                M.variables[params.resultVar] = respBody or ""
+            end
+            if not status or status < 0 or status >= 400 then
+                hs.alert.show("HTTP " .. tostring(status) .. " " .. url)
+            end
+        end
+        if method == "POST" then
+            hs.http.asyncPost(url, params.body or "", nil, onResp)
+        else
+            hs.http.asyncGet(url, nil, onResp)
+        end
+    end
+})
+
+-- Put text on the clipboard.
+M.registerActionType("clipboardSet", {
+    name = "Set Clipboard",
+    parameters = {
+        text = { type = "text", required = true, default = "" }
+    },
+    handler = function(params)
+        hs.pasteboard.setContents(params.text or "")
     end
 })
 
