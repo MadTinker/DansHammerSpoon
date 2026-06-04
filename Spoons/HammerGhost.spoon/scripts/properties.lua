@@ -41,10 +41,11 @@ function M.show(spoon, item)
     -- trigger and click an event in the log to bind it.
     if item.type == "trigger" then
         html = html .. string.format(
-            [[<div class="field"><label for="eventName">Event Name</label>]] ..
-            [[<input type="text" id="eventName" value="%s" placeholder="e.g. App.Activated.Safari"></div>]],
+            [[<div class="field"><label for="eventName">Event Name(s)</label>]] ..
+            [[<textarea id="eventName" rows="3" placeholder="e.g. App.Activated.Safari">%s</textarea></div>]],
             esc(item.eventName))
-        html = html .. [[<div class="field-hint">Tip: click an event in the log below to bind it.</div>]]
+        html = html .. [[<div class="field-hint">One event per line &mdash; fires if ANY matches. ]] ..
+            [['*'/'?' wildcards allowed. Click an event in the log below to add it.</div>]]
     end
 
     html = html .. string.format(

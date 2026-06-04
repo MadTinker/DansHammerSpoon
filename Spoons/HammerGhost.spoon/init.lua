@@ -95,6 +95,19 @@ local function matchEvent(pattern, name)
     return name:find(compiled) ~= nil
 end
 
+-- A trigger may bind MULTIPLE events, one per line (EventGhost lets a macro carry
+-- several events; any of them fires it). Match if ANY non-blank line matches.
+local function matchesAnyEvent(spec, name)
+    if not spec or spec == "" then return false end
+    for line in spec:gmatch("[^\r\n]+") do
+        local pat = line:match("^%s*(.-)%s*$")  -- trim surrounding whitespace
+        if pat ~= "" and matchEvent(pat, name) then
+            return true
+        end
+    end
+    return false
+end
+
 -- Initialize modules with dependencies
 config.init({ xmlparser = xmlparser })
 
@@ -291,7 +304,7 @@ function obj:_dispatchEvent(event)
         for _, item in ipairs(items) do
             if item.type == "trigger"
                 and item.enabled ~= false
-                and matchEvent(item.eventName, event.name) then
+                and matchesAnyEvent(item.eventName, event.name) then
                 local children = item.children or {}
                 driveMacro(function()
                     for _, child in ipairs(children) do
@@ -699,7 +712,17 @@ function obj:bindEvent(eventName)
         hs.alert.show("Select a trigger first, then click an event to bind it")
         return
     end
-    item.eventName = eventName
+    -- A trigger can hold several events (one per line); clicking a log row ADDS
+    -- the event rather than replacing, so you can bind a few in a row. Skip if
+    -- it's already bound.
+    local existing = item.eventName or ""
+    local already = false
+    for line in existing:gmatch("[^\r\n]+") do
+        if line:match("^%s*(.-)%s*$") == eventName then already = true end
+    end
+    if not already then
+        item.eventName = (existing ~= "" and (existing .. "\n") or "") .. eventName
+    end
     self:saveConfig()
     ui.refresh(self)
     ui.showProperties(self, item)
