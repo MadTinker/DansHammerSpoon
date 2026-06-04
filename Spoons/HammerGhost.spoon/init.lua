@@ -519,6 +519,46 @@ function obj:toggleItem(id)
     return item.enabled
 end
 
+-- --- Plugin API ------------------------------------------------------------
+-- Stable surface for plugin action/condition handlers (plugins/*.lua). Handlers
+-- reach the live spoon through the `spoon.HammerGhost` global; these wrap the
+-- common operations so plugins don't poke at internals.
+
+-- Return the first tree item whose name matches (depth-first), or nil. Lets
+-- flow-control actions address items by their human name instead of id.
+function obj:findItemByName(name)
+    if not name then return nil end
+    local function walk(items)
+        for _, item in ipairs(items) do
+            if item.name == name then return item end
+            if item.children then
+                local found = walk(item.children)
+                if found then return found end
+            end
+        end
+        return nil
+    end
+    return walk(self.macroTree)
+end
+
+-- Set an item's enabled state by id or name, then persist + refresh. Used by the
+-- EnableItem / DisableItem flow actions.
+function obj:setItemEnabled(idOrName, enabled)
+    local item = treeHelpers.findItem(self.macroTree, idOrName) or self:findItemByName(idOrName)
+    if not item then return false end
+    item.enabled = enabled and true or false
+    self:saveConfig()
+    ui.refresh(self)
+    return true
+end
+
+-- Emit a named event on the bus (so a TriggerEvent action can fire a custom
+-- event that other triggers match). payload defaults to an empty table.
+function obj:emitEvent(name, payload)
+    if not name or name == "" then return end
+    event_bus.emit(name, payload or {})
+end
+
 -- Function to expand/collapse a folder or sequence in the tree.
 function obj:toggleExpand(id)
     local item = treeHelpers.findItem(self.macroTree, id)
