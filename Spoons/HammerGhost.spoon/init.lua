@@ -231,9 +231,33 @@ function obj:executeItem(item, event)
     end
 end
 
--- Execute an item by id (e.g. a future "run" button). Triggers fire via events.
+-- Run `fn` as a coroutine so a Wait/Delay action inside it can suspend the macro
+-- (the delay action yields the number of seconds to wait) without blocking the
+-- main thread. The driver resumes the coroutine after that delay via hs.timer.
+-- Each macro run gets its own coroutine, so concurrent runs interleave
+-- cooperatively rather than one stalling the others.
+local function driveMacro(fn)
+    local co = coroutine.create(fn)
+    local function step()
+        local ok, waitSecs = coroutine.resume(co)
+        if not ok then
+            if _G.AppLogger then
+                _G.AppLogger:e("macro run error: " .. tostring(waitSecs), "init.lua", 0)
+            end
+            return
+        end
+        if coroutine.status(co) ~= "dead" then
+            -- The coroutine yielded a delay (seconds); resume after it elapses.
+            hs.timer.doAfter(tonumber(waitSecs) or 0, step)
+        end
+    end
+    step()
+end
+
+-- Execute an item by id (legacy entry point). Routed through runItem so it shares
+-- the coroutine driver (a Wait inside it must not run on the bare main thread).
 function obj:executeAction(id)
-    self:executeItem(treeHelpers.findItem(self.macroTree, id))
+    self:runItem(id)
 end
 
 -- Manual run from the UI (▶️ row button / "Run Selected"). Lets you test an item
@@ -241,31 +265,39 @@ end
 -- payload-templated params ({payload.app}) resolve to "". A trigger isn't itself
 -- runnable in executeItem (it's gated by the dispatcher), so a manual run on a
 -- trigger means "fire what it would fire" -> run its children, mirroring
--- _dispatchEvent. Everything else runs directly.
+-- _dispatchEvent. Everything else runs directly. The walk runs in a coroutine so
+-- a Wait/Delay action can suspend it.
 function obj:runItem(id)
     local item = treeHelpers.findItem(self.macroTree, id)
     if not item then return end
-    if item.type == "trigger" then
-        for _, child in ipairs(item.children or {}) do
-            self:executeItem(child, nil)
+    driveMacro(function()
+        if item.type == "trigger" then
+            for _, child in ipairs(item.children or {}) do
+                self:executeItem(child, nil)
+            end
+        else
+            self:executeItem(item, nil)
         end
-    else
-        self:executeItem(item, nil)
-    end
+    end)
 end
 
 -- Fire every enabled trigger whose bound eventName matches a fired bus event,
 -- running that trigger's children in order. eventName is matched with EG-style
 -- globbing (matchEvent): literals match exactly, '*'/'?' wildcards match broadly.
+-- Each matched trigger's children run in their own coroutine so a Wait/Delay
+-- suspends only that macro, not the dispatch loop or sibling triggers.
 function obj:_dispatchEvent(event)
     local function walk(items)
         for _, item in ipairs(items) do
             if item.type == "trigger"
                 and item.enabled ~= false
                 and matchEvent(item.eventName, event.name) then
-                for _, child in ipairs(item.children or {}) do
-                    self:executeItem(child, event)
-                end
+                local children = item.children or {}
+                driveMacro(function()
+                    for _, child in ipairs(children) do
+                        self:executeItem(child, event)
+                    end
+                end)
             end
             if item.children then walk(item.children) end
         end

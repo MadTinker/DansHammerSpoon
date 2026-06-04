@@ -399,6 +399,26 @@ M.registerActionType("clipboardSet", {
     end
 })
 
+-- Wait/Delay: pause the running macro for N seconds WITHOUT blocking the main
+-- thread. This works because runItem/_dispatchEvent run a macro inside a coroutine
+-- (see init.lua driveMacro); yielding the seconds suspends the walk and the driver
+-- resumes it via hs.timer. Outside a coroutine (the main thread) it's a no-op -- we
+-- never busy-wait and freeze the UI.
+M.registerActionType("delay", {
+    name = "Wait / Delay (seconds)",
+    parameters = {
+        seconds = { type = "text", required = true, default = "1" }
+    },
+    handler = function(params)
+        local secs = tonumber(params.seconds)
+        if not (secs and secs > 0) then return end
+        local _, isMain = coroutine.running()
+        if not isMain then
+            coroutine.yield(secs)
+        end
+    end
+})
+
 -- Register some default condition types
 M.registerConditionType("frontmost_window", {
     name = "Frontmost Window Title",
