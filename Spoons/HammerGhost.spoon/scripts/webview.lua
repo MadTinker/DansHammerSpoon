@@ -14,6 +14,12 @@ local function escapeHTML(s)
         :gsub(">", "&gt;"))
 end
 
+-- Escape for a double-quoted HTML attribute (adds " on top of escapeHTML), used
+-- for the payload JSON stashed on data-payload.
+local function escapeAttr(s)
+    return (escapeHTML(s):gsub('"', "&quot;"))
+end
+
 -- Render the event bus's recent history as log rows (oldest first, matching the
 -- live-append order). Shown when the window opens so the log isn't blank.
 local function buildLogHTML()
@@ -23,10 +29,11 @@ local function buildLogHTML()
     end
     local rows = {}
     for _, ev in ipairs(recent) do
+        local payloadJSON = hs.json.encode(ev.payload or {}) or "{}"
         rows[#rows + 1] = string.format(
-            '<div class="log-entry" data-seq="%d"><span class="log-time">%s</span>' ..
-            '<span class="log-name">%s</span></div>',
-            ev.seq, os.date("%H:%M:%S", ev.time), escapeHTML(ev.name))
+            '<div class="log-entry" data-seq="%d" data-payload="%s"><span class="log-time">%s</span>' ..
+            '<span class="log-name">%s</span><button class="log-toggle" title="Show payload tokens">{}</button></div>',
+            ev.seq, escapeAttr(payloadJSON), os.date("%H:%M:%S", ev.time), escapeHTML(ev.name))
     end
     return table.concat(rows)
 end

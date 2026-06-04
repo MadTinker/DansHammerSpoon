@@ -265,6 +265,8 @@ body {
 
 .log-entry {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 10px;
     padding: 2px 12px;
     white-space: nowrap;
@@ -282,8 +284,48 @@ body {
 
 .log-entry .log-name {
     color: var(--text-color);
+    flex: 1 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.log-toggle {
+    flex: 0 0 auto;
+    background: transparent;
+    border: none;
+    color: var(--muted-color);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    padding: 0 4px;
+    opacity: 0.55;
+}
+
+.log-toggle:hover {
+    color: var(--text-color);
+    opacity: 1;
+}
+
+.log-payload {
+    flex: 0 0 100%;
+    white-space: normal;
+    cursor: default;
+    margin: 3px 0 5px 0;
+    padding: 6px 9px;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    color: var(--muted-color);
+}
+
+.log-token {
+    padding: 1px 0;
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+.log-token .tok {
+    color: var(--accent-hover);
 }
 
 .log-entry.fresh {

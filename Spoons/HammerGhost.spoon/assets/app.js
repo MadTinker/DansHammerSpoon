@@ -1,9 +1,54 @@
 // --- Live event log (global so Lua's evaluateJavaScript can call them) ---
 const LOG_MAX_ROWS = 300;
 
-// Append one event row. entry = { seq, time, name }. Auto-scrolls to the newest
-// row when the view is already pinned to the bottom, so live tailing works but a
-// user who has scrolled up to read history is not yanked back down.
+// Flatten a payload object into dotted token paths so each leaf can be shown as
+// the exact {payload.x.y} string you'd type into an action param.
+function flattenPayload(obj, prefix, out) {
+    out = out || [];
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        Object.keys(obj).forEach(k => flattenPayload(obj[k], prefix + '.' + k, out));
+    } else {
+        out.push({ token: prefix, value: Array.isArray(obj) ? JSON.stringify(obj) : String(obj) });
+    }
+    return out;
+}
+
+// Build the expandable payload detail: one row per leaf, token + value.
+function renderPayloadDetail(payload) {
+    const detail = document.createElement('div');
+    detail.className = 'log-payload';
+    const rows = flattenPayload(payload, 'payload', []);
+    if (rows.length === 0) {
+        detail.textContent = 'No payload';
+        return detail;
+    }
+    rows.forEach(r => {
+        const line = document.createElement('div');
+        line.className = 'log-token';
+        const tok = document.createElement('span');
+        tok.className = 'tok';
+        tok.textContent = '{' + r.token + '}';
+        line.appendChild(tok);
+        line.appendChild(document.createTextNode(' = ' + r.value));
+        detail.appendChild(line);
+    });
+    return detail;
+}
+
+// Toggle the payload detail for a log row (payload JSON stashed on data-payload).
+function togglePayload(row) {
+    const existing = row.querySelector('.log-payload');
+    if (existing) { existing.remove(); return; }
+    let payload = {};
+    try { payload = JSON.parse(row.dataset.payload || '{}'); } catch (e) { /* leave {} */ }
+    // hs.json encodes an empty payload as [] -> treat as no payload, not a token.
+    if (Array.isArray(payload) && payload.length === 0) payload = {};
+    row.appendChild(renderPayloadDetail(payload));
+}
+
+// Append one event row. entry = { seq, time, name, payload }. Auto-scrolls to the
+// newest row when the view is already pinned to the bottom, so live tailing works
+// but a user who has scrolled up to read history is not yanked back down.
 window.appendLogEntry = (entry) => {
     const container = document.getElementById('log-entries');
     if (!container) return;
@@ -16,6 +61,7 @@ window.appendLogEntry = (entry) => {
     const row = document.createElement('div');
     row.className = 'log-entry fresh';
     row.dataset.seq = entry.seq;
+    row.dataset.payload = JSON.stringify(entry.payload || {});
 
     const time = document.createElement('span');
     time.className = 'log-time';
@@ -25,8 +71,14 @@ window.appendLogEntry = (entry) => {
     name.className = 'log-name';
     name.textContent = entry.name;
 
+    const toggle = document.createElement('button');
+    toggle.className = 'log-toggle';
+    toggle.title = 'Show payload tokens';
+    toggle.textContent = '{}';
+
     row.appendChild(time);
     row.appendChild(name);
+    row.appendChild(toggle);
     container.appendChild(row);
 
     // Cap DOM size by dropping the oldest rows.
@@ -58,12 +110,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const logEntries = document.getElementById('log-entries');
     if (logEntries) {
         logEntries.scrollTop = logEntries.scrollHeight;
-        // Click a log row to bind its event to the selected trigger.
+        // Click a log row to bind its event to the selected trigger; the {} button
+        // reveals the event's payload tokens instead of binding.
         logEntries.addEventListener('click', (event) => {
             const row = event.target.closest('.log-entry');
-            const nameEl = row && row.querySelector('.log-name');
-            if (!nameEl) return;
-            window.location.href = `hammerspoon://bindEvent?name=${encodeURIComponent(nameEl.textContent)}`;
+            if (!row) return;
+            if (event.target.closest('.log-toggle')) {
+                togglePayload(row);
+                return;
+            }
+            if (event.target.closest('.log-payload')) return; // interacting with detail, not binding
+            const nameEl = row.querySelector('.log-name');
+            if (nameEl) {
+                window.location.href = `hammerspoon://bindEvent?name=${encodeURIComponent(nameEl.textContent)}`;
+            }
         });
     }
 

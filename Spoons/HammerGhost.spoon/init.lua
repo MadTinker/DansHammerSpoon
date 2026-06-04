@@ -176,12 +176,17 @@ end
 -- buffer is rendered on next open instead).
 function obj:_pushLogEntry(event)
     if not self.window or not self.window:isVisible() then return end
-    local payload = hs.json.encode({
+    local entry = hs.json.encode({
         seq = event.seq,
         time = os.date("%H:%M:%S", event.time),
         name = event.name,
+        payload = event.payload or {},
     })
-    self.window:evaluateJavaScript(string.format("window.appendLogEntry(%s)", payload))
+    -- A payload with a non-encodable value would make hs.json.encode return nil;
+    -- skip rather than inject "appendLogEntry(nil)" (a JS error). The row just
+    -- won't tail live; the ring buffer still renders it on next open.
+    if not entry then return end
+    self.window:evaluateJavaScript(string.format("window.appendLogEntry(%s)", entry))
 end
 
 -- Clear both the bus history and the panel's rows.
