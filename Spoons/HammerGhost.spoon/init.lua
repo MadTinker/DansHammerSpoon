@@ -182,7 +182,28 @@ function obj:init()
         self:_dispatchEvent(event)
     end)
 
+    -- Run any autostart items once. init() runs twice (loadSpoon + user init.lua),
+    -- so guard with a flag -- otherwise autostart actions would fire twice.
+    if not self._autostarted then
+        self._autostarted = true
+        self:_runAutostart()
+    end
+
     return self
+end
+
+-- Run every item flagged autostart (EventGhost's Autostart macro), now that the
+-- tree and action system are loaded. Disabled items are skipped.
+function obj:_runAutostart()
+    local function walk(items)
+        for _, item in ipairs(items or {}) do
+            if item.autostart and item.enabled ~= false then
+                self:runItem(item.id)
+            end
+            if item.children then walk(item.children) end
+        end
+    end
+    walk(self.macroTree)
 end
 
 -- Push a single bus event into the live log panel (no-op when hidden; the ring
@@ -721,6 +742,10 @@ function obj:saveProperties(data)
     -- Triggers carry an event name; persist it when the form supplied one.
     if item.type == "trigger" and data.eventName ~= nil then
         item.eventName = data.eventName
+    end
+    -- Autostart flag (run once at load); the checkbox always reports a boolean.
+    if data.autostart ~= nil then
+        item.autostart = data.autostart and true or false
     end
     self:saveConfig()
     ui.refresh(self)

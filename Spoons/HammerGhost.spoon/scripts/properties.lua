@@ -48,6 +48,13 @@ function M.show(spoon, item)
             [['*'/'?' wildcards allowed. Click an event in the log below to add it.</div>]]
     end
 
+    -- Autostart: run this item once when HammerGhost loads (EventGhost's
+    -- Autostart). Useful on triggers/folders/actions you want armed at launch.
+    html = html .. string.format(
+        [[<div class="field field-check"><label><input type="checkbox" id="autostart" %s> ]] ..
+        [[Run at startup (autostart)</label></div>]],
+        item.autostart and "checked" or "")
+
     html = html .. string.format(
         [[<div class="buttons"><button id="save-button" class="primary" data-id="%s">Save</button>]] ..
         [[<button id="cancel-button">Cancel</button></div>]],

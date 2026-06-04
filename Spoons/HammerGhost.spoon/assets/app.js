@@ -252,6 +252,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = { id, name };
             const eventNameInput = document.getElementById('eventName');
             if (eventNameInput) data.eventName = eventNameInput.value;
+            const autostartInput = document.getElementById('autostart');
+            if (autostartInput) data.autostart = autostartInput.checked;
             window.location.href = `hammerspoon://saveProperties?${encodeURIComponent(JSON.stringify(data))}`;
         } else if (target.matches('#cancel-button')) {
             window.location.href = 'hammerspoon://cancelEdit';

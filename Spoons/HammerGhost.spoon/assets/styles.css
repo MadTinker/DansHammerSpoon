@@ -158,6 +158,21 @@ body {
     font-style: italic;
 }
 
+/* Checkbox field (e.g. autostart): inline label, not the uppercase field label. */
+.properties-form .field-check label {
+    flex-direction: row;
+    align-items: center;
+    gap: 7px;
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--text-color);
+    font-size: 13px;
+}
+
+.properties-form .field-check input {
+    width: auto;
+}
+
 .properties-form label {
     font-size: 11px;
     text-transform: uppercase;
