@@ -238,7 +238,29 @@ function obj:executeItem(item, event)
             end
         end
     elseif item.type == "folder" then
-        for _, child in ipairs(item.children or {}) do
+        self:_runChildren(item.children, event)
+    elseif item.type == "condition" then
+        -- A condition gates its siblings (handled in _runChildren); running one on
+        -- its own just reports whether it currently passes -- handy while building.
+        local passed = action_system.executeCondition(item, event)
+        hs.alert.show(string.format("%s: %s", item.name or "condition", passed and "TRUE" or "FALSE"))
+    end
+end
+
+-- Run a list of child items with EventGhost-style condition gating: a condition
+-- child opens/closes the gate for the actions that FOLLOW it (until the next
+-- condition); the gate starts open. This is the same gate the sequence editor
+-- applies to steps, but for the tree children of a trigger or folder -- so the
+-- variable/app/time conditions work as flow control without needing a sequence.
+-- Disabled children are skipped (and don't change the gate).
+function obj:_runChildren(children, event)
+    local gate = true
+    for _, child in ipairs(children or {}) do
+        if child.enabled == false then
+            -- skipped; leaves the gate as-is
+        elseif child.type == "condition" then
+            gate = action_system.executeCondition(child, event) and true or false
+        elseif gate then
             self:executeItem(child, event)
         end
     end
@@ -285,9 +307,7 @@ function obj:runItem(id)
     if not item then return end
     driveMacro(function()
         if item.type == "trigger" then
-            for _, child in ipairs(item.children or {}) do
-                self:executeItem(child, nil)
-            end
+            self:_runChildren(item.children, nil)
         else
             self:executeItem(item, nil)
         end
@@ -307,9 +327,7 @@ function obj:_dispatchEvent(event)
                 and matchesAnyEvent(item.eventName, event.name) then
                 local children = item.children or {}
                 driveMacro(function()
-                    for _, child in ipairs(children) do
-                        self:executeItem(child, event)
-                    end
+                    self:_runChildren(children, event)
                 end)
             end
             if item.children then walk(item.children) end
@@ -441,8 +459,13 @@ function obj:addSequence()
     self:openSequenceEditor()
 end
 
+-- Add a condition as a tree node (a gate for the actions that follow it among
+-- its siblings). Created then opened in the editor to pick its type/params.
 function obj:addCondition()
-    self:openConditionEditor()
+    local item = self:createMacroItem("New Condition", "condition", self:getCurrentSelection())
+    self.currentSelection = item
+    ui.refresh(self)
+    self:openConditionEditor(item)
 end
 
 -- Function to create a new macro item
@@ -844,9 +867,21 @@ function obj:handleConditionEditorURL(url)
     elseif cmd == "saveCondition" then
         local conditionData = safeDecodeArgs(args)
         if not conditionData then return end
-        local js = string.format("addStepToSequence(%s)", hs.json.encode({type="condition", data=conditionData}))
-        self.sequenceEditor:evaluateJavaScript(js)
-        self.conditionEditor:hide()
+        -- Two contexts: editing a condition NODE in the tree updates it; otherwise
+        -- (picked from the sequence editor's Add Condition) hand it to the sequence
+        -- editor as a step. The sequence editor may not be open -- guard it.
+        local node = (conditionData.id and conditionData.id ~= "")
+            and treeHelpers.findItem(self.macroTree, conditionData.id) or nil
+        if node and node.type == "condition" then
+            node.conditionType = conditionData.type
+            node.params = conditionData.params
+            self:saveConfig()
+            ui.refresh(self)
+        elseif self.sequenceEditor then
+            local js = string.format("addStepToSequence(%s)", hs.json.encode({type="condition", data=conditionData}))
+            self.sequenceEditor:evaluateJavaScript(js)
+        end
+        if self.conditionEditor then self.conditionEditor:hide() end
     elseif cmd == "cancelConditionEditor" then
         self.conditionEditor:hide()
     end

@@ -37,6 +37,14 @@ function M.create(spoon)
             end,
         },
         {
+            id = "addCondition",
+            label = "Add Condition",
+            image = hs.image.imageFromName("NSStatusAvailable") or hs.image.imageFromName("NSActionTemplate"),
+            fn = function()
+                spoon:addCondition()
+            end,
+        },
+        {
             id = "runSelected",
             label = "Run Selected",
             image = hs.image.imageFromName("NSTouchBarPlayTemplate")
