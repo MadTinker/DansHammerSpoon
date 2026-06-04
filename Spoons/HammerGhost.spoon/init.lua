@@ -120,9 +120,12 @@ function obj:init()
     -- Load plugins
     plugin_manager.loadPlugins()
 
-    -- Load action types
-    self.actionTypes = action_system.getActionTypes()
-    self.conditionTypes = action_system.getConditionTypes()
+    -- Load action types for the editor. The UI copies are handler-free so they
+    -- survive hs.json.encode (a function value makes encode return nil, which
+    -- left the Type dropdown empty). Execution still goes through
+    -- action_system, which keeps the real defs with their handlers.
+    self.actionTypes = action_system.getActionTypesForUI()
+    self.conditionTypes = action_system.getConditionTypesForUI()
 
     -- Load saved macros if they exist
     self.macroTree, self.lastId = config.loadMacros(self.configPath)

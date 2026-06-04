@@ -312,3 +312,131 @@ body {
     color: var(--muted-color);
     font-size: 13px;
 }
+
+/* --- Modal editor pages (action / condition / sequence / chooser) ---
+   These share styles.css but render their own markup (#action-editor etc.),
+   which had no rules at all -- hence the cramped, unstyled forms with a
+   collapsed Type dropdown. */
+#action-editor,
+#condition-editor,
+#sequence-editor,
+#action-chooser {
+    padding: 16px 18px;
+    overflow-y: auto;
+}
+
+#action-editor h2,
+#condition-editor h2,
+#sequence-editor h2,
+#action-chooser h2 {
+    margin: 0 0 14px 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted-color);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 7px 9px;
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.12s ease;
+}
+
+.form-group textarea {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    resize: vertical;
+    min-height: 90px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--accent-color);
+}
+
+.form-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.form-buttons button {
+    background-color: var(--active-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.form-buttons button:hover {
+    background-color: var(--hover-color);
+}
+
+.form-buttons button.primary {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #ffffff;
+}
+
+.form-buttons button.primary:hover {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+/* Action chooser rows */
+.action-item {
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    cursor: pointer;
+}
+
+.action-item:hover {
+    background-color: var(--hover-color);
+}
+
+/* Sequence editor steps */
+.sequence-step {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.sequence-step button {
+    background-color: var(--active-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 3px 9px;
+    font-size: 12px;
+    cursor: pointer;
+}

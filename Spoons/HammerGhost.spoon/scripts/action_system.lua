@@ -20,6 +20,26 @@ function M.getConditionTypes()
     return M.conditionTypes
 end
 
+-- Serializable copies for the editor UI. The registered defs carry handler
+-- closures, and hs.json.encode returns nil for any table holding a function --
+-- which silently left the Type dropdown empty (populate*(nil) -> JS error).
+-- Strip down to the pure data the editor needs.
+local function uiCopy(types)
+    local out = {}
+    for name, def in pairs(types) do
+        out[name] = { name = def.name, parameters = def.parameters }
+    end
+    return out
+end
+
+function M.getActionTypesForUI()
+    return uiCopy(M.actionTypes)
+end
+
+function M.getConditionTypesForUI()
+    return uiCopy(M.conditionTypes)
+end
+
 -- Substitute {event.X} / {payload.X.Y} tokens in a string against the firing
 -- event. e.g. "{payload.app} woke" with payload.app="Safari" -> "Safari woke".
 --   - missing key ({payload.nope})  -> "" (so partial payloads don't error)
@@ -65,7 +85,10 @@ end
 function M.executeAction(action, event)
     local def = M.actionTypes[action.actionType]
     if not (def and def.handler) then return end
-    if action.actionType == "executeScript" then
+    -- executeScript (Lua) and runScript (sh/python/node) take their body raw:
+    -- templating would corrupt '{...}' literals (Lua tables, Python/JS dicts).
+    -- Both instead receive the event as a call arg / can read it via their host.
+    if action.actionType == "executeScript" or action.actionType == "runScript" then
         def.handler(action.params or {}, event)
     else
         def.handler(expandParams(action.params, event), event)
@@ -162,6 +185,55 @@ M.registerActionType("runShell", {
         if params.command and params.command ~= "" then
             hs.task.new("/bin/sh", nil, { "-c", params.command }):start()
         end
+    end
+})
+
+-- Run a script in a chosen interpreter (sh/bash/python3/node). Non-blocking via
+-- hs.task. hs.task needs an absolute interpreter path (it does NOT search PATH),
+-- so python3/node are resolved against the usual install dirs. Output isn't
+-- surfaced on success; a non-zero exit pops the stderr in an alert so failures
+-- aren't silent. The code body is exempt from {event} templating (see
+-- executeAction) -- use the firing event from inside the script's own world if
+-- needed, or executeScript (Lua) for event-aware logic.
+local function resolveBin(candidates, fallback)
+    for _, p in ipairs(candidates) do
+        if hs.fs.attributes(p) then return p end
+    end
+    return fallback
+end
+
+M.registerActionType("runScript", {
+    name = "Run Script (sh / python / node)",
+    parameters = {
+        language = { type = "select", options = { "sh", "bash", "python3", "node" }, required = true },
+        code     = { type = "textarea", required = true, default = "echo hello" },
+    },
+    handler = function(params)
+        local code = params.code or ""
+        if code == "" then return end
+        local lang = params.language or "sh"
+        local bin, args
+        if lang == "sh" then
+            bin, args = "/bin/sh", { "-c", code }
+        elseif lang == "bash" then
+            bin, args = "/bin/bash", { "-c", code }
+        elseif lang == "python3" then
+            bin = resolveBin({ "/opt/homebrew/bin/python3", "/usr/local/bin/python3", "/usr/bin/python3" }, "/usr/bin/python3")
+            args = { "-c", code }
+        elseif lang == "node" then
+            bin = resolveBin({ "/opt/homebrew/bin/node", "/usr/local/bin/node" }, "/usr/local/bin/node")
+            args = { "-e", code }
+        else
+            hs.alert.show("Unknown script language: " .. tostring(lang))
+            return
+        end
+        hs.task.new(bin, function(exitCode, _stdOut, stdErr)
+            if exitCode ~= 0 then
+                local detail = (stdErr and stdErr ~= "") and stdErr or ("exit " .. tostring(exitCode))
+                hs.alert.show("Script failed (" .. lang .. "): " .. detail)
+            end
+            return true
+        end, args):start()
     end
 })
 

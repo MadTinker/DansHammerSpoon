@@ -30,15 +30,35 @@ function renderParameters(values) {
         formGroup.className = 'form-group';
         const label = document.createElement('label');
         label.textContent = paramName;
-        const input = document.createElement('input');
-        input.type = param.type || 'text';
+
+        // Pick the widget by param type: a dropdown for enumerated options, a
+        // multi-line box for scripts/commands, a plain input otherwise. (The old
+        // code always made an <input> and set input.type to 'select'/'textarea',
+        // which the browser silently downgraded to a text box.)
+        let input;
+        if (param.type === 'select') {
+            input = document.createElement('select');
+            (param.options || []).forEach(opt => {
+                const option = document.createElement('option');
+                option.value = opt;
+                option.textContent = opt;
+                input.appendChild(option);
+            });
+        } else if (param.type === 'textarea') {
+            input = document.createElement('textarea');
+            input.rows = 6;
+        } else {
+            input = document.createElement('input');
+            input.type = param.type || 'text';
+        }
         input.name = paramName;
         input.required = !!param.required;
-        if (values && values[paramName] !== undefined) {
-            input.value = values[paramName];
-        } else if (param.default !== undefined) {
-            input.value = param.default;
-        }
+
+        const val = (values && values[paramName] !== undefined)
+            ? values[paramName]
+            : (param.default !== undefined ? param.default : undefined);
+        if (val !== undefined) input.value = val;
+
         formGroup.appendChild(label);
         formGroup.appendChild(input);
         actionParametersDiv.appendChild(formGroup);
@@ -97,7 +117,7 @@ actionForm.addEventListener('submit', (event) => {
     const name = document.getElementById('action-name').value;
     const type = actionTypeSelect.value;
     const params = {};
-    actionParametersDiv.querySelectorAll('input').forEach(input => {
+    actionParametersDiv.querySelectorAll('input, select, textarea').forEach(input => {
         params[input.name] = input.value;
     });
     const actionData = { id, name, type, params };
