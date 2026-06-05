@@ -245,17 +245,21 @@ function obj:executeItem(item, event)
     if item.type == "action" then
         action_system.executeAction(item, event)
     elseif item.type == "sequence" then
-        -- Walk steps with a running "gate": a condition opens or closes the
-        -- gate for every action that follows it, until the next condition.
-        -- Actions run only while the gate is open (default open at start).
-        -- Steps are executed directly; findItem only walks .children, not
-        -- .steps, so an id round-trip would never resolve a step.
+        -- Walk steps with a running "gate": a condition opens or closes the gate
+        -- for every action that follows it, until the next condition. Actions run
+        -- only while the gate is open (default open at start). Each step is
+        -- {type, data}: a condition's type/params live inline in data; an action
+        -- step REFERENCES a tree action node by data.id, so we resolve and run that
+        -- node (it carries the real actionType/params).
         local gate = true
         for _, step in ipairs(item.steps or {}) do
+            local data = step.data or {}
             if step.type == "condition" then
-                gate = action_system.executeCondition(step, event) and true or false
+                gate = action_system.executeCondition(
+                    { conditionType = data.type, params = data.params }, event) and true or false
             elseif step.type == "action" and gate then
-                action_system.executeAction(step, event)
+                local node = data.id and treeHelpers.findItem(self.macroTree, data.id)
+                if node then self:executeItem(node, event) end
             end
         end
     elseif item.type == "folder" then
@@ -475,9 +479,14 @@ function obj:addAction()
     self:openActionEditor()
 end
 
--- Function to add a sequence
+-- Add a sequence as a tree node (an ordered, condition-gated list of action
+-- references), then open the editor to fill its steps. Created up front so
+-- saveSequence has a node to write item.steps onto.
 function obj:addSequence()
-    self:openSequenceEditor()
+    local item = self:createMacroItem("New Sequence", "sequence", self:getCurrentSelection())
+    self.currentSelection = item
+    ui.refresh(self)
+    self:openSequenceEditor(item)
 end
 
 -- Add a condition as a tree node (a gate for the actions that follow it among

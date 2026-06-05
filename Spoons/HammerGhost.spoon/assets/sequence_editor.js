@@ -14,6 +14,7 @@ function renderSteps() {
         const stepElement = document.createElement('div');
         stepElement.className = 'sequence-step';
         stepElement.dataset.index = index;
+        stepElement.draggable = true; // drag to reorder
         if (step.type === 'action') {
             stepElement.innerHTML = `
                 <span>Action: ${step.data.name}</span>
@@ -43,6 +44,34 @@ stepsContainer.addEventListener('click', (event) => {
         steps.splice(index, 1);
         renderSteps();
     }
+});
+
+// Drag a step onto another to reorder (order is the run order, so this matters
+// for the condition gate). Indexes are read off data-index, which renderSteps
+// keeps in sync after every change.
+let dragIndex = null;
+stepsContainer.addEventListener('dragstart', (event) => {
+    const el = event.target.closest('.sequence-step');
+    if (!el) return;
+    dragIndex = Number(el.dataset.index);
+    event.dataTransfer.effectAllowed = 'move';
+});
+stepsContainer.addEventListener('dragover', (event) => {
+    if (dragIndex === null) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+});
+stepsContainer.addEventListener('drop', (event) => {
+    const el = event.target.closest('.sequence-step');
+    if (dragIndex === null || !el) return;
+    event.preventDefault();
+    const dropIndex = Number(el.dataset.index);
+    if (dropIndex !== dragIndex) {
+        const [moved] = steps.splice(dragIndex, 1);
+        steps.splice(dropIndex, 0, moved);
+        renderSteps();
+    }
+    dragIndex = null;
 });
 
 document.getElementById('save-sequence').addEventListener('click', () => {
