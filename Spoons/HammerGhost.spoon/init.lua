@@ -959,6 +959,26 @@ function obj:handleSequenceEditorURL(url)
         self:openActionChooser()
     elseif cmd == "addConditionToSequence" then
         self:openConditionEditor()
+    elseif cmd == "editActionStep" then
+        -- An action step only references a tree action node (data.id); its params
+        -- live on that node. Edit the node directly: the action editor saves back
+        -- to it (saveAction matches by id), so every reference picks up the change.
+        local data = safeDecodeArgs(args)
+        local node = data and data.id and treeHelpers.findItem(self.macroTree, data.id)
+        if node and node.type == "action" then
+            self:openActionEditor(node)
+        else
+            hs.alert.show("This step's action no longer exists")
+        end
+    elseif cmd == "editConditionStep" then
+        -- Condition steps carry their params inline in data; reopen the condition
+        -- editor prefilled. Map data.type -> conditionType (the field applyCondition
+        -- reads) and leave id unset so saveCondition routes the result back to the
+        -- sequence editor (replacing the step) rather than to a tree node.
+        local data = safeDecodeArgs(args)
+        if data then
+            self:openConditionEditor({ conditionType = data.type, params = data.params })
+        end
     elseif cmd == "saveSequence" then
         local sequenceData = safeDecodeArgs(args)
         if not sequenceData then return end

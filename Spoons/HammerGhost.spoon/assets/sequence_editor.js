@@ -1,12 +1,20 @@
 // Sequence editor page script. Lua (handleSequenceEditorURL) drives it via two
 // global entry points:
 //   populateEditor(sequence)  - load the sequence's existing steps
-//   addStepToSequence(step)   - append a step chosen via the action/condition pickers
+//   addStepToSequence(step)   - add a step from the pickers, or replace the step
+//                               currently being edited (see editingStepIndex)
 // Inlined at end of <body>, so the DOM is parsed when this runs. Functions live on
 // `window` so evaluateJavaScript can reach them.
 
 const stepsContainer = document.getElementById('sequence-steps');
 let steps = [];
+// When a step is being edited (not added), this holds its index so the result
+// coming back via addStepToSequence REPLACES it instead of appending. null = add
+// mode. Every entry point sets it explicitly (Add buttons -> null, condition Edit
+// -> index) so a cancelled edit can't leave a stale index that clobbers the next
+// append. Action-step edits leave it null: they save to the referenced tree node,
+// not back through addStepToSequence.
+let editingStepIndex = null;
 
 function renderSteps() {
     stepsContainer.innerHTML = '';
@@ -18,11 +26,13 @@ function renderSteps() {
         if (step.type === 'action') {
             stepElement.innerHTML = `
                 <span>Action: ${step.data.name}</span>
+                <button class="edit-step">Edit</button>
                 <button class="remove-step">Remove</button>
             `;
         } else if (step.type === 'condition') {
             stepElement.innerHTML = `
                 <span>Condition: ${step.data.type}</span>
+                <button class="edit-step">Edit</button>
                 <button class="remove-step">Remove</button>
             `;
         }
@@ -31,10 +41,12 @@ function renderSteps() {
 }
 
 document.getElementById('add-action-step').addEventListener('click', () => {
+    editingStepIndex = null; // adding, not editing -> append the result
     window.location.href = 'hammerspoon://selectActionForSequence';
 });
 
 document.getElementById('add-condition-step').addEventListener('click', () => {
+    editingStepIndex = null; // adding, not editing -> append the result
     window.location.href = 'hammerspoon://addConditionToSequence';
 });
 
@@ -43,6 +55,24 @@ stepsContainer.addEventListener('click', (event) => {
         const index = event.target.closest('.sequence-step').dataset.index;
         steps.splice(index, 1);
         renderSteps();
+    } else if (event.target.matches('.edit-step')) {
+        const index = Number(event.target.closest('.sequence-step').dataset.index);
+        const step = steps[index];
+        if (!step) return;
+        if (step.type === 'condition') {
+            // Condition params live inline in step.data; reopen the condition
+            // editor prefilled, and replace THIS step when it comes back.
+            editingStepIndex = index;
+            window.location.href =
+                `hammerspoon://editConditionStep?${encodeURIComponent(JSON.stringify(step.data))}`;
+        } else if (step.type === 'action') {
+            // Action steps only reference a tree node (data.id); its params live
+            // on that node. Edit the node directly (Lua opens the action editor on
+            // it). It saves back to the node, not here, so we stay in add mode.
+            editingStepIndex = null;
+            window.location.href =
+                `hammerspoon://editActionStep?${encodeURIComponent(JSON.stringify({ id: step.data.id }))}`;
+        }
     }
 });
 
@@ -89,9 +119,15 @@ window.populateEditor = function(sequence) {
     renderSteps();
 };
 
-// Lua -> JS: append a step picked from the action/condition chooser.
+// Lua -> JS: a step picked from the action/condition chooser. Replaces the step
+// being edited (condition Edit set editingStepIndex), otherwise appends.
 window.addStepToSequence = function(step) {
-    steps.push(step);
+    if (editingStepIndex !== null && editingStepIndex >= 0 && editingStepIndex < steps.length) {
+        steps[editingStepIndex] = step;
+    } else {
+        steps.push(step);
+    }
+    editingStepIndex = null;
     renderSteps();
 };
 
