@@ -315,11 +315,30 @@ M.registerActionType("notify", {
     end
 })
 
--- Layout the focused window: maximize | left | right | center.
+-- Layout the focused window. The single canonical window-positioning action
+-- (the old plugin "moveWindow" was a superset of this and has been folded in).
+-- Positions are screen-relative unit rects; "left"/"right" are kept as aliases
+-- for left-half/right-half so configs from the 4-option version still resolve.
+local WIN_RECTS = {
+    ["left"]         = hs.geometry.rect(0,   0,   0.5, 1),
+    ["right"]        = hs.geometry.rect(0.5, 0,   0.5, 1),
+    ["left-half"]    = hs.geometry.rect(0,   0,   0.5, 1),
+    ["right-half"]   = hs.geometry.rect(0.5, 0,   0.5, 1),
+    ["top-half"]     = hs.geometry.rect(0,   0,   1,   0.5),
+    ["bottom-half"]  = hs.geometry.rect(0,   0.5, 1,   0.5),
+    ["top-left"]     = hs.geometry.rect(0,   0,   0.5, 0.5),
+    ["top-right"]    = hs.geometry.rect(0.5, 0,   0.5, 0.5),
+    ["bottom-left"]  = hs.geometry.rect(0,   0.5, 0.5, 0.5),
+    ["bottom-right"] = hs.geometry.rect(0.5, 0.5, 0.5, 0.5),
+}
 M.registerActionType("windowLayout", {
     name = "Window Layout",
     parameters = {
-        layout = { type = "select", options = { "maximize", "left", "right", "center" }, required = true }
+        layout = { type = "select", options = {
+            "maximize", "center",
+            "left-half", "right-half", "top-half", "bottom-half",
+            "top-left", "top-right", "bottom-left", "bottom-right",
+        }, required = true }
     },
     handler = function(params)
         local win = hs.window.focusedWindow()
@@ -327,12 +346,11 @@ M.registerActionType("windowLayout", {
         local layout = params.layout or "maximize"
         if layout == "maximize" then
             win:maximize()
-        elseif layout == "left" then
-            win:move(hs.geometry.rect(0, 0, 0.5, 1), nil, true)
-        elseif layout == "right" then
-            win:move(hs.geometry.rect(0.5, 0, 0.5, 1), nil, true)
         elseif layout == "center" then
             win:centerOnScreen()
+        else
+            local rect = WIN_RECTS[layout]
+            if rect then win:move(rect, nil, true) end
         end
     end
 })
