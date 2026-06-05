@@ -16,6 +16,8 @@ return function(action_system)
             button = { type = "select", options = { "left", "right" }, required = false },
         },
         handler = function(params)
+            -- Synthetic clicks need Accessibility; warn+prompt once if missing.
+            if not action_system.requireAccessibility() then return end
             local x = tonumber(params.x)
             local y = tonumber(params.y)
             -- Only honor an explicit point when BOTH coords parse; a half-filled
@@ -50,6 +52,7 @@ return function(action_system)
             dy = { type = "text", default = "-10" },
         },
         handler = function(params)
+            if not action_system.requireAccessibility() then return end
             hs.eventtap.scrollWheel({ tonumber(params.dx) or 0, tonumber(params.dy) or 0 }, {}, "line")
         end
     })

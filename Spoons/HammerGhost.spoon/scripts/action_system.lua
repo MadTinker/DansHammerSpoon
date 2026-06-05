@@ -57,6 +57,25 @@ function M.getConditionTypesForUI()
     return uiCopy(M.conditionTypes)
 end
 
+-- Guard for actions that synthesize input via hs.eventtap (keystrokes, clicks,
+-- scroll). Those silently no-op without macOS Accessibility permission, which is
+-- a baffling failure ("my macro did nothing"). Return true if granted; otherwise
+-- warn ONCE and open the system prompt so the cause is visible. The one-shot flag
+-- avoids spamming an alert on every keystroke action while permission is missing.
+local _accessibilityWarned = false
+function M.requireAccessibility()
+    if hs.accessibilityState() then
+        _accessibilityWarned = false  -- re-arm: warn again if it's later revoked
+        return true
+    end
+    if not _accessibilityWarned then
+        _accessibilityWarned = true
+        hs.alert.show("HammerGhost needs Accessibility permission to send keyboard/mouse input. Opening System Settings\226\128\166")
+        hs.accessibilityState(true)  -- prompt + reveal the Accessibility pane
+    end
+    return false
+end
+
 -- Substitute tokens in a string. Three roots:
 --   {event.X}     - the firing event (event.name, ...)
 --   {payload.X.Y} - the event payload (e.g. {payload.app})
@@ -182,6 +201,7 @@ M.registerActionType("keyStroke", {
         key  = { type = "text", required = true,  default = "space" }
     },
     handler = function(params)
+        if not M.requireAccessibility() then return end
         local mods = {}
         for m in tostring(params.mods or ""):gmatch("[^,%s]+") do mods[#mods + 1] = m end
         if params.key and params.key ~= "" then
@@ -197,6 +217,7 @@ M.registerActionType("typeText", {
         text = { type = "text", required = true, default = "" }
     },
     handler = function(params)
+        if not M.requireAccessibility() then return end
         if params.text and params.text ~= "" then
             hs.eventtap.keyStrokes(params.text)
         end
