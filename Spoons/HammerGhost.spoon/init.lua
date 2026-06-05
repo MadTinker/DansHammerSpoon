@@ -1025,6 +1025,11 @@ function obj:handleConditionEditorURL(url)
         if node and node.type == "condition" then
             node.conditionType = conditionData.type
             node.params = conditionData.params
+            -- The condition editor has no name field, so name the node after its
+            -- type's friendly label ("Variable Equals") instead of leaving every
+            -- condition reading "New Condition" in the tree.
+            local def = self.conditionTypes[conditionData.type]
+            node.name = (def and def.name) or node.name
             self:saveConfig()
             ui.refresh(self)
         elseif self.sequenceEditor then

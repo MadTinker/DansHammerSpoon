@@ -79,12 +79,17 @@ actionTypeSelect.addEventListener('change', () => renderParameters());
 window.populateActionTypes = function(actionTypes) {
     actionTypesMap = actionTypes || {};
     actionTypeSelect.innerHTML = '';
-    for (const type in actionTypesMap) {
-        const option = document.createElement('option');
-        option.value = type;
-        option.textContent = actionTypesMap[type].name;
-        actionTypeSelect.appendChild(option);
-    }
+    // Sort by display label so the (now ~38-entry) list is scannable instead of
+    // arbitrary registration/JSON order.
+    Object.keys(actionTypesMap)
+        .map(type => [type, actionTypesMap[type].name || type])
+        .sort((a, b) => a[1].localeCompare(b[1]))
+        .forEach(([type, label]) => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = label;
+            actionTypeSelect.appendChild(option);
+        });
     if (pendingAction) {
         applyAction(pendingAction);
         pendingAction = null;

@@ -65,12 +65,16 @@ conditionTypeSelect.addEventListener('change', () => renderParameters());
 window.populateConditionTypes = function(conditionTypes) {
     conditionTypesMap = conditionTypes || {};
     conditionTypeSelect.innerHTML = '';
-    for (const type in conditionTypesMap) {
-        const option = document.createElement('option');
-        option.value = type;
-        option.textContent = conditionTypesMap[type].name;
-        conditionTypeSelect.appendChild(option);
-    }
+    // Sort by display label so the list is scannable, not arbitrary order.
+    Object.keys(conditionTypesMap)
+        .map(type => [type, conditionTypesMap[type].name || type])
+        .sort((a, b) => a[1].localeCompare(b[1]))
+        .forEach(([type, label]) => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = label;
+            conditionTypeSelect.appendChild(option);
+        });
     if (pendingCondition) {
         applyCondition(pendingCondition);
         pendingCondition = null;
