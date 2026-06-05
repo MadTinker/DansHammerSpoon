@@ -1,6 +1,18 @@
 -- Spoons/HammerGhost.spoon/scripts/action_system.lua
 
+-- Singleton (mirrors event_bus.lua): dofile() does NOT cache -- each call re-runs
+-- this file and returns a FRESH table. But init.lua and plugin_manager.lua each
+-- dofile this module and MUST share one registry: plugins register through
+-- plugin_manager's copy, while the editor dropdown and executor read init.lua's
+-- copy. Without this guard those are different tables, so every plugin action /
+-- condition (and the variable store the conditions read) is invisible and
+-- non-executable. Stash the first instance on a global; later loads return it.
+if rawget(_G, "_HammerGhostActionSystem") then
+    return _G._HammerGhostActionSystem
+end
+
 local M = {}
+_G._HammerGhostActionSystem = M
 M.actionTypes = {}
 M.conditionTypes = {}
 

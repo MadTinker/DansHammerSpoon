@@ -301,6 +301,11 @@ local function driveMacro(fn)
     local function step()
         local ok, waitSecs = coroutine.resume(co)
         if not ok then
+            -- waitSecs holds the error on failure. print() unconditionally so a
+            -- macro error is visible in the Hammerspoon console even when the
+            -- optional AppLogger isn't present -- this is the only diagnostic for
+            -- the executor that runs on every matched event.
+            print("[HammerGhost] macro run error: " .. tostring(waitSecs))
             if _G.AppLogger then
                 _G.AppLogger:e("macro run error: " .. tostring(waitSecs), "init.lua", 0)
             end
@@ -345,6 +350,18 @@ end
 -- Each matched trigger's children run in their own coroutine so a Wait/Delay
 -- suspends only that macro, not the dispatch loop or sibling triggers.
 function obj:_dispatchEvent(event)
+    -- A TriggerEvent action emits synchronously back through here, so a
+    -- self-referential event name would recurse without bound (a hard main-thread
+    -- hang, not EventGhost's queued re-entry). Cap the depth: turn a runaway loop
+    -- into a logged stop instead of a frozen Hammerspoon.
+    self._dispatchDepth = (self._dispatchDepth or 0) + 1
+    if self._dispatchDepth > 20 then
+        print("[HammerGhost] event dispatch too deep at '" .. tostring(event and event.name) ..
+            "' -- aborting (likely a TriggerEvent feedback loop)")
+        self._dispatchDepth = self._dispatchDepth - 1
+        return
+    end
+
     local function walk(items)
         for _, item in ipairs(items) do
             if item.type == "trigger"
@@ -359,6 +376,8 @@ function obj:_dispatchEvent(event)
         end
     end
     walk(self.macroTree)
+
+    self._dispatchDepth = self._dispatchDepth - 1
 end
 
 -- Function to toggle the main window
