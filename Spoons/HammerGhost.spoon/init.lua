@@ -555,6 +555,103 @@ function obj:reloadConfig()
     hs.alert.show("Configuration reloaded")
 end
 
+-- Import an EventGhost tree.xml. EventGhost's tree is <EventGhost> containing
+-- <Folder>/<Macro>, where a <Macro> holds <Event>s (the trigger) and <Action>s.
+-- We map Folder->folder and Macro->trigger (its Events become the trigger's
+-- newline event list, its Actions become child action nodes). EG actions are
+-- plugin-specific and can't run here, so each imports as a labeled placeholder
+-- ("[EG] <name>") for you to re-wire -- the STRUCTURE and event bindings carry
+-- over, which is what cross-tool import realistically means. Plugin/Autostart
+-- sections are skipped. Imported items are appended to the current tree.
+function obj:importMacros(xmlString)
+    if not xmlString or xmlString == "" then return end
+    -- The lightweight xmlparser can't handle the XML prolog, comments, or CDATA
+    -- (EG wraps action config in CDATA); strip them -- we only read structure.
+    local clean = xmlString
+        :gsub("<%?.-%?>", "")
+        :gsub("<!%[CDATA%[.-%]%]>", "")
+        :gsub("<!%-%-.-%-%->", "")
+
+    local ok, roots = pcall(xmlparser.parse, clean)
+    if not ok or type(roots) ~= "table" then
+        hs.alert.show("Import failed: couldn't parse XML")
+        return
+    end
+
+    local function mapAction(el)
+        local nm = (el.attributes and (el.attributes.Name or el.attributes.GUID)) or "Action"
+        return {
+            name = "[EG] " .. nm,
+            type = "action",
+            actionType = "alert",
+            params = { text = "Imported from EventGhost: " .. nm .. " (re-configure)" },
+        }
+    end
+
+    local function mapNode(el)
+        local name = el.attributes and el.attributes.Name
+        if el.tag == "Folder" then
+            local folder = { name = name or "Folder", type = "folder", expanded = true, children = {} }
+            for _, child in ipairs(el.children or {}) do
+                local mapped = mapNode(child)
+                if mapped then table.insert(folder.children, mapped) end
+            end
+            return folder
+        elseif el.tag == "Macro" then
+            local trigger = { name = name or "Macro", type = "trigger", expanded = true, children = {}, eventName = "" }
+            local events = {}
+            for _, child in ipairs(el.children or {}) do
+                if child.tag == "Event" then
+                    local en = child.attributes and child.attributes.Name
+                    if en then events[#events + 1] = en end
+                elseif child.tag == "Action" then
+                    table.insert(trigger.children, mapAction(child))
+                end
+            end
+            trigger.eventName = table.concat(events, "\n")
+            return trigger
+        elseif el.tag == "Action" then
+            return mapAction(el)
+        end
+        return nil  -- Plugin, Autostart, unknown: skip
+    end
+
+    -- Descend into the <EventGhost> root if present; otherwise map top-level nodes.
+    local imported = {}
+    local function consider(el)
+        local mapped = mapNode(el)
+        if mapped then table.insert(imported, mapped) end
+    end
+    for _, el in ipairs(roots) do
+        if el.tag == "EventGhost" then
+            for _, child in ipairs(el.children or {}) do consider(child) end
+        else
+            consider(el)
+        end
+    end
+
+    if #imported == 0 then
+        hs.alert.show("Import: no Folder/Macro/Action nodes found")
+        return
+    end
+
+    -- Assign fresh ids across the imported subtree so they don't collide with the
+    -- existing tree (ids are the highest-seen + 1, tracked in self.lastId).
+    local function assignIds(node)
+        self.lastId = self.lastId + 1
+        node.id = tostring(self.lastId)
+        for _, c in ipairs(node.children or {}) do assignIds(c) end
+    end
+    for _, node in ipairs(imported) do
+        assignIds(node)
+        table.insert(self.macroTree, node)
+    end
+
+    self:saveConfig()
+    ui.refresh(self)
+    hs.alert.show(string.format("Imported %d top-level item(s) from EventGhost", #imported))
+end
+
 -- Function to edit item
 function obj:editItem(id)
     local item = treeHelpers.findItem(self.macroTree, id)

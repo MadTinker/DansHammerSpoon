@@ -76,6 +76,27 @@ function M.create(spoon)
                 spoon:reloadConfig()
             end,
         },
+        {
+            id = "importEG",
+            label = "Import EG",
+            image = hs.image.imageFromName("NSFolderSmart") or hs.image.imageFromName("NSFolder"),
+            fn = function()
+                -- Pick an EventGhost tree.xml and import its structure.
+                local result = hs.dialog.chooseFileOrFolder(
+                    "Select an EventGhost tree.xml to import",
+                    os.getenv("HOME") or "~", true, false, false, { "xml" })
+                local path = result and (result["1"] or result[1])
+                if not path then return end
+                local f = io.open(path, "r")
+                if not f then
+                    hs.alert.show("Could not read " .. tostring(path))
+                    return
+                end
+                local content = f:read("*a")
+                f:close()
+                spoon:importMacros(content)
+            end,
+        },
     })
 
     return toolbar
