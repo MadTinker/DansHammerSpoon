@@ -1044,6 +1044,29 @@ function AppManager.open_medis()
     AppManager.madFocus("Medis")
 end
 
+-- Open Claude Code in a terminal at `path`. Terminal.app is used here (not Warp,
+-- the usual madFocus terminal) because it reliably runs a startup command via
+-- AppleScript -- Warp has no clean "run this command on open" entrypoint. Swap
+-- TERMINAL_APP to retarget. The path is ~-expanded and single-quoted for the
+-- shell, then escaped for the AppleScript string layer.
+local TERMINAL_APP = "Terminal"
+function AppManager.openClaudeInFolder(path)
+    if not path or path == "" then return end
+    local expanded = path:gsub("^~", os.getenv("HOME") or "~")
+    local quoted = "'" .. expanded:gsub("'", "'\\''") .. "'"   -- shell-safe
+    local command = "cd " .. quoted .. " && claude"
+    -- Escape backslashes (a quoted single-quote becomes '\'') and double quotes
+    -- so the shell command survives inside the AppleScript double-quoted string.
+    local asCmd = command:gsub("\\", "\\\\"):gsub('"', '\\"')
+    local ok, _, err = hs.osascript.applescript(string.format(
+        'tell application "%s"\n  do script "%s"\n  activate\nend tell',
+        TERMINAL_APP, asCmd))
+    if not ok then
+        log:w("openClaudeInFolder failed: " .. tostring(err), __FILE__)
+        hs.alert.show("Could not open Claude in " .. expanded)
+    end
+end
+
 function AppManager.openProjectByIndex(index)
     local projects = FileManager.getProjectsList()
     if index > #projects then
@@ -1056,7 +1079,7 @@ function AppManager.openProjectByIndex(index)
     if project and project.path then
         log:i("Opening project by index " .. index .. ": " .. project.name, __FILE__)
         hs.execute("open -a 'GitHub Desktop' " .. project.path)
-        hs.execute("open -a 'cursor' " .. project.path)
+        AppManager.openClaudeInFolder(project.path)
     else
         log:w("Project at index " .. index .. " has no path.", __FILE__)
     end

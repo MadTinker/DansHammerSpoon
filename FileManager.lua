@@ -165,7 +165,107 @@ local function getOmniLadle()
     return nil
 end
 
--- Dynamic project list function that tries OmniLadle first, then fallbacks
+-- ---------------------------------------------------------------------------
+-- Disk auto-discovery: scan the lab roots for project repos so newly-created
+-- folders appear without hand-editing fallback_projects_list. Sits BELOW
+-- OmniLadle (the server stays authoritative) and is merged ON TOP of the curated
+-- fallback (which keeps the deliberate _meta+1..9 priority order).
+-- ---------------------------------------------------------------------------
+
+local function expandHome(p)
+    if not p then return nil end
+    return (p:gsub("^~", os.getenv("HOME") or "~"))
+end
+
+-- Canonical absolute path for dedupe (resolves .., symlinks; nil if missing).
+local function normPath(p)
+    local abs = expandHome(p)
+    return abs and (hs.fs.pathToAbsolute(abs) or abs) or abs
+end
+
+-- A repo has a .git entry -- a directory for a normal clone, a FILE for a
+-- submodule/worktree -- so test for existence, not type.
+local function isRepo(path)
+    return hs.fs.attributes(path .. "/.git") ~= nil
+end
+
+-- Immediate, non-hidden child directories of `root` ({name, path}); nil if the
+-- root is missing/unreadable. Wrapped in pcall because hs.fs.dir throws on a
+-- vanished or permission-denied path.
+local function listChildDirs(root)
+    local abs = expandHome(root)
+    if not abs or hs.fs.attributes(abs, "mode") ~= "directory" then return nil end
+    local out = {}
+    local ok = pcall(function()
+        for entry in hs.fs.dir(abs) do
+            if entry ~= "." and entry ~= ".." and entry:sub(1, 1) ~= "." then
+                local p = abs .. "/" .. entry
+                if hs.fs.attributes(p, "mode") == "directory" then
+                    out[#out + 1] = { name = entry, path = p }
+                end
+            end
+        end
+    end)
+    return ok and out or nil
+end
+
+-- getProjectsList is called in a tight loop at load (hotkeys.lua builds 9 project
+-- hotkeys), so a fresh scan each call would stat the disk 9x. Memoize briefly:
+-- a new folder still surfaces within SCAN_TTL.
+local scanCache = { list = nil, ts = 0 }
+local SCAN_TTL = 60  -- seconds
+
+-- Discover project repos under the lab roots, deduped and sorted by name.
+function FileManager.scanProjectDirs()
+    if scanCache.list and (os.time() - scanCache.ts) < SCAN_TTL then
+        return scanCache.list
+    end
+    -- Parent dirs whose immediate children are project repos. The madness
+    -- categories under projects/ are enumerated dynamically so a brand-new
+    -- category (e.g. projects/go) is covered without editing this list.
+    local roots = { seatOfAlloy .. "/AlloyMonorepo", seatOfTest }
+    for _, cat in ipairs(listChildDirs(seatOfMadness .. "/projects") or {}) do
+        roots[#roots + 1] = cat.path
+    end
+
+    local list, seen = {}, {}
+    for _, root in ipairs(roots) do
+        for _, child in ipairs(listChildDirs(root) or {}) do
+            local norm = normPath(child.path)
+            if norm and not seen[norm] and isRepo(child.path) then
+                seen[norm] = true
+                list[#list + 1] = { name = child.name, path = child.path }
+            end
+        end
+    end
+    table.sort(list, function(a, b) return a.name:lower() < b.name:lower() end)
+
+    scanCache.list = list
+    scanCache.ts = os.time()
+    return list
+end
+
+-- Curated list first (preserves the _meta+1..9 priority order), then scanned
+-- repos not already present, appended alphabetically. Dedupe by canonical path.
+local function mergeProjects(curated, scanned)
+    local merged, seen = {}, {}
+    for _, p in ipairs(curated) do
+        merged[#merged + 1] = p
+        local norm = normPath(p.path)
+        if norm then seen[norm] = true end
+    end
+    for _, p in ipairs(scanned or {}) do
+        local norm = normPath(p.path)
+        if norm and not seen[norm] then
+            seen[norm] = true
+            merged[#merged + 1] = p
+        end
+    end
+    return merged
+end
+
+-- Dynamic project list: OmniLadle (server, authoritative) first; when it's
+-- unreachable, the curated fallback merged with disk auto-discovery.
 function FileManager.getProjectsList()
     log:d('Getting projects list for FileManager')
 
@@ -177,13 +277,15 @@ function FileManager.getProjectsList()
             log:i('FileManager using ' .. #projects .. ' projects from OmniLadle')
             return projects
         else
-            log:w('OmniLadle returned empty or invalid project list, using fallback')
+            log:w('OmniLadle returned empty or invalid project list, scanning + fallback')
         end
     end
 
-    -- Fallback to hardcoded list
-    log:i('FileManager using fallback project list (' .. #fallback_projects_list .. ' projects)')
-    return fallback_projects_list
+    -- Server unreachable: curated fallback (keeps priority order) + auto-discovered
+    -- repos appended, so a newly-created project shows up without hand-editing.
+    local merged = mergeProjects(fallback_projects_list, FileManager.scanProjectDirs())
+    log:i('FileManager using merged fallback+scan project list (' .. #merged .. ' projects)')
+    return merged
 end
 
 function FileManager.getLastSelected()
