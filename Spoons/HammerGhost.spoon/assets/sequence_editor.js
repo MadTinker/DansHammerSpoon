@@ -162,6 +162,11 @@ window.populateEditor = function(sequence) {
 // being edited (condition Edit set editingStepIndex), otherwise appends.
 window.addStepToSequence = function(step) {
     if (editingStepIndex !== null && editingStepIndex >= 0 && editingStepIndex < steps.length) {
+        // Replace is wholesale, but the incoming step (rebuilt by the condition
+        // editor) carries no step-level metadata -- carry the enabled flag across
+        // so editing a toggled-off step doesn't silently re-enable it.
+        const prev = steps[editingStepIndex];
+        if (prev && prev.enabled !== undefined) step.enabled = prev.enabled;
         steps[editingStepIndex] = step;
     } else {
         steps.push(step);
