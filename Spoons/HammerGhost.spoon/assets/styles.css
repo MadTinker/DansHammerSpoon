@@ -506,3 +506,58 @@ body {
     font-size: 12px;
     cursor: pointer;
 }
+
+/* Step label takes the slack; the button cluster stays a tight group on the
+   right (instead of justify-content spreading three buttons across the row). */
+.step-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.step-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* A condition opens a gate group; the actions it gates render nested inside.
+   accent left-border marks the gated span at a glance. */
+.gate-group {
+    border-left: 3px solid var(--accent-color);
+    border-radius: 6px;
+    background-color: var(--hover-color);
+    margin-bottom: 6px;
+}
+
+.gate-group > .sequence-step.gate-header {
+    margin-bottom: 0;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 0;
+    background-color: transparent;
+}
+
+/* Indented run-list of actions under the gating condition. */
+.gate-actions {
+    padding: 6px 8px 2px 18px;
+}
+
+.gate-actions .sequence-step {
+    background-color: var(--bg-color);
+}
+
+/* Toggled-off step: greyed and struck through, but still editable/removable. */
+.sequence-step.disabled {
+    opacity: 0.5;
+}
+
+.sequence-step.disabled .step-label {
+    text-decoration: line-through;
+}
+
+.sequence-step .toggle-step {
+    min-width: 34px;
+}

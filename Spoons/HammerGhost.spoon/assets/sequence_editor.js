@@ -16,27 +16,58 @@ let steps = [];
 // not back through addStepToSequence.
 let editingStepIndex = null;
 
+// Build one step row. data-index is the FLAT array index -- edit/remove/toggle/
+// drag all key off it, so it must match the steps[] position no matter how the
+// row gets nested for gate visualization.
+function buildStepRow(step, index) {
+    const el = document.createElement('div');
+    el.className = 'sequence-step';
+    if (step.enabled === false) el.classList.add('disabled');
+    el.dataset.index = index;
+    el.draggable = true; // drag to reorder
+    const label = (step.type === 'action')
+        ? `Action: ${step.data.name}`
+        : `Condition: ${step.data.type}`;
+    const toggleLabel = step.enabled === false ? 'Off' : 'On';
+    el.innerHTML = `
+        <span class="step-label">${label}</span>
+        <span class="step-actions">
+            <button class="toggle-step" title="Enable/disable this step">${toggleLabel}</button>
+            <button class="edit-step">Edit</button>
+            <button class="remove-step">Remove</button>
+        </span>
+    `;
+    return el;
+}
+
+// Render steps with gate visualization: an ENABLED condition opens a group, and
+// the actions that follow nest under it until the next enabled condition. This
+// uses the SAME `enabled === false` skip the executor uses (init.lua sequence
+// loop), so a disabled condition does NOT form a group -- its following actions
+// stay in whatever gate is currently active, exactly as they'll run. Keeping the
+// two skip rules identical means the picture can't diverge from the behavior.
 function renderSteps() {
     stepsContainer.innerHTML = '';
+    let currentGroup = null; // .gate-actions of the most recent ENABLED condition
     steps.forEach((step, index) => {
-        const stepElement = document.createElement('div');
-        stepElement.className = 'sequence-step';
-        stepElement.dataset.index = index;
-        stepElement.draggable = true; // drag to reorder
-        if (step.type === 'action') {
-            stepElement.innerHTML = `
-                <span>Action: ${step.data.name}</span>
-                <button class="edit-step">Edit</button>
-                <button class="remove-step">Remove</button>
-            `;
-        } else if (step.type === 'condition') {
-            stepElement.innerHTML = `
-                <span>Condition: ${step.data.type}</span>
-                <button class="edit-step">Edit</button>
-                <button class="remove-step">Remove</button>
-            `;
+        const row = buildStepRow(step, index);
+        const disabled = step.enabled === false;
+        if (step.type === 'condition' && !disabled) {
+            const group = document.createElement('div');
+            group.className = 'gate-group';
+            row.classList.add('gate-header');
+            const actions = document.createElement('div');
+            actions.className = 'gate-actions';
+            group.appendChild(row);
+            group.appendChild(actions);
+            stepsContainer.appendChild(group);
+            currentGroup = actions;
+        } else {
+            // Enabled actions, disabled actions, and disabled conditions all sit
+            // in whatever gate is active now (nested under an enabled condition's
+            // group, or top-level when no gate is open).
+            (currentGroup || stepsContainer).appendChild(row);
         }
-        stepsContainer.appendChild(stepElement);
     });
 }
 
@@ -54,6 +85,14 @@ stepsContainer.addEventListener('click', (event) => {
     if (event.target.matches('.remove-step')) {
         const index = event.target.closest('.sequence-step').dataset.index;
         steps.splice(index, 1);
+        renderSteps();
+    } else if (event.target.matches('.toggle-step')) {
+        // Mute/unmute a step without removing it. Flip: disabled -> enabled,
+        // anything else -> disabled. The executor skips enabled === false.
+        const index = Number(event.target.closest('.sequence-step').dataset.index);
+        const step = steps[index];
+        if (!step) return;
+        step.enabled = (step.enabled === false);
         renderSteps();
     } else if (event.target.matches('.edit-step')) {
         const index = Number(event.target.closest('.sequence-step').dataset.index);

@@ -253,13 +253,20 @@ function obj:executeItem(item, event)
         -- node (it carries the real actionType/params).
         local gate = true
         for _, step in ipairs(item.steps or {}) do
-            local data = step.data or {}
-            if step.type == "condition" then
-                gate = action_system.executeCondition(
-                    { conditionType = data.type, params = data.params }, event) and true or false
-            elseif step.type == "action" and gate then
-                local node = data.id and treeHelpers.findItem(self.macroTree, data.id)
-                if node then self:executeItem(node, event) end
+            if step.enabled == false then
+                -- Disabled step skipped (toggled off in the editor). A disabled
+                -- condition leaves the gate as-is, so the actions after it run in
+                -- whatever gate was already open -- same rule as _runChildren, and
+                -- what the editor's gate visualization draws.
+            else
+                local data = step.data or {}
+                if step.type == "condition" then
+                    gate = action_system.executeCondition(
+                        { conditionType = data.type, params = data.params }, event) and true or false
+                elseif step.type == "action" and gate then
+                    local node = data.id and treeHelpers.findItem(self.macroTree, data.id)
+                    if node then self:executeItem(node, event) end
+                end
             end
         end
     elseif item.type == "folder" then
