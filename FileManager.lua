@@ -215,31 +215,51 @@ end
 local scanCache = { list = nil, ts = 0 }
 local SCAN_TTL = 60  -- seconds
 
+-- Categories under projects/ that aren't active projects.
+local PROJECT_SKIP = { archive = true }
+
 -- Discover project repos under the lab roots, deduped and sorted by name.
 function FileManager.scanProjectDirs()
     if scanCache.list and (os.time() - scanCache.ts) < SCAN_TTL then
         return scanCache.list
     end
-    -- Parent dirs whose immediate children are project repos. The madness
-    -- categories under projects/ are enumerated dynamically so a brand-new
-    -- category (e.g. projects/go) is covered without editing this list.
-    local roots = { seatOfAlloy .. "/AlloyMonorepo", seatOfTest }
-    for _, cat in ipairs(listChildDirs(seatOfMadness .. "/projects") or {}) do
-        roots[#roots + 1] = cat.path
-    end
 
     local list, seen = {}, {}
-    for _, root in ipairs(roots) do
+    local function add(child)
+        local norm = normPath(child.path)
+        if norm and not seen[norm] then
+            seen[norm] = true
+            list[#list + 1] = { name = child.name, path = child.path }
+        end
+    end
+    -- Add immediate child dirs of `root` that are repos; returns how many.
+    local function addRepoChildren(root)
+        local n = 0
         for _, child in ipairs(listChildDirs(root) or {}) do
-            local norm = normPath(child.path)
-            if norm and not seen[norm] and isRepo(child.path) then
-                seen[norm] = true
-                list[#list + 1] = { name = child.name, path = child.path }
+            if isRepo(child.path) then add(child); n = n + 1 end
+        end
+        return n
+    end
+
+    -- Flat roots: their immediate repo children are the projects.
+    addRepoChildren(seatOfAlloy .. "/AlloyMonorepo")
+    addRepoChildren(seatOfTest)
+
+    -- madness projects/: a child is a CATEGORY when it has repo children (add
+    -- those -- e.g. common/, python/, and tasker/, which is itself a repo yet
+    -- also parents sub-projects). A child with no repo children that is itself a
+    -- repo is a project sitting directly under projects/. Archived categories are
+    -- skipped. Depth stops here; deeper curated entries (OS/windows/*) stay
+    -- reachable through the fallback merge.
+    for _, entry in ipairs(listChildDirs(seatOfMadness .. "/projects") or {}) do
+        if not PROJECT_SKIP[entry.name:lower()] then
+            if addRepoChildren(entry.path) == 0 and isRepo(entry.path) then
+                add(entry)
             end
         end
     end
-    table.sort(list, function(a, b) return a.name:lower() < b.name:lower() end)
 
+    table.sort(list, function(a, b) return a.name:lower() < b.name:lower() end)
     scanCache.list = list
     scanCache.ts = os.time()
     return list

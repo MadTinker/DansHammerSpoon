@@ -1058,7 +1058,7 @@ function AppManager.openClaudeInFolder(path)
     -- Escape backslashes (a quoted single-quote becomes '\'') and double quotes
     -- so the shell command survives inside the AppleScript double-quoted string.
     local asCmd = command:gsub("\\", "\\\\"):gsub('"', '\\"')
-    local ok, _, err = hs.osascript.applescript(string.format(
+    local ok, err = hs.osascript.applescript(string.format(
         'tell application "%s"\n  do script "%s"\n  activate\nend tell',
         TERMINAL_APP, asCmd))
     if not ok then
