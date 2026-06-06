@@ -31,53 +31,49 @@ local lastSelected = {
     project = nil,
     editor = nil
 }
--- File Lists
+-- File Lists - Config files and quicklaunch
 local fileList = {
     { name = "Main init",       path = "~/.hammerspoon/init.lua" },
-    { name = "Global Hotkeys", path = "~/.hammerspoon/hotkeys.lua" },
-    { name = "File Manager",   path = "~/.hammerspoon/FileManager.lua" },
-    { name = "madcode",         path = "/Users/d.edens/lab/madness_interactive/projects/opencode/Whispermind_Conduit" },
-    { name = "Maddesktop",      path = "/Users/d.edens/lab/madness_interactive/projects/common/madnessDesktop" },
-    { name = "MadQTT",         path = "/Users/d.edens/lab/madness_interactive/projects/common/MadQTT" },
-    { name = "AlloyMonorepo",  path = "/Users/d.edens/lab/Faros/AlloyMonorepo" },
-    { name = "GatewayFleetExplorer",  path = "/Users/d.edens/lab/Faros/AlloyMonorepo/projects/GatewayFleetExplorer" },
+    { name = "Global Hotkeys",  path = "~/.hammerspoon/hotkeys.lua" },
+    { name = "File Manager",    path = "~/.hammerspoon/FileManager.lua" },
     { name = "claude settings", path = "~/.claude/settings.json" },
-    { name = "zshenv",         path = "~/.zshenv" },
-    { name = "zshrc",          path = "~/.zshrc" },
-    { name = "bash_aliases",   path = "~/.bash_aliases" },
-
-    { name = "tasks",          path = "~/lab/regressiontestkit/tasks.py" },
-    { name = "ssh config",     path = "~/.ssh/config" },
-    -- { name = "RTK_rules",      path = "~/lab/regressiontestkit/regressiontest/.cursorrules" },
-    { name = "mad_rules",      path = seatOfMadness .. "/.cursor/rules" },
-
+    { name = "zshenv",          path = "~/.zshenv" },
+    { name = "zshrc",           path = "~/.zshrc" },
+    { name = "bash_aliases",    path = "~/.bash_aliases" },
+    { name = "tasks",           path = "~/lab/regressiontestkit/tasks.py" },
+    { name = "ssh config",      path = "~/.ssh/config" }
 }
 
 -- Fallback projects list (used when OmniLadle is not available)
 local fallback_projects_list = {
     -- Core projects
     { name = "madness_interactive",        path = seatOfMadness },
-    { name = ".hammerspoon",        path = "~/.hammerspoon" },
+    { name = "Hammerspoon",                path = "~/.hammerspoon" },
     { name = "Chat History",               path = seatOfMadness .. "/docs/cursor_chathistory" },
     { name = "Inventorium",                path = seatOfMadness .. "/projects/common/Inventorium" },
     { name = "monorepo-ellie",             path = seatOfAlloy .. "/AlloyMonorepo" },
-    { name = "ellie",                       path = seatOfAlloy .. "/AlloyMonorepo/ellie" },
-    { name = "guardian",                    path = seatOfAlloy .. "/AlloyMonorepo/guardian" },
-    { name = "AEAabzena",                   path = seatOfAlloy .. "/AlloyMonorepo/AEAabzena" },
-    { name = "abzena-optimizer",            path = seatOfAlloy .. "/AlloyMonorepo/abzena-optimizer" },
-    { name = "DOH-Stable-Kevin",            path = seatOfAlloy .. "/AlloyMonorepo/DOH-Stable-Kevin" },
-    { name = "ellie-data-sink",             path = seatOfAlloy .. "/AlloyMonorepo/ellie-data-sink" },
-    { name = "ellie-scripts",               path = seatOfAlloy .. "/AlloyMonorepo/scripts" },
-    { name = "ellie-context",               path = seatOfAlloy .. "/AlloyMonorepo/context" },
+    { name = "madcode",                    path = seatOfMadness .. "projects/opencode/Whispermind_Conduit" },
+    { name = "Maddesktop",                 path = seatOfMadness .. "projects/common/madnessDesktop" },
+    { name = "MadQTT",                     path = seatOfMadness .. "projects/common/MadQTT" },
+    { name = "AlloyMonorepo",              path = seatOfAlloy .. "AlloyMonorepo" },
+    { name = "AEA",                        path = seatOfAlloy .. "/AlloyMonorepo/AEA" },
+    { name = "GatewayFleetExplorer",       path = seatOfAlloy .. "/AlloyMonorepo/projects/GatewayFleetExplorer" },
+    { name = "mad_rules",                  path = seatOfMadness .. "/.cursor/rules" },
+    { name = "ellie",                      path = seatOfAlloy .. "/AlloyMonorepo/ellie" },
+    { name = "guardian",                   path = seatOfAlloy .. "/AlloyMonorepo/guardian" },
+    { name = "AEAabzena",                  path = seatOfAlloy .. "/AlloyMonorepo/AEAabzena" },
+    { name = "abzena-optimizer",           path = seatOfAlloy .. "/AlloyMonorepo/abzena-optimizer" },
+    { name = "DOH-Stable-Kevin",           path = seatOfAlloy .. "/AlloyMonorepo/DOH-Stable-Kevin" },
+    { name = "ellie-data-sink",            path = seatOfAlloy .. "/AlloyMonorepo/ellie-data-sink" },
+    { name = "ellie-scripts",              path = seatOfAlloy .. "/AlloyMonorepo/scripts" },
+    { name = "ellie-context",              path = seatOfAlloy .. "/AlloyMonorepo/context" },
     { name = "SwarmDesk",                  path = seatOfMadness .. "/projects/common/SwarmDesk" },
     { name = "Omnispindle",                path = seatOfMadness .. "/projects/common/Omnispindle" },
-
     { name = "Anathesmelt",                path = seatOfMadness .. "/projects/common/Anathesmelt" },
-
     { name = "Swarmonomicon",              path = seatOfMadness .. "/projects/common/Swarmonomicon" },
-    { name = "cartogomancy",                path = seatOfMadness .. "/projects/common/cartogomancy" },
+    { name = "cartogomancy",               path = seatOfMadness .. "/projects/common/cartogomancy" },
     { name = "verified_madness",           path = seatOfMadness .. "/projects/python/verified_madness" },
-    { name = "Whispermind_Conduit_old",        path = seatOfMadness .. "/projects/common/Whispermind_Conduit" },
+    { name = "Whispermind_Conduit_old",    path = seatOfMadness .. "/projects/common/Whispermind_Conduit" },
     { name = "Todomill_projectorium",      path = seatOfMadness .. "/projects/common/Omnispindle/Todomill_projectorium" },
     { name = "DevCrystal-TaskForge",       path = seatOfMadness .. "/projects/common/DevCrystal-TaskForge" },
     { name = "madman",                     path = seatOfMadness .. "/projects/common/madman" },
@@ -86,11 +82,8 @@ local fallback_projects_list = {
     { name = "MechaFiberAtelier",          path = seatOfMadness .. "/projects/common/MechaFiberAtelier" },
     { name = "Obnubilare",                 path = seatOfMadness .. "/projects/common/Obnubilare" },
     { name = "Omnispindle-cli-bridge",     path = seatOfMadness .. "/projects/common/Omnispindle-cli-bridge" },
-
-    -- RegressionTestKit ecosystem
     { name = "regressiontestkit",          path = seatOfTest },
     { name = "IntergrationsQAtesting",     path = seatOfTest .. "/IntergrationsQAtesting" },
-
     { name = "OculusTestKit",              path = seatOfTest .. "/OculusTestKit" },
     { name = "phoenix",                    path = seatOfTest .. "/phoenix" },
     { name = "rust_ingest",                path = seatOfTest .. "/rust_ingest" },
@@ -102,22 +95,15 @@ local fallback_projects_list = {
     { name = "ohmura-firmware",            path = seatOfTest .. "/ohmura-firmware" },
     { name = "saws",                       path = seatOfTest .. "/saws" },
     { name = "prod-ed-configs",            path = seatOfTest .. "/prod-ed-configs" },
-
-
-    -- Other major projects
     { name = "Cogwyrm",                    path = seatOfMadness .. "/projects/mobile/Cogwyrm" },
     { name = "Cogwyrm2",                   path = seatOfMadness .. "/projects/mobile/Cogwyrm2" },
     { name = "MQTTCommander",              path = seatOfMadness .. "/projects/mobile/MQTTCommander" },
-    -- Rust projects
     { name = "Tinker",                     path = seatOfMadness .. "/projects/rust/Tinker" },
     { name = "EventGhost-Rust",            path = seatOfMadness .. "/projects/rust/EventGhost-Rust" },
-
-
-    -- Python projects
     { name = "mqtt-get-var",               path = seatOfMadness .. "/projects/python/mqtt-get-var" },
     { name = "dvtTestKit",                 path = seatOfMadness .. "/projects/python/dvtTestKit" },
     { name = "EventGhost-py",              path = seatOfMadness .. "/projects/python/EventGhost" },
-    { name = "dans-fastmcp-server-template", path = seatOfMadness .. "/projects/python/dans-fastmcp-server-template" },
+    { name = "dans-fastmcp-server",        path = seatOfMadness .. "/projects/python/dans-fastmcp-server-template" },
     { name = "fastmcp-balena-cli",         path = seatOfMadness .. "/projects/python/fastmcp-balena-cli" },
     { name = "LegoScry",                   path = seatOfMadness .. "/projects/python/LegoScry" },
     { name = "local-ai",                   path = seatOfMadness .. "/projects/python/local-ai" },
@@ -129,26 +115,8 @@ local fallback_projects_list = {
     { name = "simple-mqtt-server-agent",   path = seatOfMadness .. "/projects/python/simple-mqtt-server-agent" },
     { name = "Spindlewrit",                path = seatOfMadness .. "/projects/python/Spindlewrit" },
     { name = "wyrmwatch",                  path = seatOfMadness .. "/projects/python/wyrmwatch" },
-
-    -- -- Project root directories
-    -- { name = "projects-root",              path = seatOfMadness .. "/projects" },
-    -- { name = "common-projects",            path = seatOfMadness .. "/projects/common" },
-    -- { name = "mobile-projects",            path = seatOfMadness .. "/projects/mobile" },
-    -- { name = "python-projects",            path = seatOfMadness .. "/projects/python" },
-    -- -- { name = "nodeJS-projects",     path = "~/lab/madness_interactive/projects/nodeJS" },
-    -- { name = "lua-projects",               path = seatOfMadness .. "/projects/lua" },
-    -- { name = "powershell-projects",        path = seatOfMadness .. "/projects/powershell" },
-    -- -- { name = "OS-projects",         path = seatOfMadness .. "/projects/OS" },
-    -- { name = "rust-projects",              path = seatOfMadness .. "/projects/rust" },
-    -- { name = "tasker-projects",            path = seatOfMadness .. "/projects/tasker" },
-
-    -- PowerShell projects
     { name = "WinSystemSnapshot",          path = seatOfMadness .. "/projects/powershell/WinSystemSnapshot" },
-
-    -- OS projects
     { name = "DisplayPhotoTime",           path = seatOfMadness .. "/projects/OS/windows/DisplayPhotoTime" },
-
-    -- Tasker projects
     { name = "Verbatex",                   path = seatOfMadness .. "/projects/tasker/Verbatex" },
     { name = "RunedManifold",              path = seatOfMadness .. "/projects/tasker/RunedManifold" },
     { name = "PhilosophersAmpoule",        path = seatOfMadness .. "/projects/tasker/PhilosophersAmpoule" },
@@ -157,8 +125,6 @@ local fallback_projects_list = {
     { name = "EntropyVector",              path = seatOfMadness .. "/projects/tasker/EntropyVector" },
     { name = "ContextOfficium",            path = seatOfMadness .. "/projects/tasker/ContextOfficium" },
     { name = "AnathemaHexVault",           path = seatOfMadness .. "/projects/tasker/AnathemaHexVault" },
-    -- Typescript projects
-    -- { name = "typescript-projects",        path = "~/lab/madness_interactive/projects/typescript" },
     { name = "RaidShadowLegendsButItsMCP", path = seatOfMadness .. "/projects/typescript/RaidShadowLegendsButItsMCP" },
     { name = "agorventorium",              path = seatOfMadness .. "/projects/typescript/agorventorium" },
 }
