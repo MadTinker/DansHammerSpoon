@@ -4,8 +4,9 @@
 -- raw callback into an EventGhost-style dotted event name and emits it on the
 -- shared event bus. Build 1 shipped the application watcher; Build 3 adds window
 -- (focus/title/create/destroy), USB, and system-power sources. All hang off the
--- same idempotent start/stop pattern. Hotkey surfacing is deferred to a later
--- sub-task (it overlaps the existing hotkeys.lua bindings).
+-- same idempotent start/stop pattern. The hotkey source is an eventtap that
+-- surfaces modified keypresses as Hotkey.<mods+key> events (see startKeyTap) --
+-- it observes every chord, including the ones hotkeys.lua already binds.
 
 local eventBus = dofile(hs.spoons.resourcePath("event_bus.lua"))
 
@@ -16,6 +17,7 @@ M.usbWatcher = nil
 M.caffeinateWatcher = nil
 M.screenWatcher = nil
 M.wifiWatcher = nil
+M.keyTap = nil
 M.mqttTask = nil
 
 -- Last seen title per window id, so window.filter's chatty title-changed stream
@@ -225,6 +227,52 @@ local function startWifiWatcher()
     M.wifiWatcher:start()
 end
 
+-- Hotkey source. An eventtap on keyDown surfaces modified keypresses as
+-- Hotkey.<mods+key> bus events so ANY chord (whether or not hotkeys.lua binds it)
+-- can trigger a macro. This is the firehose the rest of this file avoids -- the
+-- user opted into it deliberately over a narrower per-binding emitter. Two guards
+-- keep it from being a keylogger and from drowning the bus:
+--   * Only chords carrying cmd/ctrl/alt emit. Plain typing and shift-only
+--     capitals never fire, so no plaintext (passwords, messages) is surfaced --
+--     the tap sees every key but emits nothing for unmodified ones.
+--   * Auto-repeat is dropped, so holding a chord emits once, not a stream.
+-- The callback returns false, so it never consumes the event -- the chord still
+-- reaches apps and the existing hotkeys.lua binds. (A macro that itself synthesizes
+-- a modified keystroke would be re-observed here; the dispatcher's depth cap is the
+-- backstop against a feedback cascade.)
+local HOTKEY_MODS = { "cmd", "ctrl", "alt", "shift" }  -- fixed order for stable names
+
+local function chordName(flags, keyCode)
+    -- Require a "real" modifier; shift alone is just capitalization, not a hotkey.
+    if not (flags.cmd or flags.ctrl or flags.alt) then return nil end
+    local key = hs.keycodes.map[keyCode]
+    if not key or key == "" then return nil end  -- unmappable key (dead/media)
+    local parts = {}
+    for _, m in ipairs(HOTKEY_MODS) do
+        if flags[m] then parts[#parts + 1] = m end
+    end
+    parts[#parts + 1] = key
+    return table.concat(parts, "+")
+end
+
+local function startKeyTap()
+    if M.keyTap then return end
+    local autorepeat = hs.eventtap.event.properties.keyboardEventAutorepeat
+    M.keyTap = hs.eventtap.new({ hs.eventtap.event.types.keyDown }, function(e)
+        if e:getProperty(autorepeat) ~= 0 then return false end  -- one event per press
+        local name = chordName(e:getFlags(), e:getKeyCode())
+        if name then eventBus.emit("Hotkey." .. name, { key = name }) end
+        return false  -- never consume; let the chord through to apps/other hotkeys
+    end)
+    M.keyTap:start()
+    -- The tap silently no-ops without Accessibility; surface that so a dead hotkey
+    -- source is diagnosable rather than mysteriously quiet.
+    if _G.AppLogger and not hs.accessibilityState() then
+        _G.AppLogger:w("Hotkey source: Accessibility not granted; no key events will fire",
+            "event_sources.lua", 0)
+    end
+end
+
 -- Resolve mosquitto_sub: Homebrew (arm/intel) first, then PATH.
 local function resolveMosquittoSub()
     for _, c in ipairs({ "/opt/homebrew/bin/mosquitto_sub", "/usr/local/bin/mosquitto_sub" }) do
@@ -305,6 +353,7 @@ function M.start()
     startCaffeinateWatcher()
     startScreenWatcher()
     startWifiWatcher()
+    startKeyTap()
     M._mqttStopping = false
     startMqttTask()
 end
@@ -338,6 +387,10 @@ function M.stop()
         M.wifiWatcher = nil
     end
     M._wifiSSID = nil
+    if M.keyTap then
+        M.keyTap:stop()
+        M.keyTap = nil
+    end
     -- MQTT: flag first so the exit handler doesn't respawn, then tear down.
     M._mqttStopping = true
     if M._mqttRespawn then
