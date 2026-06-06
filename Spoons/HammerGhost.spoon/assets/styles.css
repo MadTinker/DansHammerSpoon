@@ -507,11 +507,26 @@ body {
     cursor: pointer;
 }
 
-/* Step label takes the slack; the button cluster stays a tight group on the
-   right (instead of justify-content spreading three buttons across the row). */
-.step-label {
+/* Label + optional param summary stack on the left and take the slack; the
+   button cluster stays a tight group on the right (instead of justify-content
+   spreading the buttons across the row). */
+.step-text {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.step-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.step-summary {
+    font-size: 11px;
+    color: var(--muted-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

@@ -1,5 +1,6 @@
-// Sequence editor page script. Lua (handleSequenceEditorURL) drives it via two
+// Sequence editor page script. Lua (handleSequenceEditorURL) drives it via these
 // global entry points:
+//   setConditionTypes(map)    - condition-type catalog (for friendly row labels)
 //   populateEditor(sequence)  - load the sequence's existing steps
 //   addStepToSequence(step)   - add a step from the pickers, or replace the step
 //                               currently being edited (see editingStepIndex)
@@ -15,25 +16,51 @@ let steps = [];
 // append. Action-step edits leave it null: they save to the referenced tree node,
 // not back through addStepToSequence.
 let editingStepIndex = null;
+// Catalog of condition types (key -> {name, parameters, ...}), pushed by Lua on
+// the getSequenceData handshake BEFORE populateEditor so the first renderSteps can
+// show friendly names ("Variable Equals") instead of raw keys ("variableEquals").
+let conditionTypesMap = {};
+window.setConditionTypes = function(map) { conditionTypesMap = map || {}; };
+
+// Compact "key=value, key=value" of a condition step's inline params (skipping
+// blanks), shown under the label so you can read what a step does at a glance.
+// Action steps only reference a node, so their params aren't here -- no summary.
+function stepSummary(step) {
+    if (step.type !== 'condition') return '';
+    const params = step.data.params || {};
+    return Object.keys(params)
+        .filter(k => params[k] !== '' && params[k] != null)
+        .map(k => `${k}=${params[k]}`)
+        .join(', ');
+}
 
 // Build one step row. data-index is the FLAT array index -- edit/remove/toggle/
-// drag all key off it, so it must match the steps[] position no matter how the
-// row gets nested for gate visualization.
+// dup/drag all key off it, so it must match the steps[] position no matter how
+// the row gets nested for gate visualization.
 function buildStepRow(step, index) {
     const el = document.createElement('div');
     el.className = 'sequence-step';
     if (step.enabled === false) el.classList.add('disabled');
     el.dataset.index = index;
     el.draggable = true; // drag to reorder
-    const label = (step.type === 'action')
-        ? `Action: ${step.data.name}`
-        : `Condition: ${step.data.type}`;
+    let label;
+    if (step.type === 'action') {
+        label = `Action: ${step.data.name}`;
+    } else {
+        const def = conditionTypesMap[step.data.type];
+        label = `Condition: ${(def && def.name) || step.data.type}`;
+    }
+    const summary = stepSummary(step);
     const toggleLabel = step.enabled === false ? 'Off' : 'On';
     el.innerHTML = `
-        <span class="step-label">${label}</span>
+        <div class="step-text">
+            <span class="step-label">${label}</span>
+            ${summary ? `<span class="step-summary">${summary}</span>` : ''}
+        </div>
         <span class="step-actions">
             <button class="toggle-step" title="Enable/disable this step">${toggleLabel}</button>
             <button class="edit-step">Edit</button>
+            <button class="dup-step" title="Duplicate this step">Dup</button>
             <button class="remove-step">Remove</button>
         </span>
     `;
@@ -93,6 +120,15 @@ stepsContainer.addEventListener('click', (event) => {
         const step = steps[index];
         if (!step) return;
         step.enabled = (step.enabled === false);
+        renderSteps();
+    } else if (event.target.matches('.dup-step')) {
+        // Clone a step in place. Steps are plain data (type/data/enabled), so a
+        // JSON round-trip is a safe deep copy. A duplicated action step shares the
+        // same node id -- two steps running the same action, which is intended.
+        const index = Number(event.target.closest('.sequence-step').dataset.index);
+        const step = steps[index];
+        if (!step) return;
+        steps.splice(index + 1, 0, JSON.parse(JSON.stringify(step)));
         renderSteps();
     } else if (event.target.matches('.edit-step')) {
         const index = Number(event.target.closest('.sequence-step').dataset.index);

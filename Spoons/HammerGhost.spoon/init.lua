@@ -959,7 +959,12 @@ function obj:handleSequenceEditorURL(url)
 
     if cmd == "getSequenceData" then
         -- Page-load handshake. editingSequence is the node passed to the editor
-        -- (nil for a fresh add); {} gives the page an empty step list.
+        -- (nil for a fresh add); {} gives the page an empty step list. Push the
+        -- condition-type catalog first so renderSteps can show friendly names;
+        -- back-to-back evaluateJavaScript calls run in order, so it lands before
+        -- populateEditor reads it.
+        self.sequenceEditor:evaluateJavaScript(
+            string.format("setConditionTypes(%s)", hs.json.encode(self.conditionTypes or {})))
         local js = string.format("populateEditor(%s)", hs.json.encode(self.editingSequence or {}))
         self.sequenceEditor:evaluateJavaScript(js)
     elseif cmd == "selectActionForSequence" then
