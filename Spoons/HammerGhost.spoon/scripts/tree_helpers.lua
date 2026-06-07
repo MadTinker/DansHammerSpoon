@@ -2,6 +2,17 @@
 
 local M = {}
 
+-- Escape text destined for raw HTML insertion. Node names are user-entered (the
+-- properties panel lets you rename to anything), so a name with & < > -- e.g.
+-- "Build & Deploy" -- would otherwise corrupt the tree markup. Mirrors the
+-- escapeHTML in webview.lua / properties.lua.
+local function escapeHTML(s)
+    return (tostring(s or "")
+        :gsub("&", "&amp;")
+        :gsub("<", "&lt;")
+        :gsub(">", "&gt;"))
+end
+
 --- Generate HTML representation of a tree item
 --- @param item table The item to convert to HTML
 --- @param level number The indentation level
@@ -54,7 +65,7 @@ function M.itemToHTML(item, level, currentSelection)
                 <button class="delete-button" title="Delete">🗑️</button>
             </div>
         </div>
-    ]], stateClass, item.id, item.type, indentStyle, disclosure, icon, item.name)
+    ]], stateClass, item.id, item.type, indentStyle, disclosure, icon, escapeHTML(item.name))
 
     if hasChildren and isExpanded then
         html = html .. "<div class='children'>"
