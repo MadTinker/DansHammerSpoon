@@ -1031,6 +1031,8 @@ function obj:handleActionChooserURL(url)
         local js = string.format("addStepToSequence(%s)", hs.json.encode({type="action", data=action}))
         self.sequenceEditor:evaluateJavaScript(js)
         self.actionChooser:hide()
+    elseif cmd == "cancelActionChooser" then
+        if self.actionChooser then self.actionChooser:hide() end
     end
 end
 
