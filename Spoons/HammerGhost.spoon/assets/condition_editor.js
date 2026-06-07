@@ -35,6 +35,9 @@ function renderParameters(values) {
                 option.textContent = opt;
                 input.appendChild(option);
             });
+        } else if (param.type === 'textarea') {
+            input = document.createElement('textarea');
+            input.rows = 6;
         } else {
             input = document.createElement('input');
             input.type = param.type || 'text';
@@ -105,7 +108,7 @@ conditionForm.addEventListener('submit', (event) => {
     const id = document.getElementById('condition-id').value;
     const type = conditionTypeSelect.value;
     const params = {};
-    conditionParametersDiv.querySelectorAll('input, select').forEach(input => {
+    conditionParametersDiv.querySelectorAll('input, select, textarea').forEach(input => {
         params[input.name] = input.value;
     });
     const conditionData = { id, type, params };
