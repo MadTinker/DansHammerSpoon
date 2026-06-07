@@ -1,0 +1,41 @@
+[
+  {
+    "Constant" : [
+
+    ],
+    "submodules" : [
+
+    ],
+    "Function" : [
+
+    ],
+    "Variable" : [
+
+    ],
+    "stripped_doc" : [
+
+    ],
+    "Deprecated" : [
+
+    ],
+    "type" : "Module",
+    "desc" : "EventGhost-like, event-driven automation GUI for Hammerspoon.",
+    "Constructor" : [
+
+    ],
+    "items" : [
+
+    ],
+    "Method" : [
+
+    ],
+    "Command" : [
+
+    ],
+    "Field" : [
+
+    ],
+    "doc" : "EventGhost-like, event-driven automation GUI for Hammerspoon.\n\nSystem events (app\/window\/USB\/power, MQTT) flow onto a shared event bus;\ntriggers bound to those events run their child actions on a match.\n\nFeatures:\n* Event bus fed by app\/window\/USB\/system-power\/MQTT sources\n* Triggers with EventGhost-style wildcard (*\/?) event matching\n* Action library + payload templating ({event.name}, {payload.app})\n* Tree-based macro organization (folders, sequences, conditions)\n* Visual webview editor with a live event log; JSON persistence\n\nSee README.md for the model, event names, and how to wire a macro.",
+    "name" : "HammerGhost"
+  }
+]

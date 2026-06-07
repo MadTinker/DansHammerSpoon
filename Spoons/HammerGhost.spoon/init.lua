@@ -21,7 +21,7 @@ obj.__index = obj
 obj.name = "HammerGhost"
 obj.version = "1.9"
 obj.author = "Dan Edens"
-obj.homepage = "https://github.com/Hammerspoon/Spoons"
+obj.homepage = "https://github.com/MadTinker/DansHammerSpoon/tree/main/Spoons/HammerGhost.spoon"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
 -- Load additional modules
