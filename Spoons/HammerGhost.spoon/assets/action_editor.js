@@ -133,5 +133,10 @@ document.getElementById('cancel-action').addEventListener('click', () => {
     window.location.href = 'hammerspoon://cancelActionEditor';
 });
 
+// Escape cancels the editor, matching standard dialog behavior.
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') window.location.href = 'hammerspoon://cancelActionEditor';
+});
+
 // Ask the Lua side for the registered action types.
 window.location.href = 'hammerspoon://getActionTypes';
