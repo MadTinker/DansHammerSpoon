@@ -136,11 +136,16 @@ function M.refresh(spoon)
     end
 
     -- Re-render the tree and keep the header count in sync (single re-render path).
+    -- Inject via hs.json.encode (a properly-escaped JS string literal) rather than a
+    -- backtick template literal: a node named with a backtick or ${...} would
+    -- otherwise break out of the literal on refresh. This keeps itemToHTML's HTML
+    -- escaping (&<>) sufficient -- it need not also be template-literal-safe, which
+    -- would mangle the raw inline render in M.init.
     local js = string.format(
-        "document.getElementById('tree-container').innerHTML = `%s`;" ..
-        "var __c = document.getElementById('item-count'); if (__c) __c.textContent = `%s`;",
-        buildTreeHTML(spoon),
-        itemCountLabel(spoon)
+        "document.getElementById('tree-container').innerHTML = %s;" ..
+        "var __c = document.getElementById('item-count'); if (__c) __c.textContent = %s;",
+        hs.json.encode(buildTreeHTML(spoon)),
+        hs.json.encode(itemCountLabel(spoon))
     )
     spoon.window:evaluateJavaScript(js)
 end
