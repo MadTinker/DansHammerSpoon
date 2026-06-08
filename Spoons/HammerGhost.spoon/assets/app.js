@@ -164,18 +164,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Decide where a drop lands relative to a row: inside a folder/sequence when
-    // hovering its middle band, otherwise before/after by cursor vertical position.
+    // Decide where a drop lands relative to a row: "inside" a container (folder or
+    // trigger -- the types that RUN their children) when hovering its middle band,
+    // otherwise before/after by cursor vertical position. A sequence is NOT a drop
+    // container: it runs its steps, not its children, so an "inside" drop there would
+    // make an inert child (same reason the context menu's Add is folder/trigger only).
     const dropPosition = (row, event) => {
-        const isContainer = row.dataset.type === 'folder'
-            || row.dataset.type === 'sequence'
-            || row.dataset.type === 'trigger';
+        const isContainer = row.dataset.type === 'folder' || row.dataset.type === 'trigger';
         const rect = row.getBoundingClientRect();
         const offset = event.clientY - rect.top;
         if (isContainer && offset > rect.height * 0.25 && offset < rect.height * 0.75) {
             return 'inside';
         }
         return offset < rect.height / 2 ? 'before' : 'after';
+    };
+
+    // A node can't be dropped onto itself or into its own subtree -- that would orphan
+    // it / make a cycle. moveItem rejects this server-side too (containsId), but
+    // checking here lets us suppress the drop marker so an invalid target reads as a
+    // visible "no" instead of a silent no-op when released.
+    const isInvalidDropTarget = (targetRow) => {
+        if (!dragSourceId) return true;
+        const sourceRow = treeContainer.querySelector('.tree-item[data-id="' + dragSourceId + '"]');
+        if (!sourceRow) return false;
+        if (sourceRow === targetRow) return true;
+        const kids = sourceRow.nextElementSibling;
+        return !!(kids && kids.classList.contains('children') && kids.contains(targetRow));
     };
 
     treeContainer.addEventListener('dragstart', (event) => {
@@ -189,6 +203,12 @@ document.addEventListener('DOMContentLoaded', () => {
     treeContainer.addEventListener('dragover', (event) => {
         const row = event.target.closest('.tree-item');
         if (!row || !dragSourceId) return;
+        if (isInvalidDropTarget(row)) {
+            // Skip preventDefault so the browser shows "no drop", and leave no marker.
+            event.dataTransfer.dropEffect = 'none';
+            clearDropMarkers();
+            return;
+        }
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
         clearDropMarkers();
@@ -199,13 +219,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const row = event.target.closest('.tree-item');
         if (!row || !dragSourceId) return;
         event.preventDefault();
+        clearDropMarkers();
+        if (isInvalidDropTarget(row)) { dragSourceId = null; return; }
         const targetId = row.dataset.id;
         const position = dropPosition(row, event);
-        clearDropMarkers();
-        if (targetId !== dragSourceId) {
-            window.location.href =
-                `hammerspoon://moveItem?source=${dragSourceId}&target=${targetId}&position=${position}`;
-        }
+        window.location.href =
+            `hammerspoon://moveItem?source=${dragSourceId}&target=${targetId}&position=${position}`;
         dragSourceId = null;
     });
 

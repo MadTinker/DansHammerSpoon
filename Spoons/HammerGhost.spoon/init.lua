@@ -851,6 +851,18 @@ function obj:moveItem(sourceId, targetId, position)
     -- Never drop a node into itself or one of its own descendants.
     if containsId(source, targetId) then return end
 
+    -- "inside" only nests into a container that actually RUNS its children
+    -- (folder/trigger). A sequence runs its steps, not its children, so an inside
+    -- drop there would make an inert child -- demote to a sibling drop. The client
+    -- avoids offering this, but guard here too so a crafted URL / future caller
+    -- can't create the ghost node.
+    if position == "inside" then
+        local target = locate(self.macroTree, targetId)
+        if not (target and (target.type == "folder" or target.type == "trigger")) then
+            position = "after"
+        end
+    end
+
     -- Detach source from its current parent before re-inserting (indices into
     -- the target list are computed after this removal so they stay valid).
     table.remove(srcList, srcIdx)
