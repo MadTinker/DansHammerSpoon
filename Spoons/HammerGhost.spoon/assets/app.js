@@ -96,6 +96,7 @@ window.clearLogEntries = () => {
 
 document.addEventListener('DOMContentLoaded', () => {
     const treeContainer = document.getElementById('tree-container');
+    const treeColumn = document.getElementById('tree-column');
     const propertiesPanel = document.getElementById('properties-panel');
 
     // Clear button wipes both the DOM and the Lua-side ring buffer.
@@ -213,9 +214,79 @@ document.addEventListener('DOMContentLoaded', () => {
         dragSourceId = null;
     });
 
+    // --- Tree filter/search (harvested from the shelved tree_view.js) ---------
+    // Filters the live, Lua-rendered tree in place. A row stays visible when it
+    // matches, when an ancestor matches (a matched folder reveals its whole
+    // subtree, via `force`), or when a descendant matches (a buried hit stays
+    // reachable in context). Each .tree-item row is followed by a sibling
+    // .children block, so we recurse one level at a time.
+    // Known limit: collapsed folders don't render their children into the DOM, so
+    // those rows aren't searchable here -- the default-expanded case is covered; a
+    // Lua-side filter would be needed to reach collapsed branches.
+    const treeSearch = document.getElementById('tree-search');
+    const treeSearchClear = document.getElementById('tree-search-clear');
+    let filterQuery = '';
+
+    function applyTreeFilter(container, query, force) {
+        let anyVisible = false;
+        const rows = Array.prototype.filter.call(
+            container.children, (el) => el.classList.contains('tree-item'));
+        rows.forEach((row) => {
+            const next = row.nextElementSibling;
+            const kids = (next && next.classList.contains('children')) ? next : null;
+            const nameEl = row.querySelector('.name');
+            const nameMatch = !!(nameEl && nameEl.textContent.toLowerCase().includes(query));
+            const childForce = force || nameMatch;
+            const descVisible = kids ? applyTreeFilter(kids, query, childForce) : false;
+            const visible = force || nameMatch || descVisible;
+            row.classList.toggle('tree-hidden', !visible);
+            if (kids) kids.classList.toggle('tree-hidden', !descVisible);
+            if (visible) anyVisible = true;
+        });
+        return anyVisible;
+    }
+
+    function runTreeFilter() {
+        if (!treeContainer) return;
+        if (!filterQuery) {
+            // Empty query: clear every hide flag so the full tree shows.
+            treeContainer.querySelectorAll('.tree-hidden')
+                .forEach((el) => el.classList.remove('tree-hidden'));
+            return;
+        }
+        applyTreeFilter(treeContainer, filterQuery, false);
+    }
+
+    function setFilterQuery(value) {
+        filterQuery = value.trim().toLowerCase();
+        if (treeSearchClear) treeSearchClear.style.display = filterQuery ? 'block' : 'none';
+        runTreeFilter();
+    }
+
+    if (treeSearch) {
+        treeSearch.addEventListener('input', () => setFilterQuery(treeSearch.value));
+        treeSearch.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') { treeSearch.value = ''; setFilterQuery(''); }
+        });
+    }
+    if (treeSearchClear) {
+        treeSearchClear.addEventListener('click', () => {
+            treeSearch.value = '';
+            setFilterQuery('');
+            treeSearch.focus();
+        });
+    }
+
+    // Lua refreshes the tree by replacing #tree-container's innerHTML; re-apply the
+    // active filter to the fresh rows so a search survives add/delete/toggle/move.
+    if (window.MutationObserver) {
+        new MutationObserver(() => { if (filterQuery) runTreeFilter(); })
+            .observe(treeContainer, { childList: true });
+    }
+
     // --- Resizable divider between the tree and properties panels ---
-    // Sets tree-container's width (a style attribute), which survives the
-    // innerHTML re-renders that refresh performs on the tree.
+    // Sets #tree-column's width (a style attribute on the column wrapper, not the
+    // re-rendered #tree-container), so the chosen width survives innerHTML refreshes.
     const divider = document.getElementById('divider');
     if (divider) {
         let resizing = false;
@@ -232,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let width = event.clientX;
             if (width < min) width = min;
             if (width > max) width = max;
-            treeContainer.style.width = width + 'px';
+            if (treeColumn) treeColumn.style.width = width + 'px';
         });
         document.addEventListener('mouseup', () => {
             if (!resizing) return;
