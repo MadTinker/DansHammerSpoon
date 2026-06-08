@@ -524,6 +524,27 @@ function obj:addCondition()
     self:openConditionEditor(item)
 end
 
+-- Add a child under a specific node, used by the tree's right-click "Add" items.
+-- The add* methods nest into the current selection, so we point the selection at
+-- the target first, then reuse them -- the new node lands inside the right-clicked
+-- container (createMacroItem falls back to the top level if it isn't a container).
+-- Unknown types are ignored.
+function obj:addChildTo(id, itemType)
+    local item = treeHelpers.findItem(self.macroTree, id)
+    if item then
+        self.currentSelection = item
+    end
+    if itemType == "folder" then
+        self:addFolder()
+    elseif itemType == "trigger" then
+        self:addTrigger()
+    elseif itemType == "action" then
+        self:addAction()
+    elseif itemType == "sequence" then
+        self:addSequence()
+    end
+end
+
 -- Function to create a new macro item
 function obj:createMacroItem(name, type, parent, data)
     self.lastId = self.lastId + 1

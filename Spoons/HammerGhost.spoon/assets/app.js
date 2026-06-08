@@ -284,6 +284,104 @@ document.addEventListener('DOMContentLoaded', () => {
             .observe(treeContainer, { childList: true });
     }
 
+    // --- Right-click context menu (harvested from the shelved tree_view.js) ---
+    // Right-click a row for the same operations as its inline buttons, plus
+    // add-child for container rows. Every item maps to an existing ui.handleURL
+    // route (runItem/editItem/toggleItem/toggleExpand/deleteItem/addChild), so the
+    // menu is a faster path to actions that already work -- it adds no new behavior.
+    const contextMenu = document.getElementById('tree-context-menu');
+
+    const closeContextMenu = () => { if (contextMenu) contextMenu.classList.remove('open'); };
+
+    // Build the menu's items for a given row, reading type/enabled/expanded state
+    // straight off the DOM (the same attributes app.js's click delegation uses).
+    function buildContextMenu(row) {
+        const id = row.dataset.id;
+        const type = row.dataset.type;
+        // Only folders and triggers RUN their children (a folder via _runChildren,
+        // a trigger via the event dispatcher), so only they can take an added child.
+        // A sequence executes its `steps`, not its `children` -- a child added to a
+        // sequence would render in the tree but never run, so it's excluded here.
+        const isContainer = type === 'folder' || type === 'trigger';
+        const isDisabled = row.classList.contains('disabled');
+        // A real disclosure triangle (not the spacer) means the row has children;
+        // ▾ = currently expanded, ▸ = collapsed.
+        const disclosure = row.querySelector('.disclosure');
+        const isExpanded = !!disclosure && disclosure.textContent.indexOf('▾') !== -1;
+
+        const items = [
+            { label: 'Run', href: `hammerspoon://runItem?id=${id}` },
+            { label: 'Edit', href: `hammerspoon://editItem?id=${id}` },
+            { label: isDisabled ? 'Enable' : 'Disable', href: `hammerspoon://toggleItem?id=${id}` },
+        ];
+        if (disclosure) {
+            items.push({ label: isExpanded ? 'Collapse' : 'Expand',
+                href: `hammerspoon://toggleExpand?id=${id}` });
+        }
+        if (isContainer) {
+            items.push({ sep: true });
+            ['folder', 'trigger', 'action', 'sequence'].forEach((t) => {
+                items.push({
+                    label: 'Add ' + t.charAt(0).toUpperCase() + t.slice(1),
+                    href: `hammerspoon://addChild?id=${id}&type=${t}`,
+                });
+            });
+        }
+        items.push({ sep: true });
+        items.push({ label: 'Delete', danger: true, confirm: true,
+            href: `hammerspoon://deleteItem?id=${id}` });
+
+        contextMenu.innerHTML = '';
+        items.forEach((it) => {
+            if (it.sep) {
+                const sep = document.createElement('div');
+                sep.className = 'menu-sep';
+                contextMenu.appendChild(sep);
+                return;
+            }
+            const el = document.createElement('div');
+            el.className = 'menu-item' + (it.danger ? ' danger' : '');
+            el.textContent = it.label; // textContent: labels are static, no injection
+            el.addEventListener('click', () => {
+                closeContextMenu();
+                if (it.confirm && !confirm('Are you sure you want to delete this item?')) return;
+                window.location.href = it.href;
+            });
+            contextMenu.appendChild(el);
+        });
+    }
+
+    // Show at the cursor, then clamp so the menu never spills past the viewport.
+    function openContextMenu(row, x, y) {
+        if (!contextMenu) return;
+        buildContextMenu(row);
+        contextMenu.style.left = '0px';
+        contextMenu.style.top = '0px';
+        contextMenu.classList.add('open');
+        const rect = contextMenu.getBoundingClientRect();
+        const maxX = window.innerWidth - rect.width - 4;
+        const maxY = window.innerHeight - rect.height - 4;
+        contextMenu.style.left = Math.max(4, Math.min(x, maxX)) + 'px';
+        contextMenu.style.top = Math.max(4, Math.min(y, maxY)) + 'px';
+    }
+
+    if (contextMenu) {
+        treeContainer.addEventListener('contextmenu', (event) => {
+            const row = event.target.closest('.tree-item');
+            if (!row) return;
+            event.preventDefault();
+            openContextMenu(row, event.clientX, event.clientY);
+        });
+        // Dismiss on outside click, Escape, or scrolling the tree.
+        document.addEventListener('click', (event) => {
+            if (!contextMenu.contains(event.target)) closeContextMenu();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') closeContextMenu();
+        });
+        treeContainer.addEventListener('scroll', closeContextMenu, true);
+    }
+
     // --- Resizable divider between the tree and properties panels ---
     // Sets #tree-column's width (a style attribute on the column wrapper, not the
     // re-rendered #tree-container), so the chosen width survives innerHTML refreshes.
