@@ -1,6 +1,61 @@
 // --- Live event log (global so Lua's evaluateJavaScript can call them) ---
 const LOG_MAX_ROWS = 300;
 
+// --- Inline action/condition editor (properties panel) --------------------
+// Type defs arrive once from Lua via getEditorDefs -> HG.setDefs. When an
+// action/condition is selected, properties.lua injects the panel shell then calls
+// HG.initPropertiesEditor(item); we fill the Type dropdown + params with the shared
+// HG renderer. On window.HG so Lua's evaluateJavaScript can reach them
+// (param_widgets.js created window.HG first; guard anyway).
+window.HG = window.HG || {};
+HG.defs = { action: {}, condition: {} };
+HG._propItem = null;
+
+HG.setDefs = function (d) {
+    d = d || {};
+    HG.defs.action = d.actionTypes || {};
+    HG.defs.condition = d.conditionTypes || {};
+    HG._applyPropsEditor(); // defs may land after a selection already rendered
+};
+
+// (Re)render the inline editor for the stashed item, once BOTH the panel shell and
+// the defs are present. Safe to call repeatedly / early (no-ops until ready).
+HG._applyPropsEditor = function () {
+    const item = HG._propItem;
+    if (!item) return;
+    const sel = document.getElementById('prop-type');
+    const paramsDiv = document.getElementById('properties-params');
+    if (!sel || !paramsDiv) return;
+    const defs = (item.kind === 'condition') ? HG.defs.condition : HG.defs.action;
+    if (!defs || Object.keys(defs).length === 0) return; // defs not in yet
+
+    sel.innerHTML = '';
+    Object.keys(defs)
+        .map((t) => [t, defs[t].name || t])
+        .sort((a, b) => a[1].localeCompare(b[1]))
+        .forEach(([t, label]) => {
+            const o = document.createElement('option');
+            o.value = t;
+            o.textContent = label;
+            sel.appendChild(o);
+        });
+    if (item.currentType) sel.value = item.currentType;
+
+    const renderFor = (values) => {
+        const def = defs[sel.value];
+        HG.renderParams(paramsDiv, def && def.parameters, values);
+    };
+    renderFor(item.params || {});
+    // Changing type resets params to that type's defaults (matches the popups).
+    sel.onchange = () => renderFor({});
+};
+
+// Called by properties.lua right after it injects the panel shell.
+HG.initPropertiesEditor = function (item) {
+    HG._propItem = item;
+    HG._applyPropsEditor();
+};
+
 // Flatten a payload object into dotted token paths so each leaf can be shown as
 // the exact {payload.x.y} string you'd type into an action param.
 function flattenPayload(obj, prefix, out) {
@@ -442,9 +497,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (eventNameInput) data.eventName = eventNameInput.value;
             const autostartInput = document.getElementById('autostart');
             if (autostartInput) data.autostart = autostartInput.checked;
+            // Inline action/condition editor: include the chosen type + params.
+            const typeSel = document.getElementById('prop-type');
+            const paramsDiv = document.getElementById('properties-params');
+            if (typeSel && paramsDiv) {
+                data.type = typeSel.value;
+                data.params = HG.collectParams(paramsDiv);
+            }
             window.location.href = `hammerspoon://saveProperties?${encodeURIComponent(JSON.stringify(data))}`;
         } else if (target.matches('#cancel-button')) {
             window.location.href = 'hammerspoon://cancelEdit';
         }
     });
+
+    // Fetch the action/condition type defs once so the inline editor can render
+    // params the moment an action/condition is selected.
+    window.location.href = 'hammerspoon://getEditorDefs';
 });

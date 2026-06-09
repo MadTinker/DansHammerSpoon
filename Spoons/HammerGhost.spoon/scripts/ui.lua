@@ -89,6 +89,8 @@ function M.handleURL(spoon, url)
         spoon:addSequence()
     elseif cmd == "addChild" and params.id and params.type then
         spoon:addChildTo(params.id, params.type)
+    elseif cmd == "getEditorDefs" then
+        spoon:sendEditorDefs()
     elseif cmd == "clearLog" then
         spoon:clearLog()
     elseif cmd == "bindEvent" and params.name then

@@ -912,9 +912,34 @@ function obj:saveProperties(data)
     if data.autostart ~= nil then
         item.autostart = data.autostart and true or false
     end
+    -- Inline action/condition editor: persist the chosen type + params (the
+    -- properties panel now edits these directly, mirroring the saveAction /
+    -- saveCondition create paths). Only when the form supplied a type.
+    if data.type and data.type ~= "" then
+        if item.type == "action" then
+            item.actionType = data.type
+            if data.params ~= nil then item.params = data.params end
+        elseif item.type == "condition" then
+            item.conditionType = data.type
+            if data.params ~= nil then item.params = data.params end
+        end
+    end
     self:saveConfig()
     ui.refresh(self)
     ui.clearProperties(self)
+end
+
+-- Push the action/condition type defs to the MAIN window so the inline properties
+-- editor can fill its dropdown + render params. Answered when app.js requests
+-- getEditorDefs on load. Table-encoded (never a bare string -> no refresh-style crash).
+function obj:sendEditorDefs()
+    if not self.window then return end
+    local payload = hs.json.encode({
+        actionTypes = self.actionTypes or {},
+        conditionTypes = self.conditionTypes or {},
+    })
+    self.window:evaluateJavaScript(string.format(
+        "if(window.HG&&HG.setDefs){HG.setDefs(%s);}", payload))
 end
 
 -- Bind a logged event name to the currently selected trigger (click a log row).

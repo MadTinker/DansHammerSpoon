@@ -33,9 +33,18 @@ function M.show(spoon, item)
     html = html .. string.format(
         [[<div class="field"><label for="name">Name</label><input type="text" id="name" value="%s"></div>]],
         esc(item.name))
-    html = html .. string.format(
-        [[<div class="field"><label for="type">Type</label><input type="text" id="type" value="%s" readonly></div>]],
-        esc(item.type))
+    -- Action/condition types are editable inline: a dropdown (app.js fills it from
+    -- the registered defs) + a params container the shared HG renderer populates.
+    -- Other node types just show their type read-only.
+    local editable = (item.type == "action" or item.type == "condition")
+    if editable then
+        html = html .. [[<div class="field"><label for="prop-type">Type</label><select id="prop-type"></select></div>]]
+        html = html .. [[<div id="properties-params"></div>]]
+    else
+        html = html .. string.format(
+            [[<div class="field"><label for="type">Type</label><input type="text" id="type" value="%s" readonly></div>]],
+            esc(item.type))
+    end
 
     -- Triggers expose the event they fire on. Edit directly, or select the
     -- trigger and click an event in the log to bind it.
@@ -65,6 +74,18 @@ function M.show(spoon, item)
         "document.getElementById('properties-panel').innerHTML = `%s`;",
         html
     )
+    -- Hand the inline editor the item's current type + params so it can fill the
+    -- dropdown and render widgets. JSON (a table), never a bare string, so a
+    -- backtick/${} in a value can't break out (see the refresh-crash fix).
+    if editable then
+        local initData = hs.json.encode({
+            kind = item.type,
+            currentType = item.actionType or item.conditionType,
+            params = item.params or {},
+        })
+        js = js .. string.format(
+            "if(window.HG&&HG.initPropertiesEditor){HG.initPropertiesEditor(%s);}", initData)
+    end
     spoon.window:evaluateJavaScript(js)
 end
 
