@@ -86,6 +86,12 @@ function M.create(opts)
     html = html:gsub('<link rel="stylesheet" href="styles.css">', function()
         return "<style>\n" .. css .. "\n</style>"
     end)
+    -- Inline the shared param-widgets renderer ahead of the page script. No-op on
+    -- pages that don't include the tag (e.g. the action chooser).
+    local widgets = readAsset("param_widgets.js")
+    html = html:gsub('<script src="param_widgets.js"></script>', function()
+        return "<script>\n" .. widgets .. "\n</script>"
+    end)
     html = html:gsub('<script src="' .. opts.js .. '"></script>', function()
         return "<script>\n" .. js .. "\n</script>"
     end)

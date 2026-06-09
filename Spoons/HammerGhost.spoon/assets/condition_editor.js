@@ -14,45 +14,11 @@ const conditionTypeSelect = document.getElementById('condition-type');
 const conditionParametersDiv = document.getElementById('condition-parameters');
 
 // Render parameter inputs for the selected condition type. `values` (optional)
-// pre-fills inputs when editing.
+// pre-fills inputs when editing. Delegates to the shared HG renderer so the popup
+// and the inline properties panel build identical widgets.
 function renderParameters(values) {
     const def = conditionTypesMap[conditionTypeSelect.value];
-    conditionParametersDiv.innerHTML = '';
-    if (!def || !def.parameters) return;
-    for (const paramName in def.parameters) {
-        const param = def.parameters[paramName];
-        const formGroup = document.createElement('div');
-        formGroup.className = 'form-group';
-        const label = document.createElement('label');
-        label.textContent = paramName;
-
-        let input;
-        if (param.type === 'select') {
-            input = document.createElement('select');
-            (param.options || []).forEach(opt => {
-                const option = document.createElement('option');
-                option.value = opt;
-                option.textContent = opt;
-                input.appendChild(option);
-            });
-        } else if (param.type === 'textarea') {
-            input = document.createElement('textarea');
-            input.rows = 6;
-        } else {
-            input = document.createElement('input');
-            input.type = param.type || 'text';
-        }
-        input.name = paramName;
-        input.required = !!param.required;
-        if (values && values[paramName] !== undefined) {
-            input.value = values[paramName];
-        } else if (param.default !== undefined) {
-            input.value = param.default;
-        }
-        formGroup.appendChild(label);
-        formGroup.appendChild(input);
-        conditionParametersDiv.appendChild(formGroup);
-    }
+    HG.renderParams(conditionParametersDiv, def && def.parameters, values);
 }
 
 function applyCondition(condition) {
@@ -107,10 +73,7 @@ conditionForm.addEventListener('submit', (event) => {
     event.preventDefault();
     const id = document.getElementById('condition-id').value;
     const type = conditionTypeSelect.value;
-    const params = {};
-    conditionParametersDiv.querySelectorAll('input, select, textarea').forEach(input => {
-        params[input.name] = input.value;
-    });
+    const params = HG.collectParams(conditionParametersDiv);
     const conditionData = { id, type, params };
     window.location.href = `hammerspoon://saveCondition?${encodeURIComponent(JSON.stringify(conditionData))}`;
 });

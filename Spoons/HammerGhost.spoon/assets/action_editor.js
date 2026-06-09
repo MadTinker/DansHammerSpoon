@@ -19,50 +19,11 @@ const actionTypeSelect = document.getElementById('action-type');
 const actionParametersDiv = document.getElementById('action-parameters');
 
 // Render parameter inputs for the selected action type. `values` (optional)
-// pre-fills inputs when editing an existing action.
+// pre-fills inputs when editing. Delegates to the shared HG renderer so the popup
+// and the inline properties panel build identical widgets.
 function renderParameters(values) {
     const def = actionTypesMap[actionTypeSelect.value];
-    actionParametersDiv.innerHTML = '';
-    if (!def || !def.parameters) return;
-    for (const paramName in def.parameters) {
-        const param = def.parameters[paramName];
-        const formGroup = document.createElement('div');
-        formGroup.className = 'form-group';
-        const label = document.createElement('label');
-        label.textContent = paramName;
-
-        // Pick the widget by param type: a dropdown for enumerated options, a
-        // multi-line box for scripts/commands, a plain input otherwise. (The old
-        // code always made an <input> and set input.type to 'select'/'textarea',
-        // which the browser silently downgraded to a text box.)
-        let input;
-        if (param.type === 'select') {
-            input = document.createElement('select');
-            (param.options || []).forEach(opt => {
-                const option = document.createElement('option');
-                option.value = opt;
-                option.textContent = opt;
-                input.appendChild(option);
-            });
-        } else if (param.type === 'textarea') {
-            input = document.createElement('textarea');
-            input.rows = 6;
-        } else {
-            input = document.createElement('input');
-            input.type = param.type || 'text';
-        }
-        input.name = paramName;
-        input.required = !!param.required;
-
-        const val = (values && values[paramName] !== undefined)
-            ? values[paramName]
-            : (param.default !== undefined ? param.default : undefined);
-        if (val !== undefined) input.value = val;
-
-        formGroup.appendChild(label);
-        formGroup.appendChild(input);
-        actionParametersDiv.appendChild(formGroup);
-    }
+    HG.renderParams(actionParametersDiv, def && def.parameters, values);
 }
 
 function applyAction(action) {
@@ -121,10 +82,7 @@ actionForm.addEventListener('submit', (event) => {
     const id = document.getElementById('action-id').value;
     const name = document.getElementById('action-name').value;
     const type = actionTypeSelect.value;
-    const params = {};
-    actionParametersDiv.querySelectorAll('input, select, textarea').forEach(input => {
-        params[input.name] = input.value;
-    });
+    const params = HG.collectParams(actionParametersDiv);
     const actionData = { id, name, type, params };
     window.location.href = `hammerspoon://saveAction?${encodeURIComponent(JSON.stringify(actionData))}`;
 });

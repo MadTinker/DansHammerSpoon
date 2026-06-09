@@ -193,19 +193,32 @@ M.registerActionType("launchApp", {
     end
 })
 
--- Send a keystroke: comma-separated modifiers + a key. e.g. mods="cmd,shift".
+-- Send a keystroke. The editor uses a hotkey-capture widget that records a chord
+-- like "cmd+shift+k" into a single `hotkey` param. Older saved actions stored a
+-- comma-separated `mods` + separate `key`; the handler falls back to those so they
+-- keep running unedited.
 M.registerActionType("keyStroke", {
     name = "Send Keystroke",
     parameters = {
-        mods = { type = "text", required = false, default = "cmd" },
-        key  = { type = "text", required = true,  default = "space" }
+        hotkey = { type = "hotkey", required = true, default = "cmd+space" }
     },
     handler = function(params)
         if not M.requireAccessibility() then return end
-        local mods = {}
-        for m in tostring(params.mods or ""):gmatch("[^,%s]+") do mods[#mods + 1] = m end
-        if params.key and params.key ~= "" then
-            hs.eventtap.keyStroke(mods, params.key, 0)
+        local mods, key = {}, nil
+        if params.hotkey and params.hotkey ~= "" then
+            -- "cmd+shift+k" -> mods {cmd,shift}, key "k" (last segment is the key).
+            -- Note: the literal "+" key is not expressible here (the split treats
+            -- "+" only as a separator) -- a rare key, acceptable limitation.
+            local parts = {}
+            for p in tostring(params.hotkey):gmatch("[^+]+") do parts[#parts + 1] = p end
+            key = table.remove(parts)
+            mods = parts
+        else
+            for m in tostring(params.mods or ""):gmatch("[^,%s]+") do mods[#mods + 1] = m end
+            key = params.key
+        end
+        if key and key ~= "" then
+            hs.eventtap.keyStroke(mods, key, 0)
         end
     end
 })

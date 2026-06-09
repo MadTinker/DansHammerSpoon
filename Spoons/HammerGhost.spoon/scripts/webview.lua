@@ -95,6 +95,12 @@ function M.init(spoon)
     htmlContent = htmlContent:gsub('<link rel="stylesheet" href="styles.css">', function()
         return "<style>\n" .. css .. "\n</style>"
     end)
+    -- Inline the shared param-widgets renderer ahead of app.js (app.js's inline
+    -- editor calls HG.renderParams/collectParams).
+    local widgets = readAsset("param_widgets.js")
+    htmlContent = htmlContent:gsub('<script src="param_widgets.js"></script>', function()
+        return "<script>\n" .. widgets .. "\n</script>"
+    end)
     htmlContent = htmlContent:gsub('<script src="app.js"></script>', function()
         return "<script>\n" .. js .. "\n</script>"
     end)
