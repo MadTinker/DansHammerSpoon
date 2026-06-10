@@ -500,9 +500,14 @@ function obj:addTrigger()
     ui.showProperties(self, item)
 end
 
--- Function to add a new action
+-- Function to add a new action. Mirrors addTrigger: drop the node in, select it,
+-- and edit inline in the properties panel (the dropdown defaults to the first
+-- action type; Save persists the chosen type + params).
 function obj:addAction()
-    self:openActionEditor()
+    local item = self:createMacroItem("New Action", "action", self:getCurrentSelection())
+    self.currentSelection = item
+    ui.refresh(self)
+    ui.showProperties(self, item)
 end
 
 -- Add a sequence as a tree node (an ordered, condition-gated list of action
@@ -516,12 +521,13 @@ function obj:addSequence()
 end
 
 -- Add a condition as a tree node (a gate for the actions that follow it among
--- its siblings). Created then opened in the editor to pick its type/params.
+-- its siblings). Created then edited inline in the properties panel to pick its
+-- type/params (mirrors addTrigger/addAction).
 function obj:addCondition()
     local item = self:createMacroItem("New Condition", "condition", self:getCurrentSelection())
     self.currentSelection = item
     ui.refresh(self)
-    self:openConditionEditor(item)
+    ui.showProperties(self, item)
 end
 
 -- Add a child under a specific node, used by the tree's right-click "Add" items.
@@ -703,12 +709,11 @@ end
 function obj:editItem(id)
     local item = treeHelpers.findItem(self.macroTree, id)
     if item then
-        if item.type == "action" then
-            self:openActionEditor(item)
-        elseif item.type == "sequence" then
+        -- Actions and conditions edit inline in the properties panel (same as
+        -- triggers/folders); only sequences keep the popup, since their step
+        -- editor doesn't fit the param-form layout.
+        if item.type == "sequence" then
             self:openSequenceEditor(item)
-        elseif item.type == "condition" then
-            self:openConditionEditor(item)
         else
             self.currentSelection = item
             ui.showProperties(self, item)
