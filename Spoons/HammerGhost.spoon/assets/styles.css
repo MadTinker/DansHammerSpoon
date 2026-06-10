@@ -102,9 +102,11 @@ body {
     color: var(--text-color);
 }
 
-/* Browse / Pick-app button next to app & file param inputs. */
+/* Browse / Pick-app button below app & file param inputs. align-self keeps it
+   intrinsic-width inside the stretch-aligned field column; the column's gap
+   provides the spacing above it. */
 .browse-btn {
-    margin-top: 6px;
+    align-self: flex-start;
     padding: 4px 10px;
     font-size: 11px;
     cursor: pointer;
@@ -251,6 +253,14 @@ body {
     color: var(--text-color);
 }
 
+/* ── Shared form styling ──────────────────────────────────────────────────
+   Two surfaces render the same kind of form: the inline properties panel
+   (.properties-form, rows wrapped in .field) and the modal editor pages
+   (#action-editor etc., rows wrapped in .form-group). The shared HG.renderParams
+   emits .form-group rows into BOTH, so the rules below are grouped to keep a
+   param widget pixel-identical wherever it lands. .properties-form / .form-group
+   keep only the bits unique to each surface. */
+
 .properties-form {
     display: flex;
     flex-direction: column;
@@ -264,10 +274,22 @@ body {
     letter-spacing: 0.3px;
 }
 
-.properties-form .field {
+/* Field row: label stacked above its control. */
+.properties-form .field,
+.form-group {
     display: flex;
     flex-direction: column;
     gap: 5px;
+}
+
+/* Modal pages space rows with a bottom margin; the properties panel uses its
+   parent's gap, so params (rendered as .form-group) drop the margin there. */
+.form-group {
+    margin-bottom: 12px;
+}
+
+.properties-form .form-group {
+    margin-bottom: 0;
 }
 
 .properties-form .field-hint {
@@ -291,15 +313,22 @@ body {
     width: auto;
 }
 
-.properties-form label {
+/* Field label: small uppercase muted caption. */
+.properties-form label,
+.form-group label {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--muted-color);
 }
 
+/* Controls — text/number/hotkey inputs, dropdowns, textareas. */
 .properties-form input,
-.properties-form textarea {
+.properties-form select,
+.properties-form textarea,
+.form-group input,
+.form-group select,
+.form-group textarea {
     background-color: var(--input-bg);
     color: var(--text-color);
     border: 1px solid var(--border-color);
@@ -312,27 +341,63 @@ body {
     box-sizing: border-box;
 }
 
-.properties-form textarea {
+.properties-form textarea,
+.form-group textarea {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     resize: vertical;
 }
 
+/* Popup textareas (action code etc.) want more room out of the gate. */
+.form-group textarea {
+    min-height: 90px;
+}
+
 .properties-form input:focus,
-.properties-form textarea:focus {
+.properties-form select:focus,
+.properties-form textarea:focus,
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
     border-color: var(--accent-color);
 }
 
-.properties-form input[readonly] {
+/* Read-only fields are muted -- except the hotkey capture box, whose recorded
+   chord must stay legible (styled below). */
+.properties-form input[readonly]:not(.hotkey-input) {
     color: var(--muted-color);
 }
 
-.properties-form .buttons {
+/* Hotkey capture field: read-only, click-then-press to record a chord. Monospace
+   so chords align; pointer cursor signals it's clickable; a filled background on
+   focus shows it's armed and listening. */
+.hotkey-input {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.hotkey-input:focus {
+    border-color: var(--accent-color);
+    background-color: var(--active-color);
+}
+
+/* Form action bar. */
+.properties-form .buttons,
+.form-buttons {
     display: flex;
     gap: 8px;
+}
+
+.properties-form .buttons {
     margin-top: 6px;
 }
 
-.properties-form button {
+.form-buttons {
+    margin-top: 16px;
+}
+
+.properties-form button,
+.form-buttons button {
     background-color: var(--active-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
@@ -343,17 +408,20 @@ body {
     transition: background-color 0.12s ease, border-color 0.12s ease;
 }
 
-.properties-form button:hover {
+.properties-form button:hover,
+.form-buttons button:hover {
     background-color: var(--hover-color);
 }
 
-.properties-form button.primary {
+.properties-form button.primary,
+.form-buttons button.primary {
     background-color: var(--accent-color);
     border-color: var(--accent-color);
     color: #ffffff;
 }
 
-.properties-form button.primary:hover {
+.properties-form button.primary:hover,
+.form-buttons button.primary:hover {
     background-color: var(--accent-hover);
     border-color: var(--accent-hover);
 }
@@ -518,78 +586,8 @@ body {
     font-weight: 600;
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    margin-bottom: 12px;
-}
-
-.form-group label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--muted-color);
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    background-color: var(--input-bg);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 7px 9px;
-    font-size: 13px;
-    outline: none;
-    width: 100%;
-    box-sizing: border-box;
-    transition: border-color 0.12s ease;
-}
-
-.form-group textarea {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    resize: vertical;
-    min-height: 90px;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    border-color: var(--accent-color);
-}
-
-.form-buttons {
-    display: flex;
-    gap: 8px;
-    margin-top: 16px;
-}
-
-.form-buttons button {
-    background-color: var(--active-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 6px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: background-color 0.12s ease, border-color 0.12s ease;
-}
-
-.form-buttons button:hover {
-    background-color: var(--hover-color);
-}
-
-.form-buttons button.primary {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-    color: #ffffff;
-}
-
-.form-buttons button.primary:hover {
-    background-color: var(--accent-hover);
-    border-color: var(--accent-hover);
-}
+/* .form-group / .form-buttons rules live in the shared form-styling section
+   above (converged with .properties-form). */
 
 /* Action chooser rows */
 .action-item {
