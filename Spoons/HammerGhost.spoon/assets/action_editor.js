@@ -8,6 +8,9 @@
 // runs; no DOMContentLoaded wrapper (that also kept these functions closure-local
 // and invisible to Lua, which is why the dropdown was always empty).
 
+window.HG = window.HG || {};
+HG.surface = 'action'; // picker write-back targets this webview (HG.setParamValue)
+
 let actionTypesMap = {};
 // An edit can arrive before the action-types round-trip returns (the page asks
 // for types on load; Lua may call populateEditor immediately after show()).

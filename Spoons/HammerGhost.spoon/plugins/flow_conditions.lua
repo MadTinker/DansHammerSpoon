@@ -50,7 +50,7 @@ return function(action_system)
     action_system.registerConditionType("app_running", {
         name = "App Is Running",
         parameters = {
-            app = { type = "text", required = true, default = "" }
+            app = { type = "app", required = true, default = "" }
         },
         handler = function(params)
             return params.app ~= nil and params.app ~= "" and hs.application.get(params.app) ~= nil

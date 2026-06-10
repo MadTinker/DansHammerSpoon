@@ -8,6 +8,7 @@ const LOG_MAX_ROWS = 300;
 // HG renderer. On window.HG so Lua's evaluateJavaScript can reach them
 // (param_widgets.js created window.HG first; guard anyway).
 window.HG = window.HG || {};
+HG.surface = 'main'; // identifies this webview for picker write-back (HG.setParamValue)
 HG.defs = { action: {}, condition: {} };
 HG._propItem = null;
 

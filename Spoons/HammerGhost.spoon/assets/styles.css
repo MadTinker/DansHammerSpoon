@@ -102,6 +102,22 @@ body {
     color: var(--text-color);
 }
 
+/* Browse / Pick-app button next to app & file param inputs. */
+.browse-btn {
+    margin-top: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--text-color);
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.browse-btn:hover {
+    border-color: var(--accent-color);
+}
+
 #tree-container {
     flex: 1 1 auto;
     min-height: 0;

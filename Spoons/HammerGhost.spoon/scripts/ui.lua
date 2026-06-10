@@ -91,6 +91,10 @@ function M.handleURL(spoon, url)
         spoon:addChildTo(params.id, params.type)
     elseif cmd == "getEditorDefs" then
         spoon:sendEditorDefs()
+    elseif cmd == "pickFile" and params.field then
+        spoon:pickFile(params.field, params.surface or "main")
+    elseif cmd == "pickApp" and params.field then
+        spoon:pickApp(params.field, params.surface or "main")
     elseif cmd == "clearLog" then
         spoon:clearLog()
     elseif cmd == "bindEvent" and params.name then

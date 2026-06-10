@@ -5,8 +5,9 @@
 // later-inlined scripts can reach it.
 //
 // A param def is { type, required, default, options? }. Supported widget types:
-//   text | number | select | textarea | hotkey
-// (app / file pickers are added in a later phase; unknown types fall back to text.)
+//   text | number | select | textarea | hotkey | app | file
+// (app/file render a text input + a Browse button that calls a native Lua picker;
+// unknown types fall back to text.)
 (function () {
     const HG = window.HG = window.HG || {};
 
@@ -105,6 +106,25 @@
             if (initial !== undefined) input.value = initial;
 
             group.appendChild(input);
+
+            // app / file params get a Browse button that asks Lua to open the
+            // native picker; the result is written back via HG.setParamValue. The
+            // text input stays editable (you can also type a value). HG.surface
+            // (set by each page) tells Lua which webview to write back to.
+            if (param.type === 'app' || param.type === 'file') {
+                const browse = document.createElement('button');
+                browse.type = 'button';
+                browse.className = 'browse-btn';
+                browse.textContent = (param.type === 'app') ? 'Pick app…' : 'Browse…';
+                browse.addEventListener('click', () => {
+                    const cmd = (param.type === 'app') ? 'pickApp' : 'pickFile';
+                    const surface = HG.surface || 'main';
+                    window.location.href = 'hammerspoon://' + cmd
+                        + '?field=' + encodeURIComponent(name) + '&surface=' + surface;
+                });
+                group.appendChild(browse);
+            }
+
             container.appendChild(group);
         });
     };
@@ -116,5 +136,17 @@
             if (el.name) out[el.name] = el.value;
         });
         return out;
+    };
+
+    // Write a value into a param field by name (Lua calls this after a native
+    // picker returns). Arg is {field, value} -- a JSON object, never a bare string,
+    // so Lua can hs.json.encode it (which rejects bare strings).
+    HG.setParamValue = function (o) {
+        if (!o || !o.field) return;
+        const el = document.querySelector('[data-param-type][name="' + o.field + '"]');
+        if (el) {
+            el.value = o.value != null ? o.value : '';
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
     };
 })();

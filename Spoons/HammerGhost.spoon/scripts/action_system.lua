@@ -184,11 +184,28 @@ M.registerActionType("executeScript", {
 M.registerActionType("launchApp", {
     name = "Launch / Focus App",
     parameters = {
-        app = { type = "text", required = true, default = "Finder" }
+        app = { type = "app", required = true, default = "Finder" }
     },
     handler = function(params)
         if params.app and params.app ~= "" then
             hs.application.launchOrFocus(params.app)
+        end
+    end
+})
+
+-- Open a file or folder in its default app (like the `open` command). The path
+-- param uses the native file picker (type = "file").
+M.registerActionType("openFile", {
+    name = "Open File / Folder",
+    parameters = {
+        path = { type = "file", required = true, default = "" }
+    },
+    handler = function(params)
+        if params.path and params.path ~= "" then
+            -- Shell-safe single-quote (paths from the picker won't normally
+            -- contain quotes, but guard anyway).
+            local p = tostring(params.path):gsub("'", "'\\''")
+            hs.execute("open '" .. p .. "'")
         end
     end
 })
@@ -507,7 +524,7 @@ M.registerConditionType("frontmost_window", {
 M.registerConditionType("frontmost_app", {
     name = "Frontmost Application",
     parameters = {
-        app = { type = "text", required = true, default = "Finder" },
+        app = { type = "app", required = true, default = "Finder" },
         operator = { type = "select", options = { "is", "is not", "contains" }, required = true }
     },
     handler = function(params)

@@ -942,6 +942,70 @@ function obj:sendEditorDefs()
         "if(window.HG&&HG.setDefs){HG.setDefs(%s);}", payload))
 end
 
+-- Write a value into a param field in the right editor webview after a native
+-- picker returns. surface ("main"|"action"|"condition") selects the target;
+-- field + value go as a JSON object (HG.setParamValue / hs.json.encode need a
+-- table, not a bare string).
+function obj:_writeParam(surface, field, value)
+    local win = (surface == "action" and self.actionEditor)
+        or (surface == "condition" and self.conditionEditor)
+        or self.window
+    if not win then return end
+    local payload = hs.json.encode({ field = field, value = value })
+    win:evaluateJavaScript(string.format(
+        "if(window.HG&&HG.setParamValue){HG.setParamValue(%s);}", payload))
+end
+
+-- Native file/folder picker for a "file" param's Browse button (modal; blocks
+-- until the user chooses or cancels).
+function obj:pickFile(field, surface)
+    local res = hs.dialog.chooseFileOrFolder(
+        "Choose a file or folder", os.getenv("HOME") or "~", true, true, false)
+    if res then
+        local path
+        for _, v in pairs(res) do path = v; break end
+        if path then self:_writeParam(surface, field, path) end
+    end
+end
+
+-- Native app picker for an "app" param's Pick-app button: running apps plus the
+-- *.app bundles under the standard Applications dirs, searchable by name/path.
+function obj:pickApp(field, surface)
+    local seen, choices = {}, {}
+    for _, app in ipairs(hs.application.runningApplications()) do
+        local n = app:name()
+        if n and not seen[n] then
+            seen[n] = true
+            choices[#choices + 1] = { text = n, subText = app:bundleID() or "running" }
+        end
+    end
+    for _, dir in ipairs({ "/Applications", "/System/Applications",
+        (os.getenv("HOME") or "") .. "/Applications" }) do
+        pcall(function()
+            for f in hs.fs.dir(dir) do
+                if f:match("%.app$") then
+                    local n = f:gsub("%.app$", "")
+                    if not seen[n] then
+                        seen[n] = true
+                        choices[#choices + 1] = { text = n, subText = dir }
+                    end
+                end
+            end
+        end)
+    end
+    table.sort(choices, function(a, b) return a.text:lower() < b.text:lower() end)
+    -- Retain on self so the chooser isn't GC'd before the user picks.
+    self._appChooser = hs.chooser.new(function(choice)
+        if choice then self:_writeParam(surface, field, choice.text) end
+    end)
+    self._appChooser:choices(choices)
+    -- searchSubText is a nicety (match on bundle id / path too); guard it so a
+    -- bad method name can't stop the chooser from showing (CLI was wedged, couldn't
+    -- verify the name live -- see [[hs-ipc-cli-wedge-under-probe-storm]]).
+    pcall(function() self._appChooser:searchSubText(true) end)
+    self._appChooser:show()
+end
+
 -- Bind a logged event name to the currently selected trigger (click a log row).
 -- Closes the discovery->bind loop: see the event fire, click it onto a trigger.
 function obj:bindEvent(eventName)

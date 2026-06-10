@@ -6,6 +6,9 @@
 // Inlined at end of <body>; functions live on `window` so evaluateJavaScript can
 // reach them (closure-local versions were invisible to Lua -> empty dropdown).
 
+window.HG = window.HG || {};
+HG.surface = 'condition'; // picker write-back targets this webview (HG.setParamValue)
+
 let conditionTypesMap = {};
 let pendingCondition = null;
 
