@@ -198,15 +198,15 @@ function AppManager.madFocus(appName)
     chooser:show()
 end
 
--- Special function for GitHub Desktop that always shows the selection menu
+-- Special function for madhub that always shows the selection menu
 function AppManager.launchGitHubWithProjectSelection(app)
-    local appName = "GitHub Desktop"
+    local appName = "Madness Desktop"
     if not app then
         app = hs.application.find(appName)
     end
 
     if not app then
-        -- If GitHub Desktop isn't running, launch it with the selection menu
+        -- If madhub isn't running, launch it with the selection menu
         local choices = {}
 
         if enableMenuSeparators then
@@ -233,11 +233,9 @@ function AppManager.launchGitHubWithProjectSelection(app)
             if not choice then return end
 
             if choice.type == "project" then
-                -- Open the selected project with GitHub Desktop
-                hs.execute("open -a '" .. appName .. "' " .. choice.path)
+                hs.execute("madhub " .. choice.path)
             elseif choice.type == "custom" then
-                -- Open the custom path with GitHub Desktop
-                hs.execute("open -a '" .. appName .. "' " .. choice.path)
+                hs.execute("madhub " .. choice.path)
             end
         end)
 
@@ -249,7 +247,7 @@ function AppManager.launchGitHubWithProjectSelection(app)
                 for k, v in pairs(choices) do customChoices[k] = v end
                 table.insert(customChoices, 1, {
                     text = "Open custom path: " .. query,
-                    subText = "Enter to open this path with " .. appName,
+                    subText = "Enter to open this path with madhub",
                     path = query,
                     type = "custom"
                 })
@@ -297,7 +295,7 @@ function AppManager.launchGitHubWithProjectSelection(app)
                 if not hasMatches and query ~= "" then
                     table.insert(filteredChoices, {
                         text = "Open custom path: " .. query,
-                        subText = "Enter to open this path with " .. appName,
+                        subText = "Enter to open this path with madhub",
                         path = query,
                         type = "custom"
                     })
@@ -310,7 +308,7 @@ function AppManager.launchGitHubWithProjectSelection(app)
         chooser:choices(choices)
         chooser:show()
     else
-        -- If GitHub Desktop is running, get all its windows
+        -- If Madness Desktop is running, get all its windows
         local windows = app:allWindows()
         local choices = {}
         local openWindowTitles = {}
@@ -357,11 +355,9 @@ function AppManager.launchGitHubWithProjectSelection(app)
                 -- Focus the selected window
                 choice.window:focus()
             elseif choice.type == "project" then
-                -- Open the selected project with GitHub Desktop
-                hs.execute("open -a '" .. appName .. "' " .. choice.path)
+                hs.execute("madhub " .. choice.path)
             elseif choice.type == "custom" then
-                -- Open the custom path with GitHub Desktop
-                hs.execute("open -a '" .. appName .. "' " .. choice.path)
+                hs.execute("madhub " .. choice.path)
             end
         end)
 
@@ -373,7 +369,7 @@ function AppManager.launchGitHubWithProjectSelection(app)
                 for k, v in pairs(choices) do customChoices[k] = v end
                 table.insert(customChoices, 1, {
                     text = "Open custom path: " .. query,
-                    subText = "Enter to open this path with " .. appName,
+                    subText = "Enter to open this path with madhub",
                     path = query,
                     type = "custom"
                 })
@@ -421,7 +417,7 @@ function AppManager.launchGitHubWithProjectSelection(app)
                 if not hasMatches and query ~= "" then
                     table.insert(filteredChoices, {
                         text = "Open custom path: " .. query,
-                        subText = "Enter to open this path with " .. appName,
+                        subText = "Enter to open this path with madhub",
                         path = query,
                         type = "custom"
                     })
@@ -436,10 +432,9 @@ function AppManager.launchGitHubWithProjectSelection(app)
     end
 end
 
--- Special function for Cursor that also updates GitHub Desktop
+-- Special function for Cursor that also updates madhub
 function AppManager.launchCursorWithGitHubDesktop()
     local cursorAppName = "cursor"
-    local githubAppName = "GitHub Desktop"
     local cursor = hs.application.find(cursorAppName)
 
     if not cursor then
@@ -471,12 +466,12 @@ function AppManager.launchCursorWithGitHubDesktop()
             if not choice then return end
 
             if choice.type == "project" then
-                -- Open the selected project with both GitHub Desktop and Cursor
-                hs.execute("open -a '" .. githubAppName .. "' " .. choice.path)
+                -- Open the selected project with both madhub and Cursor
+                hs.execute("madhub " .. choice.path)
                 hs.execute("open -a '" .. cursorAppName .. "' " .. choice.path)
             elseif choice.type == "custom" then
-                -- Open the custom path with both GitHub Desktop and Cursor
-                hs.execute("open -a '" .. githubAppName .. "' " .. choice.path)
+                -- Open the custom path with both madhub and Cursor
+                hs.execute("madhub " .. choice.path)
                 hs.execute("open -a '" .. cursorAppName .. "' " .. choice.path)
             end
         end)
@@ -606,19 +601,19 @@ function AppManager.launchCursorWithGitHubDesktop()
             if not choice then return end
 
             if choice.type == "window" then
-                -- Focus the selected window and update GitHub Desktop if we have a path
+                -- Focus the selected window and update madhub if we have a path
                 if choice.path and choice.path ~= "" then
-                    hs.execute("open -a '" .. githubAppName .. "' " .. choice.path)
+                    hs.execute("madhub " .. choice.path)
                     hs.execute("open -a '" .. cursorAppName .. "' " .. choice.path)
                 end
                 choice.window:focus()
             elseif choice.type == "project" then
-                -- Open the selected project with both GitHub Desktop and Cursor
-                hs.execute("open -a '" .. githubAppName .. "' " .. choice.path)
+                -- Open the selected project with both madhub and Cursor
+                hs.execute("madhub " .. choice.path)
                 hs.execute("open -a '" .. cursorAppName .. "' " .. choice.path)
             elseif choice.type == "custom" then
-                -- Open the custom path with both GitHub Desktop and Cursor
-                hs.execute("open -a '" .. githubAppName .. "' " .. choice.path)
+                -- Open the custom path with both madhub and Cursor
+                hs.execute("madhub " .. choice.path)
                 hs.execute("open -a '" .. cursorAppName .. "' " .. choice.path)
             end
         end)
@@ -861,9 +856,8 @@ end
 
 -- Application Launch Functions
 function AppManager.open_github()
-    local githubAppName = "GitHub Desktop"
     local seatOfMadness = "/Users/d.edens/lab/madness_interactive"
-    hs.execute("open -a '" .. githubAppName .. "' " .. seatOfMadness)
+    hs.execute("madhub " .. seatOfMadness)
 end
 
 function AppManager.open_cursor_with_github()
@@ -1078,7 +1072,7 @@ function AppManager.openProjectByIndex(index)
     local project = projects[index]
     if project and project.path then
         log:i("Opening project by index " .. index .. ": " .. project.name, __FILE__)
-        hs.execute("open -a 'GitHub Desktop' " .. project.path)
+        hs.execute("madhub " .. project.path)
         AppManager.openClaudeInFolder(project.path)
     else
         log:w("Project at index " .. index .. " has no path.", __FILE__)
