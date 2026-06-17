@@ -59,7 +59,7 @@ hs.hotkey.bind(_hyper, "F2", "Windsurf", function() AppManager.open_windsurf() e
 hs.hotkey.bind("cmd", "F2", "Open Zen", function() AppManager.open_zen() end)
 hs.hotkey.bind(hammer, "F3", "Toggle USB Logging", function() DeviceManager.toggleUSBLogging() end)
 hs.hotkey.bind(_hyper, "F3", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind("cmd", "F3", "Open GitHub", function() AppManager.open_github() end)
+hs.hotkey.bind("cmd", "F3", "Open madhub", function() AppManager.open_github() end)
 hs.hotkey.bind(hammer, "F4", "Show Layouts Menu", function() spoon.Layouts:chooseLayout() end)
 hs.hotkey.bind(_hyper, "F4", "Save Layout", function() saveLayoutWithDialog() end)
 hs.hotkey.bind("cmd", "F4", "Temporary Function", function() tempFunction() end)
@@ -88,7 +88,7 @@ hs.hotkey.bind(hammer, "F12", "Temporary Function", function() tempFunction() en
 hs.hotkey.bind(_hyper, "F12", "Temporary Function", function() tempFunction() end)
 
 -- Keybindings - Number Row
-hs.hotkey.bind(hammer, "`", "Open Cursor with GitHub", function() AppManager.open_cursor_with_github() end)
+hs.hotkey.bind(hammer, "`", "Open Cursor with madhub", function() AppManager.open_cursor_with_github() end)
 hs.hotkey.bind(_hyper, "`", "Open Medis", function() AppManager.open_medis() end)
 hs.hotkey.bind(hammer, "1", "Move Top-Left Corner", function() WindowManager.applyLayout("topLeft") end)
 hs.hotkey.bind(_hyper, "1", "Move Bottom-Left Corner", function() WindowManager.applyLayout("bottomLeft") end)
@@ -167,7 +167,7 @@ hs.hotkey.bind(_hyper, "d", "Open MongoDB Compass", function() AppManager.open_m
 hs.hotkey.bind(hammer, "f", "Open Scrcpy", function() AppManager.open_scrcpy() end)
 hs.hotkey.bind(_hyper, "f", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "g", "Toggle Mad Tinker Dashboard", function() spoon.HammerGhost:toggleControlPanel() end, nil, function() end)
-hs.hotkey.bind(_hyper, "g", "Open just GitHub Desktop", function() AppManager.open_github() end)
+hs.hotkey.bind(_hyper, "g", "Open madhub", function() AppManager.open_github() end)
 hs.hotkey.bind(hammer, "h", "Toggle HammerGhost", function() spoon.HammerGhost:toggle() end, nil, function() end)
 hs.hotkey.bind(_hyper, "h", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "j", "Toggle Project Manager", function() ProjectManager.toggleProjectManager() end)
