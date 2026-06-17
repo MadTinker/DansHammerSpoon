@@ -42,6 +42,29 @@ local condition_editor = dofile(hs.spoons.resourcePath("scripts/condition_editor
 local plugin_manager = dofile(hs.spoons.resourcePath("scripts/plugin_manager.lua"))
 local xmlparser = dofile(hs.spoons.resourcePath("scripts/xmlparser.lua"))
 local control_panel = dofile(hs.spoons.resourcePath("scripts/control_panel.lua"))
+local event_bus = dofile(hs.spoons.resourcePath("scripts/event_bus.lua"))
+local event_sources = dofile(hs.spoons.resourcePath("scripts/event_sources.lua"))
+
+-- Percent-decode a URL component. hs.urlevent has no unquote(); the JS side uses
+-- encodeURIComponent (no form-style '+' for spaces), so we only decode %xx bytes.
+local function urlDecode(s)
+    if not s then return s end
+    return (s:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end))
+end
+
+-- Decode a URL-encoded JSON payload from the JS bridge. Returns the decoded
+-- table, or nil after logging + alerting if the payload is malformed — callers
+-- must bail on nil so a bad bridge message can't silently corrupt the tree.
+local function safeDecodeArgs(args)
+    local ok, decoded = pcall(function() return hs.json.decode(urlDecode(args)) end)
+    if not ok or type(decoded) ~= "table" then
+        local msg = "HammerGhost: failed to decode bridge payload"
+        if _G.AppLogger then _G.AppLogger:e(msg, "init.lua", 0) end
+        hs.alert.show(msg)
+        return nil
+    end
+    return decoded
+end
 
 -- Initialize modules with dependencies
 config.init({ xmlparser = xmlparser })
@@ -53,7 +76,7 @@ obj.actionEditor = nil
 obj.sequenceEditor = nil
 obj.actionChooser = nil
 obj.conditionEditor = nil
-obj.configPath = hs.configdir .. "/hammerghost_config.xml"
+obj.configPath = hs.configdir .. "/hammerghost_config.json"
 obj.macroTree = {}
 obj.currentSelection = nil
 obj.lastId = 0
@@ -93,33 +116,102 @@ function obj:init()
         config.saveMacros(self.configPath, self.macroTree)
     end
 
+    -- Start the event subsystem: system watchers feed the bus, and a forwarder
+    -- pushes each event into the live log panel when the window is open. The
+    -- watcher runs regardless of window state; the bus's ring buffer back-fills
+    -- the panel on open.
+    -- Idempotent: hs.loadSpoon auto-calls init() AND the user's init.lua calls
+    -- it explicitly, so this runs twice. event_sources.start() self-guards;
+    -- drop any prior subscriptions before re-subscribing so events aren't logged
+    -- or dispatched twice.
+    event_sources.start()
+    self.eventBus = event_bus  -- exposed for console inspection + triggers
+    if self._logUnsub then self._logUnsub() end
+    if self._dispatchUnsub then self._dispatchUnsub() end
+    self._logUnsub = event_bus.subscribe(function(event)
+        self:_pushLogEntry(event)
+    end)
+    self._dispatchUnsub = event_bus.subscribe(function(event)
+        self:_dispatchEvent(event)
+    end)
+
     return self
 end
 
--- Function to execute an action
-function obj:executeAction(id)
-    local item = treeHelpers.findItem(self.macroTree, id)
-    if item then
-        if item.type == "action" then
-            action_system.executeAction(item)
-        elseif item.type == "sequence" then
-            for i, step in ipairs(item.steps) do
-                if step.type == "condition" then
-                    if action_system.executeCondition(step) then
-                        -- If condition is true, execute the next step if it's an action
-                        if item.steps[i+1] and item.steps[i+1].type == "action" then
-                            self:executeAction(item.steps[i+1].id)
-                        end
-                    end
-                elseif step.type == "action" then
-                     -- Check if the previous step was a condition, if so, it was handled above
-                    if i == 1 or not item.steps[i-1] or item.steps[i-1].type ~= "condition" then
-                       self:executeAction(step.id)
-                    end
-                end
+-- Push a single bus event into the live log panel (no-op when hidden; the ring
+-- buffer is rendered on next open instead).
+function obj:_pushLogEntry(event)
+    if not self.window or not self.window:isVisible() then return end
+    local payload = hs.json.encode({
+        seq = event.seq,
+        time = os.date("%H:%M:%S", event.time),
+        name = event.name,
+    })
+    self.window:evaluateJavaScript(string.format("window.appendLogEntry(%s)", payload))
+end
+
+-- Clear both the bus history and the panel's rows.
+function obj:clearLog()
+    event_bus.clear()
+    if self.window and self.window:isVisible() then
+        self.window:evaluateJavaScript("window.clearLogEntries()")
+    end
+end
+
+-- Run a tree item. Actions execute, sequences run their gated steps, folders
+-- run their children in order. Disabled items (enabled == false) are skipped, so
+-- a greyed item never fires. Triggers are NOT runnable here: they are *fired* by
+-- the event dispatcher, which runs their children directly — running a trigger
+-- from a parent folder would bypass its event gate.
+function obj:executeItem(item)
+    if not item or item.enabled == false then return end
+
+    if item.type == "action" then
+        action_system.executeAction(item)
+    elseif item.type == "sequence" then
+        -- Walk steps with a running "gate": a condition opens or closes the
+        -- gate for every action that follows it, until the next condition.
+        -- Actions run only while the gate is open (default open at start).
+        -- Steps are executed directly; findItem only walks .children, not
+        -- .steps, so an id round-trip would never resolve a step.
+        local gate = true
+        for _, step in ipairs(item.steps or {}) do
+            if step.type == "condition" then
+                gate = action_system.executeCondition(step) and true or false
+            elseif step.type == "action" and gate then
+                action_system.executeAction(step)
             end
         end
+    elseif item.type == "folder" then
+        for _, child in ipairs(item.children or {}) do
+            self:executeItem(child)
+        end
     end
+end
+
+-- Execute an item by id (e.g. a future "run" button). Triggers fire via events.
+function obj:executeAction(id)
+    self:executeItem(treeHelpers.findItem(self.macroTree, id))
+end
+
+-- Fire every enabled trigger whose bound eventName matches a fired bus event,
+-- running that trigger's children in order. Exact-name match for now; EG-style
+-- wildcard matching is a later layer.
+function obj:_dispatchEvent(event)
+    local function walk(items)
+        for _, item in ipairs(items) do
+            if item.type == "trigger"
+                and item.enabled ~= false
+                and item.eventName
+                and item.eventName == event.name then
+                for _, child in ipairs(item.children or {}) do
+                    self:executeItem(child)
+                end
+            end
+            if item.children then walk(item.children) end
+        end
+    end
+    walk(self.macroTree)
 end
 
 -- Function to toggle the main window
@@ -219,6 +311,14 @@ function obj:addFolder()
     ui.refresh(self)
 end
 
+-- Function to add a new trigger (an event-bound container for actions)
+function obj:addTrigger()
+    local item = self:createMacroItem("New Trigger", "trigger", self:getCurrentSelection())
+    self.currentSelection = item
+    ui.refresh(self)
+    ui.showProperties(self, item)
+end
+
 -- Function to add a new action
 function obj:addAction()
     self:openActionEditor()
@@ -240,9 +340,13 @@ function obj:createMacroItem(name, type, parent, data)
         id = tostring(self.lastId),
         name = name,
         type = type,
-        expanded = false,
-        children = (type == "folder" or type == "sequence") and {} or nil,
+        expanded = true,  -- new containers start expanded so added children are visible
+        children = (type == "folder" or type == "sequence" or type == "trigger") and {} or nil,
     }
+    -- Triggers carry the event name they fire on; empty until bound.
+    if type == "trigger" then
+        item.eventName = ""
+    end
     if data then
         for k, v in pairs(data) do
             item[k] = v
@@ -315,15 +419,128 @@ function obj:deleteItem(id)
     end
 end
 
+-- Function to toggle an item's enabled/disabled state
+function obj:toggleItem(id)
+    local item = treeHelpers.findItem(self.macroTree, id)
+    if not item then return end
+
+    -- Items are enabled by default; absence of the flag means enabled
+    if item.enabled == nil then
+        item.enabled = true
+    end
+    item.enabled = not item.enabled
+
+    self:saveConfig()        -- persist state change
+    ui.refresh(self)         -- update visual state
+
+    hs.alert.show(string.format("%s %s", item.name, item.enabled and "enabled" or "disabled"))
+    return item.enabled
+end
+
+-- Function to expand/collapse a folder or sequence in the tree.
+function obj:toggleExpand(id)
+    local item = treeHelpers.findItem(self.macroTree, id)
+    if not item then return end
+
+    -- expanded defaults to true (nil/true render expanded); toggle flips it.
+    if item.expanded == nil then
+        item.expanded = true
+    end
+    item.expanded = not item.expanded
+
+    self:saveConfig()  -- persist collapse state across reloads
+    ui.refresh(self)
+    return item.expanded
+end
+
+-- Function to move/reorder an item in the tree via drag and drop.
+-- position is "before" | "after" (sibling of target) or "inside" (child of target).
+function obj:moveItem(sourceId, targetId, position)
+    if not sourceId or not targetId or sourceId == targetId then return end
+
+    -- Locate an item by id, returning the item, its containing list, and index.
+    local function locate(items, id)
+        for i, item in ipairs(items) do
+            if item.id == id then return item, items, i end
+            if item.children then
+                local it, list, idx = locate(item.children, id)
+                if it then return it, list, idx end
+            end
+        end
+        return nil
+    end
+
+    -- True if `id` is `node` itself or any descendant of it (cycle guard).
+    local function containsId(node, id)
+        if node.id == id then return true end
+        if node.children then
+            for _, child in ipairs(node.children) do
+                if containsId(child, id) then return true end
+            end
+        end
+        return false
+    end
+
+    local source, srcList, srcIdx = locate(self.macroTree, sourceId)
+    if not source then return end
+
+    -- Never drop a node into itself or one of its own descendants.
+    if containsId(source, targetId) then return end
+
+    -- Detach source from its current parent before re-inserting (indices into
+    -- the target list are computed after this removal so they stay valid).
+    table.remove(srcList, srcIdx)
+
+    if position == "inside" then
+        local target = locate(self.macroTree, targetId)
+        if target then
+            target.children = target.children or {}
+            table.insert(target.children, source)
+        else
+            table.insert(self.macroTree, source) -- target vanished; keep at root
+        end
+    else
+        local _, tgtList, tgtIdx = locate(self.macroTree, targetId)
+        if tgtList then
+            local insertIdx = (position == "after") and (tgtIdx + 1) or tgtIdx
+            table.insert(tgtList, insertIdx, source)
+        else
+            table.insert(self.macroTree, source)
+        end
+    end
+
+    self:saveConfig()
+    ui.refresh(self)
+end
+
 -- Function to save properties
 function obj:saveProperties(data)
     local item = treeHelpers.findItem(self.macroTree, data.id)
     if item then
         item.name = data.name
+        -- Triggers carry an event name; persist it when the form supplied one.
+        if item.type == "trigger" and data.eventName ~= nil then
+            item.eventName = data.eventName
+        end
         self:saveConfig()
         ui.refresh(self)
         ui.clearProperties(self)
     end
+end
+
+-- Bind a logged event name to the currently selected trigger (click a log row).
+-- Closes the discovery->bind loop: see the event fire, click it onto a trigger.
+function obj:bindEvent(eventName)
+    local item = self.currentSelection
+    if not item or item.type ~= "trigger" then
+        hs.alert.show("Select a trigger first, then click an event to bind it")
+        return
+    end
+    item.eventName = eventName
+    self:saveConfig()
+    ui.refresh(self)
+    ui.showProperties(self, item)
+    hs.alert.show(string.format("Bound %s -> %s", item.name, eventName))
 end
 
 function obj:handleURL(url)
@@ -338,7 +555,8 @@ function obj:handleActionEditorURL(url)
         local js = string.format("populateActionTypes(%s)", hs.json.encode(self.actionTypes))
         self.actionEditor:evaluateJavaScript(js)
     elseif cmd == "saveAction" then
-        local actionData = hs.json.decode(hs.urlevent.unquote(args))
+        local actionData = safeDecodeArgs(args)
+        if not actionData then return end
         if actionData.id and actionData.id ~= "" then
             -- Update existing action
             local item = treeHelpers.findItem(self.macroTree, actionData.id)
@@ -374,7 +592,8 @@ function obj:handleSequenceEditorURL(url)
     elseif cmd == "addConditionToSequence" then
         self:openConditionEditor()
     elseif cmd == "saveSequence" then
-        local sequenceData = hs.json.decode(hs.urlevent.unquote(args))
+        local sequenceData = safeDecodeArgs(args)
+        if not sequenceData then return end
         local item = self.currentSelection
         if item and item.type == "sequence" then
             item.steps = sequenceData.steps
@@ -407,7 +626,8 @@ function obj:handleActionChooserURL(url)
         local js = string.format("populateActions(%s)", hs.json.encode(actions))
         self.actionChooser:evaluateJavaScript(js)
     elseif cmd == "actionSelected" then
-        local action = hs.json.decode(hs.urlevent.unquote(args))
+        local action = safeDecodeArgs(args)
+        if not action then return end
         local js = string.format("addStepToSequence(%s)", hs.json.encode({type="action", data=action}))
         self.sequenceEditor:evaluateJavaScript(js)
         self.actionChooser:hide()
@@ -422,7 +642,8 @@ function obj:handleConditionEditorURL(url)
         local js = string.format("populateConditionTypes(%s)", hs.json.encode(self.conditionTypes))
         self.conditionEditor:evaluateJavaScript(js)
     elseif cmd == "saveCondition" then
-        local conditionData = hs.json.decode(hs.urlevent.unquote(args))
+        local conditionData = safeDecodeArgs(args)
+        if not conditionData then return end
         local js = string.format("addStepToSequence(%s)", hs.json.encode({type="condition", data=conditionData}))
         self.sequenceEditor:evaluateJavaScript(js)
         self.conditionEditor:hide()

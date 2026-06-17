@@ -13,6 +13,14 @@ function M.create(spoon)
             end,
         },
         {
+            id = "addTrigger",
+            label = "Add Trigger",
+            image = hs.image.imageFromName("NSAdvanced") or hs.image.imageFromName("NSActionTemplate"),
+            fn = function()
+                spoon:addTrigger()
+            end,
+        },
+        {
             id = "addAction",
             label = "Add Action",
             image = hs.image.imageFromName("NSActionTemplate"),

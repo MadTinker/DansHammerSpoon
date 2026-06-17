@@ -6,12 +6,28 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="tree-container">
-        <!-- Tree content will be injected here -->
+    <header id="app-header">
+        <span id="app-title">HammerGhost</span>
+        <span id="item-count"><!-- Item count injected here --></span>
+    </header>
+    <div id="main">
+        <div id="tree-container">
+            <!-- Tree content will be injected here -->
+        </div>
+        <div id="divider" title="Drag to resize"></div>
+        <div id="properties-panel">
+            <!-- Properties content will be injected here -->
+        </div>
     </div>
-    <div id="properties-panel">
-        <!-- Properties content will be injected here -->
-    </div>
+    <section id="log-panel">
+        <div id="log-header">
+            <span>Event Log</span>
+            <button id="log-clear" title="Clear log">Clear</button>
+        </div>
+        <div id="log-entries">
+            <!-- Log entries injected here -->
+        </div>
+    </section>
     <script src="app.js"></script>
 </body>
 </html>

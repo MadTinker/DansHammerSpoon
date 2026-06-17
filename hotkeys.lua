@@ -148,11 +148,11 @@ hs.hotkey.bind(hammer, "p", "Open Postman", function() AppManager.open_postman()
 hs.hotkey.bind(_hyper, "p", "Open Cursor", function() AppManager.open_cursor() end)
 -- New: dedicated screenshot-to-clipboard hotkey
 hs.hotkey.bind(hammer, "[", "Screenshot to Clipboard", function() FileManager.captureScreenshotToClipboard() end)
-hs.hotkey.bind(_hyper, "[", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "]", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "]", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "\\", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "\\", "Temporary Function", function() tempFunction() end)
+hs.hotkey.bind(_hyper, "[", "Mouse: Previous Monitor", function() WindowManager.moveMouseToScreenRelative("previous") end)
+hs.hotkey.bind(hammer, "]", "Mouse: Monitor 1", function() WindowManager.moveMouseToScreen(1) end)
+hs.hotkey.bind(_hyper, "]", "Mouse: Monitor 3", function() WindowManager.moveMouseToScreen(3) end)
+hs.hotkey.bind(hammer, "\\", "Mouse: Monitor 2", function() WindowManager.moveMouseToScreen(2) end)
+hs.hotkey.bind(_hyper, "\\", "Mouse: Next Monitor", function() WindowManager.moveMouseToScreenRelative("next") end)
 
 -- Keybindings - Caps Lock Row
 hs.hotkey.bind(hammer, "a", "Toggle KineticLatch", function() spoon.KineticLatch:toggle() end)

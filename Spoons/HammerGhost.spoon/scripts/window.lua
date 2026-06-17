@@ -27,17 +27,23 @@ function M.create(spoon)
     window:level(hs.drawing.windowLevels.floating)
     window:allowNewWindows(false)
 
-    -- navigationCallback receives (action, webView, navID, extra)
-    -- For "navigationAction", extra.URL has the actual URL
-    window:navigationCallback(function(action, webView, navID, extra)
+    -- Intercept custom-scheme navigations via the policy decision callback.
+    -- navigationCallback only reports navigation *lifecycle* events (didStart/
+    -- didFinish/didFail) and never delivers the request URL for a hammerspoon://
+    -- link, so the URL bridge must live here. For a "navigationAction" the URL is
+    -- at details.request.URL.url; returning false denies the load and keeps the
+    -- current page (no provisional-navigation failure / blank-out).
+    window:policyCallback(function(action, webView, details)
         if action == "navigationAction" then
-            local url = extra and extra.URL or ""
+            local request = details and details.request
+            local urlObj = request and request.URL
+            local url = urlObj and urlObj.url or ""
             if url:match("^hammerspoon://") then
                 spoon:handleURL(url)
-                return false -- block navigation, keep current page
+                return false -- deny navigation, stay on current page
             end
-            return true -- allow other navigations
         end
+        return true -- allow all other navigations (initial page load, etc.)
     end)
 
     return window

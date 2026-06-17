@@ -20,7 +20,7 @@ local seatOfMadness = "/Users/d.edens/lab/madness_interactive"
 -- local seatOfTest = os.getenv("SEAT_OF_TEST")
 local seatOfTest = "/Users/d.edens/lab/regressiontestkit"
 
-local seatOfFaros = "/Users/d.edens/lab/Faros"
+local seatOfAlloy = "/Users/d.edens/lab/alloy"
 local seatOfLight = "/Users/d.edens/lab"
 
 -- State
@@ -38,9 +38,9 @@ local fileList = {
     { name = "File Manager",   path = "~/.hammerspoon/FileManager.lua" },
     { name = "madcode",         path = "/Users/d.edens/lab/madness_interactive/projects/opencode/Whispermind_Conduit" },
     { name = "Maddesktop",      path = "/Users/d.edens/lab/madness_interactive/projects/common/madnessDesktop" },
-    { name = "Abzena",         path = "/Users/d.edens/lab/Faros/ellie-monorepo/AEAabzena" },
-    { name = "ellie-monorepo",  path = "/Users/d.edens/lab/Faros/ellie-monorepo" },
-
+    { name = "MadQTT",         path = "/Users/d.edens/lab/madness_interactive/projects/common/MadQTT" },
+    { name = "AlloyMonorepo",  path = "/Users/d.edens/lab/Faros/AlloyMonorepo" },
+    { name = "GatewayFleetExplorer",  path = "/Users/d.edens/lab/Faros/AlloyMonorepo/projects/GatewayFleetExplorer" },
     { name = "claude settings", path = "~/.claude/settings.json" },
     { name = "zshenv",         path = "~/.zshenv" },
     { name = "zshrc",          path = "~/.zshrc" },
@@ -60,17 +60,15 @@ local fallback_projects_list = {
     { name = ".hammerspoon",        path = "~/.hammerspoon" },
     { name = "Chat History",               path = seatOfMadness .. "/docs/cursor_chathistory" },
     { name = "Inventorium",                path = seatOfMadness .. "/projects/common/Inventorium" },
-    { name = "monorepo-ellie",             path = seatOfFaros .. "/ellie-monorepo" },
-    { name = "ellie",                       path = seatOfFaros .. "/ellie-monorepo/ellie" },
-    { name = "guardian",                    path = seatOfFaros .. "/ellie-monorepo/guardian" },
-    { name = "AEAabzena",                   path = seatOfFaros .. "/ellie-monorepo/AEAabzena" },
-    { name = "abzena-optimizer",            path = seatOfFaros .. "/ellie-monorepo/abzena-optimizer" },
-    { name = "DOH-Stable-Kevin",            path = seatOfFaros .. "/ellie-monorepo/DOH-Stable-Kevin" },
-    { name = "ellie-data-sink",             path = seatOfFaros .. "/ellie-monorepo/ellie-data-sink" },
-    { name = "ellie-slack-bot",             path = seatOfFaros .. "/ellie-monorepo/ellie-slack-bot" },
-    { name = "ellie-jobs",                  path = seatOfFaros .. "/ellie-monorepo/jobs" },
-    { name = "ellie-scripts",               path = seatOfFaros .. "/ellie-monorepo/scripts" },
-    { name = "ellie-context",               path = seatOfFaros .. "/ellie-monorepo/context" },
+    { name = "monorepo-ellie",             path = seatOfAlloy .. "/AlloyMonorepo" },
+    { name = "ellie",                       path = seatOfAlloy .. "/AlloyMonorepo/ellie" },
+    { name = "guardian",                    path = seatOfAlloy .. "/AlloyMonorepo/guardian" },
+    { name = "AEAabzena",                   path = seatOfAlloy .. "/AlloyMonorepo/AEAabzena" },
+    { name = "abzena-optimizer",            path = seatOfAlloy .. "/AlloyMonorepo/abzena-optimizer" },
+    { name = "DOH-Stable-Kevin",            path = seatOfAlloy .. "/AlloyMonorepo/DOH-Stable-Kevin" },
+    { name = "ellie-data-sink",             path = seatOfAlloy .. "/AlloyMonorepo/ellie-data-sink" },
+    { name = "ellie-scripts",               path = seatOfAlloy .. "/AlloyMonorepo/scripts" },
+    { name = "ellie-context",               path = seatOfAlloy .. "/AlloyMonorepo/context" },
     { name = "SwarmDesk",                  path = seatOfMadness .. "/projects/common/SwarmDesk" },
     { name = "Omnispindle",                path = seatOfMadness .. "/projects/common/Omnispindle" },
 

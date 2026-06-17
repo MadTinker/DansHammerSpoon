@@ -360,6 +360,44 @@ function WindowManager.moveWindowMouseCorner()
     --  WindowManager.currentFrame = f
 end
 
+-- Mouse-to-monitor jumps -------------------------------------------------------
+
+-- Warp the mouse cursor to the center of the given screen.
+local function centerMouseOnScreen(screen)
+    if not screen then return end
+    local f = screen:fullFrame()
+    hs.mouse.absolutePosition({ x = f.x + f.w / 2, y = f.y + f.h / 2 })
+end
+
+-- Screens ordered left-to-right (then top-to-bottom) so absolute indices are
+-- stable regardless of hs.screen.allScreens() ordering.
+local function screensLeftToRight()
+    local screens = hs.screen.allScreens()
+    table.sort(screens, function(a, b)
+        local fa, fb = a:frame(), b:frame()
+        if fa.x == fb.x then return fa.y < fb.y end
+        return fa.x < fb.x
+    end)
+    return screens
+end
+
+-- Jump the mouse to a specific monitor by 1-based left-to-right index.
+function WindowManager.moveMouseToScreen(index)
+    local screen = screensLeftToRight()[index]
+    if not screen then
+        hs.alert.show("No monitor " .. tostring(index))
+        return
+    end
+    centerMouseOnScreen(screen)
+end
+
+-- Jump the mouse to the next/previous monitor relative to the cursor, wrapping.
+function WindowManager.moveMouseToScreenRelative(direction)
+    local current = hs.mouse.getCurrentScreen() or hs.screen.mainScreen()
+    local target = (direction == "previous") and current:previous() or current:next()
+    centerMouseOnScreen(target)
+end
+
 -- Window Position Save/Restore
 function WindowManager.saveWindowPosition()
     log.i('Saving window position')

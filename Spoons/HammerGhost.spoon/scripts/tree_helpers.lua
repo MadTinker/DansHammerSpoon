@@ -15,22 +15,47 @@ function M.itemToHTML(item, level, currentSelection)
 
     local indentStyle = string.format("padding-left: %dpx;", level * 20)
     local selectedClass = (currentSelection and item.id == currentSelection.id) and "selected" or ""
-    local icon = item.type == "folder" and "📁" or (item.type == "sequence" and "📋" or "⚡")
+    -- item.enabled == false marks a disabled item; nil/true are treated as enabled
+    local disabledClass = (item.enabled == false) and "disabled" or ""
+    local stateClass = (selectedClass .. " " .. disabledClass):gsub("^%s+", ""):gsub("%s+$", "")
+    -- Per-type glyphs: trigger ⚡ fires on an event, action ⚙️ does work,
+    -- sequence 📋 runs gated steps, condition ❓ gates, folder 📁 groups.
+    local icons = {
+        folder = "📁", sequence = "📋", trigger = "⚡",
+        action = "⚙️", condition = "❓",
+    }
+    local icon = icons[item.type] or "⚙️"
 
+    -- Containers with children get a disclosure triangle; expanded unless the
+    -- model explicitly stores expanded == false (nil/true render expanded). Items
+    -- without children get a spacer so names stay vertically aligned.
+    local hasChildren = item.children and #item.children > 0
+    local isExpanded = item.expanded ~= false
+    local disclosure
+    if hasChildren then
+        disclosure = string.format('<span class="disclosure">%s</span>', isExpanded and "▾" or "▸")
+    else
+        disclosure = '<span class="disclosure-spacer"></span>'
+    end
+
+    -- Class names below match app.js event delegation (.tree-item / .disclosure /
+    -- .toggle-button / .edit-button / .delete-button) and styles.css. Click and drag
+    -- wiring is handled by delegated listeners in app.js via
+    -- closest('.tree-item').dataset.id, so no inline onclick/ondrag handlers are
+    -- needed. draggable + data-type drive the drag-to-reorder behavior.
     local html = string.format([[
-        <div class="item %s" data-id="%s" data-type="%s" style="%s" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
-            <span class="icon" onclick="toggleItem('%s', event)">%s</span>
+        <div class="tree-item %s" data-id="%s" data-type="%s" style="%s" draggable="true">
+            %s
+            <span class="icon toggle-button">%s</span>
             <span class="name">%s</span>
             <div class="actions">
-                <button class="edit" onclick="editItem('%s', '%s', event)" title="Edit">✏️</button>
-                <button class="delete" onclick="deleteItem('%s', '%s', event)" title="Delete">🗑️</button>
+                <button class="edit-button" title="Edit">✏️</button>
+                <button class="delete-button" title="Delete">🗑️</button>
             </div>
-            <div class="drop-indicator"></div>
         </div>
-    ]], selectedClass, item.id, item.type, indentStyle, item.id, icon, item.name,
-        item.id, item.name:gsub("'", "\\'"), item.id, item.name:gsub("'", "\\'"))
+    ]], stateClass, item.id, item.type, indentStyle, disclosure, icon, item.name)
 
-    if item.children and #item.children > 0 then
+    if hasChildren and isExpanded then
         html = html .. "<div class='children'>"
         for _, child in ipairs(item.children) do
             html = html .. M.itemToHTML(child, level + 1, currentSelection)
