@@ -3,7 +3,7 @@
 	url = https://github.com/DanEdens/Layouts.spoon.git
 [submodule "data"]
 	path = data
-	url = https://github.com/DanEdens/DansDesktopLayouts
+	url = https://github.com/MadTinker/DansDesktopLayouts.git
 [submodule "Spoons/OmniLadle.spoon"]
 	path = Spoons/OmniLadle.spoon
 	url = https://github.com/MadnessEngineering/OmniLadle.spoon.git
