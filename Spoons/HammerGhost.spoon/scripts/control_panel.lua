@@ -703,12 +703,22 @@ function M.show(spoonObj)
         panelWindow:windowTitle("⚡ Mad Tinker Dashboard")
         panelWindow:allowNewWindows(false)
 
-        panelWindow:navigationCallback(function(url)
-            handleURL(spoonObj, url)
-            -- Return true to cancel navigation for custom scheme URLs
-            if type(url) == "string" and url:match("^hammerspoon://") then
-                return true
+        -- Deny hammerspoon:// navigations and route them to handleURL. A
+        -- navigationCallback's return value does NOT cancel the load, so the
+        -- nav would leak to the global hs.urlevent dispatcher (host lowercased
+        -- to "controlpanel", no bind -> warning). policyCallback returning
+        -- false actually blocks it. Mirrors editor_window.lua.
+        panelWindow:policyCallback(function(action, webView, details)
+            if action == "navigationAction" then
+                local request = details and details.request
+                local urlObj = request and request.URL
+                local url = urlObj and urlObj.url or ""
+                if url:match("^hammerspoon://") then
+                    handleURL(spoonObj, url)
+                    return false
+                end
             end
+            return true
         end)
 
         panelWindow:html(PANEL_HTML)
