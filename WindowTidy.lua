@@ -29,6 +29,14 @@ WindowTidy.config = {
     timeout = 90,        -- seconds before we give up on the agent
     model = nil,         -- nil = gemini's default; e.g. "gemini-2.5-pro"
     dryRun = false,      -- true = log the plan, queue nothing
+
+    -- Run log. The console is ephemeral and a run finishes ~30s after the
+    -- hotkey, long after you have looked away, so every run is also appended
+    -- to a file you can read afterwards.
+    logPath = os.getenv("HOME") .. "/.hammerspoon/data/windowtidy.log",
+    maxLogBytes = 512 * 1024, -- rotate to .log.1 past this
+    logRawResponse = true,    -- include the agent's raw stdout (verbose but
+                              -- the only way to debug a bad plan)
 }
 
 -- Runtime state
@@ -61,6 +69,72 @@ local function resolveGemini()
     if p ~= "" and hs.fs.attributes(p) then geminiPath = p; return p end
 
     return nil
+end
+
+-- Run log -------------------------------------------------------------------
+
+--- Roll the log over once it gets fat, keeping one previous generation.
+local function rotateLogIfNeeded(path)
+    local attrs = hs.fs.attributes(path)
+    if attrs and attrs.size and attrs.size > WindowTidy.config.maxLogBytes then
+        os.remove(path .. ".1")
+        os.rename(path, path .. ".1")
+    end
+end
+
+--- Append a timestamped line to the run log. Never throws: a logging failure
+--- must not take down a window move.
+local function logLine(fmt, ...)
+    local ok, msg = pcall(string.format, fmt, ...)
+    if not ok then msg = tostring(fmt) end
+
+    log:i('WindowTidy: ' .. msg)
+
+    local path = WindowTidy.config.logPath
+    if not path then return end
+
+    pcall(function()
+        rotateLogIfNeeded(path)
+        local f = io.open(path, "a")
+        if not f then return end
+        f:write(os.date("%Y-%m-%d %H:%M:%S "), msg, "\n")
+        f:close()
+    end)
+end
+
+--- Section header so separate runs are easy to tell apart when scrolling.
+local function logHeader(title)
+    pcall(function()
+        local f = io.open(WindowTidy.config.logPath, "a")
+        if not f then return end
+        f:write("\n", string.rep("=", 72), "\n")
+        f:close()
+    end)
+    logLine("=== %s ===", title)
+end
+
+WindowTidy.log = logLine
+
+--- Open the run log in the user's default editor.
+function WindowTidy.showLog()
+    local path = WindowTidy.config.logPath
+    if not hs.fs.attributes(path) then
+        hs.alert.show("WindowTidy: no log yet")
+        return
+    end
+    hs.execute("open -t '" .. path:gsub("'", "'\\''") .. "'")
+end
+
+--- Dump the tail of the log straight into the Hammerspoon console.
+function WindowTidy.tailLog(lines)
+    lines = lines or 40
+    local path = WindowTidy.config.logPath
+    if not hs.fs.attributes(path) then
+        print("WindowTidy: no log at " .. tostring(path))
+        return
+    end
+    local out = hs.execute(string.format("tail -n %d '%s'", lines, path:gsub("'", "'\\''")))
+    print(out or "")
 end
 
 -- Snapshot ------------------------------------------------------------------
@@ -324,25 +398,32 @@ local function drainTick()
             WindowTidy.drainTimer:stop()
             WindowTidy.drainTimer = nil
         end
-        log.i('WindowTidy queue drained')
+        logLine("DONE: queue drained, %d window(s) can be undone", #WindowTidy.undoStack)
         return
     end
 
     local win = hs.window.get(move.id)
     if not win then
-        log.w('WindowTidy: window vanished before move: ' .. tostring(move.id))
+        logLine("  SKIP %s (%d): window no longer exists", move.app, move.id)
         return
     end
 
     local focused = hs.window.focusedWindow()
     if focused and focused:id() == move.id then
-        log.i('WindowTidy: skipping ' .. move.app .. ', it is now focused')
+        logLine("  SKIP %s (%d): window took focus while the agent was thinking",
+            move.app, move.id)
         return
     end
 
-    WindowTidy.undoStack[#WindowTidy.undoStack + 1] = { id = move.id, frame = win:frame() }
-    WindowManager.setFrameInScreenWithRetry(win, hs.geometry.rect(move.frame))
-    log.d('WindowTidy moved ' .. move.app .. ': ' .. move.reason)
+    local before = win:frame()
+    WindowTidy.undoStack[#WindowTidy.undoStack + 1] = { id = move.id, frame = before }
+
+    local okFrame = WindowManager.setFrameInScreenWithRetry(win, hs.geometry.rect(move.frame))
+    local after = win:frame()
+    logLine("  %s %s (%d): %d,%d %dx%d -> %d,%d %dx%d",
+        okFrame and "MOVED" or "PARTIAL", move.app, move.id,
+        math.floor(before.x), math.floor(before.y), math.floor(before.w), math.floor(before.h),
+        math.floor(after.x), math.floor(after.y), math.floor(after.w), math.floor(after.h))
 end
 
 --- Hand a validated move list to the drain loop.
@@ -366,14 +447,18 @@ function WindowTidy.undo()
         return
     end
 
+    logHeader("UNDO")
     local restored = 0
     for _, entry in ipairs(WindowTidy.undoStack) do
         local win = hs.window.get(entry.id)
         if win then
             WindowManager.setFrameInScreenWithRetry(win, entry.frame)
             restored = restored + 1
+        else
+            logLine("  SKIP %d: window no longer exists", entry.id)
         end
     end
+    logLine("restored %d of %d window(s)", restored, #WindowTidy.undoStack)
 
     WindowTidy.undoStack = {}
     hs.alert.show("WindowTidy: restored " .. restored .. " windows")
@@ -382,26 +467,42 @@ end
 -- Agent invocation ----------------------------------------------------------
 
 local function handleResponse(snapshot, stdOut, stdErr, exitCode)
+    WindowTidy.lastResponse = stdOut
+
+    if WindowTidy.config.logRawResponse then
+        logLine("raw stdout (%d bytes):\n%s", #(stdOut or ""), stdOut or "<empty>")
+    end
+    if stdErr and stdErr ~= "" then
+        logLine("stderr:\n%s", stdErr)
+    end
+
     if exitCode ~= 0 then
-        log.e('WindowTidy: gemini exited ' .. tostring(exitCode) .. ': ' .. tostring(stdErr))
-        hs.alert.show("WindowTidy: agent failed (" .. tostring(exitCode) .. ")")
+        hs.alert.show("WindowTidy: agent failed (" .. tostring(exitCode) .. ") — see log")
+        logLine("ABORT: agent exited non-zero")
         return
     end
 
     local plan = WindowTidy.extractJson(stdOut)
     if not plan then
-        log.e('WindowTidy: could not parse agent output: ' .. tostring(stdOut):sub(1, 500))
-        hs.alert.show("WindowTidy: unparseable response")
+        hs.alert.show("WindowTidy: unparseable response — see log")
+        logLine("ABORT: no decodable JSON object in the agent output")
         return
     end
 
     WindowTidy.lastPlan = plan
+    if plan.summary then logLine("agent summary: %s", tostring(plan.summary)) end
+    logLine("agent proposed %d move(s)", (type(plan.moves) == "table") and #plan.moves or 0)
 
     local moves, rejected = WindowTidy.validatePlan(plan, snapshot)
-    for _, r in ipairs(rejected) do log.d('WindowTidy rejected: ' .. r) end
+    for _, r in ipairs(rejected) do logLine("  REJECTED %s", r) end
+    for _, m in ipairs(moves) do
+        logLine("  ACCEPTED %s (%d) -> %d,%d %dx%d  |  %s",
+            m.app, m.id, m.frame.x, m.frame.y, m.frame.w, m.frame.h, m.reason)
+    end
 
     if #moves == 0 then
-        hs.alert.show("WindowTidy: no usable moves")
+        hs.alert.show("WindowTidy: no usable moves — see log")
+        logLine("DONE: nothing survived validation")
         return
     end
 
@@ -412,12 +513,13 @@ local function handleResponse(snapshot, stdOut, stdErr, exitCode)
                 m.app, m.frame.x, m.frame.y, m.frame.w, m.frame.h, m.reason)
         end
         local text = table.concat(lines, "\n")
-        log.i(text)
+        logLine("DRY RUN: queueing nothing")
         hs.alert.show(text, 6)
         return
     end
 
     hs.alert.show("WindowTidy: applying " .. #moves .. " moves")
+    logLine("queueing %d move(s)", #moves)
     WindowTidy.enqueue(moves)
 end
 
@@ -425,24 +527,42 @@ end
 function WindowTidy.run()
     if WindowTidy.task and WindowTidy.task:isRunning() then
         hs.alert.show("WindowTidy: already thinking")
+        logLine("IGNORED: a run is already in flight")
         return
     end
     if WindowTidy.drainTimer then
         hs.alert.show("WindowTidy: still applying the last plan")
+        logLine("IGNORED: still draining the previous plan")
         return
     end
 
+    logHeader(WindowTidy.config.dryRun and "RUN (dry run)" or "RUN")
+
     local bin = resolveGemini()
     if not bin then
-        hs.alert.show("WindowTidy: gemini CLI not found")
-        log.e('WindowTidy: could not resolve a gemini binary')
+        hs.alert.show("WindowTidy: gemini CLI not found — see log")
+        logLine("ABORT: could not resolve a gemini binary on any known path")
         return
     end
+    logLine("binary: %s", bin)
 
     local snapshot = WindowTidy.snapshot()
     if #snapshot.windows < 2 then
         hs.alert.show("WindowTidy: not enough windows")
+        logLine("ABORT: only %d visible standard window(s)", #snapshot.windows)
         return
+    end
+
+    logLine("%d screen(s), %d window(s), %d overlap pair(s)",
+        #snapshot.screens, #snapshot.windows, #snapshot.overlaps)
+    for _, w in ipairs(snapshot.windows) do
+        logLine("  window %d  %-22s screen %d  %d,%d %dx%d%s",
+            w.id, w.app, w.screen, w.frame.x, w.frame.y, w.frame.w, w.frame.h,
+            w.focused and "   <- FOCUSED, will not be moved" or "")
+    end
+    for _, o in ipairs(snapshot.overlaps) do
+        logLine("  overlap %d <-> %d  %d px^2 (%d%% of the smaller window)",
+            o.a, o.b, o.area, o.pctOfSmaller)
     end
 
     -- --skip-trust: headless gemini refuses to run in an untrusted directory,
@@ -454,10 +574,13 @@ function WindowTidy.run()
     end
 
     local out, err = {}, {}
+    local startedAt = hs.timer.secondsSinceEpoch()
 
     WindowTidy.task = hs.task.new(bin,
         function(exitCode)
             WindowTidy.task = nil
+            logLine("agent exited %s after %.1fs",
+                tostring(exitCode), hs.timer.secondsSinceEpoch() - startedAt)
             handleResponse(snapshot, table.concat(out), table.concat(err), exitCode)
         end,
         function(_task, stdOut, stdErr)
@@ -478,7 +601,7 @@ function WindowTidy.run()
     })
 
     hs.alert.show("WindowTidy: asking the agent about " .. #snapshot.windows .. " windows...")
-    log.i('WindowTidy: dispatching ' .. bin .. ' for ' .. #snapshot.windows .. ' windows')
+    logLine("dispatching %s for %d windows", bin, #snapshot.windows)
     WindowTidy.task:start()
 
     hs.timer.doAfter(WindowTidy.config.timeout, function()
@@ -486,6 +609,7 @@ function WindowTidy.run()
             WindowTidy.task:terminate()
             WindowTidy.task = nil
             hs.alert.show("WindowTidy: agent timed out")
+            logLine("ABORT: killed the agent after %ds", WindowTidy.config.timeout)
         end
     end)
 end
