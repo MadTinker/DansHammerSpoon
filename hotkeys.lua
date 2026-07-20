@@ -29,6 +29,7 @@ local HotkeyManager = getModule('HotkeyManager')
 local WindowToggler = getModule('WindowToggler')
 local ProjectManager = getModule('ProjectManager')
 local WindowMenu = getModule('WindowMenu')
+local WindowTidy = getModule('WindowTidy')
 
 -- Define modifier key combinations
 hammer = { "cmd", "ctrl", "alt" }
@@ -135,10 +136,10 @@ hs.hotkey.bind(hammer, "r", "Show Window Management Menu", function() WindowMenu
 hs.hotkey.bind(_hyper, "r", "Reset Shuffle Counters", function() WindowManager.resetShuffleCounters() end)
 hs.hotkey.bind(hammer, "t", "Open Barrier", function() AppManager.open_barrier() end)
 hs.hotkey.bind(_hyper, "t", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "y", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "y", "Temporary Function", function() tempFunction() end)
+hs.hotkey.bind(hammer, "y", "AI Tidy Windows", function() WindowTidy.run() end)
+hs.hotkey.bind(_hyper, "y", "AI Tidy Preview (dry run)", function() WindowTidy.preview() end)
 hs.hotkey.bind(hammer, "u", "Open Most Recent Image Folder", function() FileManager.openMostRecentImageFolder() end)
-hs.hotkey.bind(_hyper, "u", "Temporary Function", function() tempFunction() end)
+hs.hotkey.bind(_hyper, "u", "AI Tidy Undo", function() WindowTidy.undo() end)
 -- Original behavior: copy most recent image from Desktop to clipboard
 hs.hotkey.bind(hammer, "i", "Copy Most Recent Image", function() FileManager.copyMostRecentImage() end)
 hs.hotkey.bind(_hyper, "i", "Open Most Recent Image", function() FileManager.openMostRecentImage() end)

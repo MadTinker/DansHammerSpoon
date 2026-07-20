@@ -43,7 +43,8 @@ local icons = {
     restore = "↺",
     settings = "⚙",
     monitor = "🖥",
-    clear = "🗑"
+    clear = "🗑",
+    ai = "🧠"
 }
 
 -- Helper function to create menu item with icon
@@ -106,6 +107,24 @@ function WindowMenu.createMainMenu()
         {
             title = icons.move .. " Window Movement",
             menu = WindowMenu.createMovementSubmenu()
+        },
+        { title = "-" },
+
+        -- AI-assisted arrangement (never touches the focused window)
+        {
+            title = icons.ai .. " AI Tidy Windows",
+            fn = function() require('WindowTidy').run() end,
+            tooltip = "Ask the CLI agent for a better arrangement and apply it"
+        },
+        {
+            title = icons.ai .. " AI Tidy — Preview Only",
+            fn = function() require('WindowTidy').preview() end,
+            tooltip = "Show the proposed arrangement without moving anything"
+        },
+        {
+            title = icons.restore .. " AI Tidy — Undo Last",
+            fn = function() require('WindowTidy').undo() end,
+            tooltip = "Restore windows to their frames before the last tidy"
         },
         { title = "-" },
 
