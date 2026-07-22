@@ -208,8 +208,8 @@ hs.hotkey.bind(hammer, "m", "Toggle HammerGhost", function() spoon.HammerGhost:t
 hs.hotkey.bind(_hyper, "m", "HammerGhost Editor", function() spoon.HammerGhost:showActionEditor() end, nil, function() end)
 
 -- Keybindings - Space Row
-hs.hotkey.bind(hammer, "Space", "Show Hammer Hotkeys", function() showHammerList() end)
-hs.hotkey.bind(_hyper, "Space", "Show Hyper Hotkeys", function() showHyperList() end)
+hs.hotkey.bind(hammer, "Space", "Show All Hotkeys", function() showCombinedList() end)
+hs.hotkey.bind(_hyper, "Space", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(_meta, "Space", "Toggle Hotkey Display Mode", function() toggleHotkeyDisplayMode() end)
 
 -- Keybindings - Arrow Row

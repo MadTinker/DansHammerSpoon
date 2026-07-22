@@ -74,6 +74,38 @@ local function tableContains(tbl, element)
     return false
 end
 
+-- Compact modifier glyphs, shown in the combined list so an identical key in
+-- both modifier layers (e.g. hammer+Space vs hyper+Space) stays distinguishable.
+HotkeyManager.MODIFIER_GLYPHS = {
+    hammer = "⌘⌃⌥",
+    hyper  = "⌘⇧⌃⌥",
+    other  = "•",
+}
+
+-- Assign a binding to a display category from its description. Shared by both
+-- the chooser and the alert renderers so they never drift apart.
+local function categorizeBinding(description)
+    description = description or ""
+    if description:match("[Ww]indow") or description:match("[Ll]ayout") or
+        description:match("[Ss]creen") or description:match("[Ss]huffle") or
+        description:match("[Mm]ove") or description:match("[Pp]osition") then
+        return "Window Management"
+    elseif description:match("[Oo]pen") or description:match("[Ll]aunch") or
+        description:match("App") then
+        return "Applications"
+    elseif description:match("[Ff]ile") or description:match("[Ff]older") or
+        description:match("[Ii]mage") or description:match("[Mm]enu") then
+        return "Files"
+    elseif description:match("[Ss]how") or description:match("[Tt]oggle") or
+        description:match("[Ll]ist") or description:match("[Hh]otkey") then
+        return "UI & Display"
+    elseif description:match("[Ff]unction") or description:match("[Rr]eload") or
+        description:match("[Cc]onsole") then
+        return "System"
+    end
+    return "Other"
+end
+
 -- Register a hotkey binding
 function HotkeyManager.registerBinding(modifiers, key, callback, description)
     local modType = nil
@@ -172,134 +204,127 @@ function HotkeyManager.registerBinding(modifiers, key, callback, description)
     return true
 end
 
--- Show hotkey list for a specific modifier type with searchable chooser or alert
-function HotkeyManager.showHotkeyList(modType)
-    if not HotkeyManager.bindings[modType] then
-        log:e("Unknown modifier type:" .. modType, __FILE__, 173)
+-- Normalize a modType argument (a single string or an array of strings) into a
+-- validated, de-duplicated list of known modifier types.
+local function resolveModTypes(modTypes)
+    if type(modTypes) == "string" then modTypes = { modTypes } end
+    if type(modTypes) ~= "table" then return {} end
+    local out, seen = {}, {}
+    for _, m in ipairs(modTypes) do
+        if HotkeyManager.bindings[m] and not seen[m] then
+            seen[m] = true
+            out[#out + 1] = m
+        end
+    end
+    return out
+end
+
+-- Show hotkey list for one or more modifier types with searchable chooser or
+-- alert. Pass a single modType ("hammer") or a list ({"hammer","hyper"}).
+function HotkeyManager.showHotkeyList(modTypes)
+    local types = resolveModTypes(modTypes)
+    if #types == 0 then
+        log:e("Unknown modifier type(s) for showHotkeyList")
         return
     end
 
-    local bindings = HotkeyManager.bindings[modType]
-    if #bindings == 0 then
-        log:w("No bindings registered for:" .. modType, __FILE__, 179)
+    local total = 0
+    for _, m in ipairs(types) do total = total + #HotkeyManager.bindings[m] end
+    if total == 0 then
+        log:w("No bindings registered for the requested modifier(s)")
         hs.alert.show("No hotkeys registered")
         return
     end
 
+    -- Alert layout only supports a single modifier; fall back to the first.
     if HotkeyManager.config.displayMode == "alert" then
-        HotkeyManager.showHotkeyListAlert(modType)
+        HotkeyManager.showHotkeyListAlert(types[1])
     else
-        HotkeyManager.showHotkeyListChooser(modType)
+        HotkeyManager.showHotkeyListChooser(types)
     end
 end
 
 -- Show hotkey list in searchable chooser format
-function HotkeyManager.showHotkeyListChooser(modType)
-    local bindings = HotkeyManager.bindings[modType]
-    
-    -- Group bindings by category
+function HotkeyManager.showHotkeyListChooser(modTypes)
+    local types = resolveModTypes(modTypes)
+    if #types == 0 then return end
+    local combined = #types > 1
+
+    -- Group bindings by category, tagging each with its modifier so the row can
+    -- show which layer it belongs to when several are merged.
     local categories = {}
-
-    -- First pass: categorize bindings
-    for _, binding in ipairs(bindings) do
-        if not binding.isTemp then
-            local category = "Other"
-
-            -- Determine category based on description
-            if binding.description:match("[Ww]indow") or binding.description:match("[Ll]ayout") or
-                binding.description:match("[Ss]creen") or binding.description:match("[Ss]huffle") or
-                binding.description:match("[Mm]ove") or binding.description:match("[Pp]osition") then
-                category = "Window Management"
-            elseif binding.description:match("[Oo]pen") or binding.description:match("[Ll]aunch") or
-                binding.description:match("App") then
-                category = "Applications"
-            elseif binding.description:match("[Ff]ile") or binding.description:match("[Ff]older") or
-                binding.description:match("[Ii]mage") or binding.description:match("[Mm]enu") then
-                category = "Files"
-            elseif binding.description:match("[Ss]how") or binding.description:match("[Tt]oggle") or
-                binding.description:match("[Ll]ist") or binding.description:match("[Hh]otkey") then
-                category = "UI & Display"
-            elseif binding.description:match("[Ff]unction") or binding.description:match("[Rr]eload") or
-                binding.description:match("[Cc]onsole") then
-                category = "System"
+    for _, modType in ipairs(types) do
+        for _, binding in ipairs(HotkeyManager.bindings[modType]) do
+            if not binding.isTemp then
+                local category = categorizeBinding(binding.description)
+                categories[category] = categories[category] or {}
+                table.insert(categories[category], {
+                    key = binding.key,
+                    description = binding.description,
+                    callback = binding.callback,
+                    modType = modType,
+                })
             end
-
-            if not categories[category] then
-                categories[category] = {}
-            end
-
-            table.insert(categories[category], binding)
         end
     end
 
-    -- Sort each category's bindings by key
+    -- Sort each category by key, then by modifier so duplicates group together.
     for _, catBindings in pairs(categories) do
         table.sort(catBindings, function(a, b)
+            if a.key == b.key then return a.modType < b.modType end
             return a.key < b.key
         end)
     end
 
-    -- Create chooser choices with formatted display
     local choices = {}
-    local callbacks = {} -- Store callbacks locally
+    local callbacks = {}
     local callbackIndex = 1
-    
-    -- Title
-    local titleText = modType == HotkeyManager.MODIFIERS.HAMMER and "Hammer Mode Hotkeys" or
-        modType == HotkeyManager.MODIFIERS.HYPER and "Hyper Mode Hotkeys" or "Other Hotkeys"
-    
-    -- Order of categories
-    local categoryOrder = { "Window Management", "Applications", "Files", "UI & Display", "System" }
 
-    -- Add categories in preferred order
-    for _, catName in ipairs(categoryOrder) do
+    -- Render one binding into a chooser choice. In combined mode the key column
+    -- is prefixed with the modifier glyph, and the modifier name is folded into
+    -- subText so it is searchable ("hyper", "hammer").
+    local function addChoice(binding, catName)
+        local glyph = HotkeyManager.MODIFIER_GLYPHS[binding.modType] or ""
+        local keyLabel = combined and (glyph .. " " .. binding.key) or binding.key
+        local subText = combined and (catName .. "  ·  " .. binding.modType) or catName
+        table.insert(choices, {
+            text = string.format("%-14s — %-30s", keyLabel, binding.description),
+            subText = subText,
+            key = binding.key,
+            description = binding.description,
+            category = catName,
+            callbackIndex = callbackIndex,
+        })
+        callbacks[callbackIndex] = binding.callback
+        callbackIndex = callbackIndex + 1
+    end
+
+    local orderedCategories = { "Window Management", "Applications", "Files", "UI & Display", "System", "Other" }
+    for _, catName in ipairs(orderedCategories) do
         if categories[catName] and #categories[catName] > 0 then
-            -- Add category header
             table.insert(choices, {
                 text = "— " .. catName .. " —",
                 subText = "────────────────────────────────────────",
-                disabled = true
+                disabled = true,
             })
-
-            -- Add hotkeys in this category with spacing
             for _, binding in ipairs(categories[catName]) do
-                table.insert(choices, {
-                    text = string.format("%-8s — %-30s", binding.key, binding.description),
-                    subText = catName,
-                    key = binding.key,
-                    description = binding.description,
-                    category = catName,
-                    callbackIndex = callbackIndex
-                })
-                callbacks[callbackIndex] = binding.callback
-                callbackIndex = callbackIndex + 1
+                addChoice(binding, catName)
             end
         end
     end
 
-    -- Handle "Other" category last
-    if categories["Other"] and #categories["Other"] > 0 then
-        table.insert(choices, {
-            text = "— Other —",
-            subText = "────────────────────────────────────────",
-            disabled = true
-        })
-
-        for _, binding in ipairs(categories["Other"]) do
-            table.insert(choices, {
-                text = string.format("%-8s — %-30s", binding.key, binding.description),
-                subText = "Other",
-                key = binding.key,
-                description = binding.description,
-                category = "Other",
-                callbackIndex = callbackIndex
-            })
-            callbacks[callbackIndex] = binding.callback
-            callbackIndex = callbackIndex + 1
-        end
+    -- Title / placeholder reflects which layers are shown.
+    local titleText
+    if combined then
+        titleText = "All Hotkeys"
+    elseif types[1] == HotkeyManager.MODIFIERS.HAMMER then
+        titleText = "Hammer Mode Hotkeys"
+    elseif types[1] == HotkeyManager.MODIFIERS.HYPER then
+        titleText = "Hyper Mode Hotkeys"
+    else
+        titleText = "Other Hotkeys"
     end
 
-    -- Create and show chooser
     local chooser = hs.chooser.new(function(choice)
         if choice and not choice.disabled and choice.callbackIndex and callbacks[choice.callbackIndex] then
             callbacks[choice.callbackIndex]()
@@ -470,6 +495,11 @@ function HotkeyManager.showHyperList()
     HotkeyManager.showHotkeyList(HotkeyManager.MODIFIERS.HYPER)
 end
 
+-- Show hammer and hyper hotkeys together in a single searchable list.
+function HotkeyManager.showCombinedList()
+    HotkeyManager.showHotkeyList({ HotkeyManager.MODIFIERS.HAMMER, HotkeyManager.MODIFIERS.HYPER })
+end
+
 -- Show other hotkey list or toggle it off if already showing
 function HotkeyManager.showOtherList()
     HotkeyManager.showHotkeyList(HotkeyManager.MODIFIERS.OTHER)
@@ -518,6 +548,7 @@ function HotkeyManager.init()
     -- Replace the global functions
     _G.showHammerList = HotkeyManager.showHammerList
     _G.showHyperList = HotkeyManager.showHyperList
+    _G.showCombinedList = HotkeyManager.showCombinedList
     _G.showOtherList = HotkeyManager.showOtherList
     _G.toggleHotkeyDisplayMode = HotkeyManager.toggleDisplayMode
 
