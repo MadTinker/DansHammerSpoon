@@ -10,6 +10,19 @@ local log = HyperLogger.new('HammerspoonApp')
 _G.AppLogger = log
 log:d('Logger initialized', __FILE__, 10)
 
+-- Console + hotkey control over log verbosity. Default is "info" (quiet);
+-- cycleLogLevel() steps quiet->loud (info -> debug) across every namespace.
+_G.cycleLogLevel = function()
+    local level = HyperLogger.cycleGlobalLevel()
+    hs.alert.show("Log level: " .. level)
+    return level
+end
+_G.setLogLevel = function(level)
+    local applied = HyperLogger.setGlobalLevel(level)
+    hs.alert.show("Log level: " .. applied)
+    return applied
+end
+
 -- Load secrets
 local secrets = require("load_secrets")
 log:d('Secrets module loaded', __FILE__, 14)

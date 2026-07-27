@@ -74,7 +74,7 @@ hs.hotkey.bind(hammer, "F7", "Restore Window Position", function() WindowManager
 hs.hotkey.bind(_hyper, "F7", "Restore All Window Positions", function() WindowManager.restoreAllWindowPositions() end)
 hs.hotkey.bind("cmd", "F8", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "F8", "Raise Window to Front", function() WindowManager.toggleAlwaysOnTop() end)
-hs.hotkey.bind(_hyper, "F8", "Temporary Function", function() tempFunction() end)
+hs.hotkey.bind(_hyper, "F8", "Cycle Log Level", function() cycleLogLevel() end)
 hs.hotkey.bind("cmd", "F9", "Temporary Function", function() tempFunction() end)
 hs.hotkey.bind(hammer, "F9", "Show Window Config Info", function() WindowToggler.showConfigurationInfo() end)
 hs.hotkey.bind(_hyper, "F9", "Refresh Window Config", function() WindowToggler.refreshConfiguration() end)

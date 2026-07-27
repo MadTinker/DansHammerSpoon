@@ -27,7 +27,7 @@ local HyperLogger = {}
 
 local loggers = {}          -- namespace -> logger (singletons)
 local creationStacks = {}   -- namespace -> where it was first created
-local DEFAULT_LOG_LEVEL = "debug"
+local DEFAULT_LOG_LEVEL = "info"  -- quiet by default; opt into debug via cycle
 
 -- hs.logger's ordering. Lower number = more severe. A message prints when its
 -- severity number is <= the logger's configured level number.
@@ -140,10 +140,14 @@ local function emit(logger, levelName, first, ...)
     return logger
 end
 
+-- The level new loggers inherit when none is passed. Changed by setGlobalLevel
+-- so a single toggle raises/lowers verbosity across every namespace at once.
+HyperLogger.globalLevel = DEFAULT_LOG_LEVEL
+
 --- Create (or fetch the existing) logger for a namespace.
 function HyperLogger.new(namespace, loglevel)
     namespace = tostring(namespace or "HammerspoonLogger")
-    loglevel = tostring(loglevel or DEFAULT_LOG_LEVEL)
+    loglevel = tostring(loglevel or HyperLogger.globalLevel)
 
     local existing = loggers[namespace]
     if existing then
@@ -206,6 +210,35 @@ function HyperLogger.resetLoggers()
     loggers = {}
     creationStacks = {}
     printInit("all loggers reset")
+end
+
+-- Set the level on every existing logger and on the default for future ones.
+function HyperLogger.setGlobalLevel(level)
+    level = tostring(level)
+    if not LEVELS[level] then
+        printInit("ignored unknown log level: " .. level, true)
+        return HyperLogger.globalLevel
+    end
+    HyperLogger.globalLevel = level
+    for _, lg in pairs(loggers) do lg:setLogLevel(level) end
+    return level
+end
+
+function HyperLogger.getGlobalLevel()
+    return HyperLogger.globalLevel
+end
+
+-- Cycle order runs quiet -> loud, so from the default "info" the first step
+-- turns the firehose on. Wraps back to error after debug.
+local CYCLE = { "error", "warning", "info", "debug" }
+
+--- Advance the global level one step round the cycle. Returns the new level.
+function HyperLogger.cycleGlobalLevel()
+    local idx = 1
+    for i, l in ipairs(CYCLE) do
+        if l == HyperLogger.globalLevel then idx = i; break end
+    end
+    return HyperLogger.setGlobalLevel(CYCLE[(idx % #CYCLE) + 1])
 end
 
 return HyperLogger
