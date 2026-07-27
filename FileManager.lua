@@ -41,7 +41,8 @@ local fileList = {
     { name = "zshrc",           path = "~/.zshrc" },
     { name = "bash_aliases",    path = "~/.bash_aliases" },
     { name = "tasks",           path = "~/lab/regressiontestkit/tasks.py" },
-    { name = "ssh config",      path = "~/.ssh/config" }
+    { name = "ssh config",      path = "~/.ssh/config" },
+    { name = "titancall log",   path = "~/.local/share/titancall/log" }
 }
 
 -- Fallback projects list (used when OmniLadle is not available)
@@ -149,19 +150,26 @@ function FileManager.setEditor(newEditor)
     lastSelected.editor = newEditor
 end
 
--- OmniLadle integration for centralized project management
+-- OmniLadle integration for centralized project management.
+-- The unavailable warning is logged only on transition into the unavailable
+-- state, not on every call: OmniLadle is often down for a whole session, and
+-- warning each time floods the console.
+local omniLadleWasAvailable = nil  -- nil = unknown, so the first result logs
 local function getOmniLadle()
-    -- Check if OmniLadle is available globally (loaded in init.lua)
-    if _G.OmniLadle then
-        return _G.OmniLadle
+    local ladle = _G.OmniLadle or (spoon and spoon.OmniLadle) or nil
+
+    if ladle then
+        if omniLadleWasAvailable == false then
+            log:i('OmniLadle now available for FileManager')
+        end
+        omniLadleWasAvailable = true
+        return ladle
     end
 
-    -- Try to access through spoon system
-    if spoon and spoon.OmniLadle then
-        return spoon.OmniLadle
+    if omniLadleWasAvailable ~= false then
+        log:w('OmniLadle not available for FileManager - using fallback project list')
     end
-
-    log:w('OmniLadle not available for FileManager - using fallback project list')
+    omniLadleWasAvailable = false
     return nil
 end
 
@@ -284,18 +292,46 @@ local function mergeProjects(curated, scanned)
     return merged
 end
 
--- Dynamic project list: OmniLadle (server, authoritative) first; when it's
--- unreachable, the curated fallback merged with disk auto-discovery.
-function FileManager.getProjectsList()
-    log:d('Getting projects list for FileManager')
+-- Result cache for getProjectsList. Menu builders call it many times per user
+-- action (and once per open window in the app switcher), so without this a
+-- single menu rebuild re-merges the list and logs the same three lines a dozen
+-- times. TTL is short so a project added on the server or disk still surfaces
+-- quickly. Cleared explicitly by invalidateProjectsList().
+local projectsCache = { list = nil, ts = 0, source = nil }
+local PROJECTS_TTL = 30  -- seconds
 
-    -- Try OmniLadle first for real-time project management
+-- Log the resolved source only when it changes, so a burst of calls that all
+-- return the same list produces one line, not one per call.
+local lastLoggedSource = nil
+local function logSourceOnce(source)
+    if source ~= lastLoggedSource then
+        log:i('FileManager project list: ' .. source)
+        lastLoggedSource = source
+    end
+end
+
+-- Drop the memoized list so the next getProjectsList() rebuilds from scratch.
+function FileManager.invalidateProjectsList()
+    projectsCache.list = nil
+    projectsCache.ts = 0
+end
+
+-- Dynamic project list: OmniLadle (server, authoritative) first; when it's
+-- unreachable, the curated fallback merged with disk auto-discovery. Memoized
+-- for PROJECTS_TTL seconds.
+function FileManager.getProjectsList()
+    if projectsCache.list and (os.time() - projectsCache.ts) < PROJECTS_TTL then
+        return projectsCache.list
+    end
+
+    local list, source
+
+    -- Try OmniLadle first for real-time project management.
     local omniLadle = getOmniLadle()
     if omniLadle then
         local projects = omniLadle:getProjectsList()
         if projects and #projects > 0 then
-            log:i('FileManager using ' .. #projects .. ' projects from OmniLadle')
-            return projects
+            list, source = projects, #projects .. ' from OmniLadle'
         else
             log:w('OmniLadle returned empty or invalid project list, scanning + fallback')
         end
@@ -303,9 +339,14 @@ function FileManager.getProjectsList()
 
     -- Server unreachable: curated fallback (keeps priority order) + auto-discovered
     -- repos appended, so a newly-created project shows up without hand-editing.
-    local merged = mergeProjects(fallback_projects_list, FileManager.scanProjectDirs())
-    log:i('FileManager using merged fallback+scan project list (' .. #merged .. ' projects)')
-    return merged
+    if not list then
+        list = mergeProjects(fallback_projects_list, FileManager.scanProjectDirs())
+        source = #list .. ' merged fallback+scan'
+    end
+
+    projectsCache.list, projectsCache.ts, projectsCache.source = list, os.time(), source
+    logSourceOnce(source)
+    return list
 end
 
 function FileManager.getLastSelected()

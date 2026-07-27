@@ -550,6 +550,10 @@ function AppManager.launchCursorWithGitHubDesktop()
         local choices = {}
         local openWindowTitles = {}
 
+        -- Project list is invariant across the window loop below; fetch it once
+        -- rather than rebuilding it per open window.
+        local projects_list = FileManager.getProjectsList()
+
         -- Add existing windows as choices
         for i, win in ipairs(windows) do
             local title = win:title()
@@ -557,7 +561,7 @@ function AppManager.launchCursorWithGitHubDesktop()
             local path = ""
 
             -- Check if this window title matches any known project
-            for _, project in ipairs(FileManager.getProjectsList()) do
+            for _, project in ipairs(projects_list) do
                 if title:match(project.name) then
                     path = project.path
                     break
