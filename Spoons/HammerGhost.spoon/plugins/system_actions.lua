@@ -101,15 +101,27 @@ return function(action_system)
         end
     })
 
-    -- Play a named system sound (e.g. Glass, Ping, Sosumi). Unknown name -> no-op.
+    -- Play a system sound picked from a dropdown, or a custom audio file (AIFF/
+    -- WAV/MP3/...) via the file picker. A non-empty file wins over the dropdown;
+    -- a missing/unreadable file falls back to the named sound. Unknown -> no-op.
+    -- Options are snapshotted from hs.sound.systemSounds() at plugin load.
     -- Retained so the sound isn't collected mid-play.
+    local soundNames = hs.sound.systemSounds()
+    table.sort(soundNames)
     action_system.registerActionType("playSound", {
         name = "Play Sound",
         parameters = {
-            name = { type = "text", required = false, default = "Glass" }
+            name = { type = "select", options = soundNames, required = false, default = "Glass" },
+            file = { type = "file", required = false, default = "" }
         },
         handler = function(params)
-            local s = hs.sound.getByName(params.name)
+            local s
+            if params.file and params.file ~= "" then
+                s = hs.sound.getByFile(params.file)
+            end
+            if not s then
+                s = hs.sound.getByName(params.name or "Glass")
+            end
             if s then
                 lastSound = s
                 s:play()
