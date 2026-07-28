@@ -266,6 +266,81 @@ local PANEL_HTML = [[
     font-size: 11px;
     letter-spacing: 1px;
   }
+
+  /* ── Logger section ── */
+  .logger {
+    border-top: 1px solid var(--border);
+    padding: 10px 14px 14px;
+  }
+  .logger-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .logger-title {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .logger-global {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .logger-global .lbl {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    min-width: 52px;
+  }
+  /* Level segmented picker */
+  .seg { display: inline-flex; gap: 3px; }
+  .seg .lv {
+    padding: 2px 7px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--btn-bg);
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 8px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .seg .lv:hover { background: var(--btn-hover); color: var(--text); }
+  .seg .lv.is-active {
+    color: var(--active);
+    border-color: var(--active);
+    background: rgba(0, 255, 163, 0.08);
+  }
+  /* Per-namespace rows */
+  .logger-rows {
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .logger-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 2px 0;
+  }
+  .logger-row .ns {
+    font-size: 9px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
 </style>
 </head>
 <body>
@@ -287,6 +362,23 @@ local PANEL_HTML = [[
 
 <div class="grid" id="card-grid">
   <div class="empty">⚙ Initializing contraptions…</div>
+</div>
+
+<div class="logger" id="logger-panel">
+  <div class="logger-head">
+    <span class="logger-title">▤ Logger</span>
+    <div class="card-actions">
+      <button class="btn btn-accent" onclick="resetLog()">Reset → info</button>
+      <button class="btn btn-info" onclick="openConsole()">Console</button>
+    </div>
+  </div>
+  <div class="logger-global">
+    <span class="lbl">Global</span>
+    <span class="seg" id="logger-global-seg"></span>
+  </div>
+  <div class="logger-rows" id="logger-rows">
+    <div class="empty" style="padding:14px">Loading namespaces…</div>
+  </div>
 </div>
 
 <script>
@@ -375,6 +467,57 @@ function escHtml(s) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+// ── Logger controls ──────────────────────────────────────────────────────
+function setGlobalLog(level) { nav('action=setGlobalLog&level=' + encodeURIComponent(level)); }
+function setNsLog(ns, level) {
+  nav('action=setNsLog&ns=' + encodeURIComponent(ns) + '&level=' + encodeURIComponent(level));
+}
+function resetLog()    { nav('action=resetLog'); }
+function openConsole() { nav('action=console'); }
+
+// Build a 4-button segmented level picker. onclickExpr is a JS snippet string
+// that receives the level, e.g. "setGlobalLog" or "setNsLog('X',...)".
+function levelSeg(choices, current, mkOnclick) {
+  var html = '';
+  for (var i = 0; i < choices.length; i++) {
+    var lv = choices[i];
+    var cls = 'lv' + (lv === current ? ' is-active' : '');
+    html += '<span class="' + cls + '" onclick="' + mkOnclick(lv) + '">' + escHtml(lv.slice(0, 3)) + '</span>';
+  }
+  return html;
+}
+
+function renderLogger(state) {
+  if (!state) return;
+  var choices = state.choices || ['error', 'warning', 'info', 'debug'];
+
+  // Global row
+  document.getElementById('logger-global-seg').innerHTML =
+    levelSeg(choices, state.global, function (lv) {
+      return "setGlobalLog('" + lv + "')";
+    });
+
+  // Per-namespace rows
+  var rows = state.levels || [];
+  var container = document.getElementById('logger-rows');
+  if (rows.length === 0) {
+    container.innerHTML = '<div class="empty" style="padding:14px">No loggers registered</div>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i];
+    var nsEsc = String(r.ns).replace(/'/g, "\\'");
+    html += '<div class="logger-row">';
+    html += '<span class="ns" title="' + escHtml(r.ns) + '">' + escHtml(r.ns) + '</span>';
+    html += '<span class="seg">' + levelSeg(choices, r.level, (function (ns) {
+      return function (lv) { return "setNsLog('" + ns + "','" + lv + "')"; };
+    })(nsEsc)) + '</span>';
+    html += '</div>';
+  }
+  container.innerHTML = html;
 }
 
 // Boot: request state on load
@@ -664,6 +807,19 @@ local function handleURL(spoonObj, url)
     elseif action == "lock" then
         hs.caffeinate.lockScreen()
 
+    -- ── Logger controls ─────────────────────────────────────────────────────────
+    elseif action == "setGlobalLog" then
+        require('HyperLogger').setGlobalLevel(params.level)
+        M.refresh()
+
+    elseif action == "setNsLog" then
+        require('HyperLogger').setNamespaceLevel(params.ns, params.level)
+        M.refresh()
+
+    elseif action == "resetLog" then
+        require('HyperLogger').resetLevels()
+        M.refresh()
+
     end
 end
 
@@ -755,6 +911,15 @@ function M.refresh()
     local ok, json = pcall(hs.json.encode, cards)
     if ok then
         panelWindow:evaluateJavaScript("renderCards(" .. json .. ");")
+    end
+
+    -- Push logger state into the Logger section.
+    local HL = require('HyperLogger')
+    local lstate = { global = HL.getGlobalLevel(), levels = HL.getLevels(),
+                     choices = HL.LEVEL_CHOICES }
+    local ok2, ljson = pcall(hs.json.encode, lstate)
+    if ok2 then
+        panelWindow:evaluateJavaScript("renderLogger(" .. ljson .. ");")
     end
 end
 

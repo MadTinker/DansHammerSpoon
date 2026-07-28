@@ -23,6 +23,11 @@ _G.setLogLevel = function(level)
     return applied
 end
 
+-- Restore per-namespace + global log levels saved in a previous session. Runs
+-- before hotkeys.lua loads the rest, so globalLevel is right as modules register
+-- and each logger picks up any saved override.
+HyperLogger.loadLevels()
+
 -- Load secrets
 local secrets = require("load_secrets")
 log:d('Secrets module loaded', __FILE__, 14)

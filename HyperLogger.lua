@@ -144,10 +144,22 @@ end
 -- so a single toggle raises/lowers verbosity across every namespace at once.
 HyperLogger.globalLevel = DEFAULT_LOG_LEVEL
 
+-- Canonical level ordering for UIs (quiet -> loud). Exported so the control
+-- panel doesn't hardcode it. Matches the level methods, which top out at debug.
+HyperLogger.LEVEL_CHOICES = { "error", "warning", "info", "debug" }
+
+-- Persisted overrides, loaded from hs.settings by loadLevels(). `ns[namespace]`
+-- is a per-logger override that beats the global default, both for existing
+-- loggers and ones created later.
+local persisted = { global = nil, ns = {} }
+
 --- Create (or fetch the existing) logger for a namespace.
 function HyperLogger.new(namespace, loglevel)
     namespace = tostring(namespace or "HammerspoonLogger")
-    loglevel = tostring(loglevel or HyperLogger.globalLevel)
+    -- No explicit level: a saved per-namespace override wins over the global
+    -- default, so a module registering its logger after loadLevels() still
+    -- picks up the level the user chose for it.
+    loglevel = tostring(loglevel or persisted.ns[namespace] or HyperLogger.globalLevel)
 
     local existing = loggers[namespace]
     if existing then
@@ -212,15 +224,33 @@ function HyperLogger.resetLoggers()
     printInit("all loggers reset")
 end
 
+local SETTINGS_KEY = "HyperLogger.levels"
+
+-- Persist the current global + per-namespace overrides to hs.settings
+-- (machine-local; deliberately not a file in the auto-committing data/ submodule).
+function HyperLogger.saveLevels()
+    pcall(function()
+        hs.settings.set(SETTINGS_KEY, {
+            global = HyperLogger.globalLevel,
+            ns = persisted.ns,
+        })
+    end)
+end
+
 -- Set the level on every existing logger and on the default for future ones.
-function HyperLogger.setGlobalLevel(level)
+-- A global set means "everything to X", so it supersedes and clears the
+-- per-namespace overrides. `skipSave` is used by loadLevels to avoid writing
+-- back the values it just read.
+function HyperLogger.setGlobalLevel(level, skipSave)
     level = tostring(level)
     if not LEVELS[level] then
         printInit("ignored unknown log level: " .. level, true)
         return HyperLogger.globalLevel
     end
     HyperLogger.globalLevel = level
+    persisted.ns = {}
     for _, lg in pairs(loggers) do lg:setLogLevel(level) end
+    if not skipSave then HyperLogger.saveLevels() end
     return level
 end
 
@@ -228,17 +258,68 @@ function HyperLogger.getGlobalLevel()
     return HyperLogger.globalLevel
 end
 
--- Cycle order runs quiet -> loud, so from the default "info" the first step
--- turns the firehose on. Wraps back to error after debug.
-local CYCLE = { "error", "warning", "info", "debug" }
+-- Set a single namespace's level as an override on top of the global default,
+-- and persist it. Applies immediately if that logger already exists.
+function HyperLogger.setNamespaceLevel(namespace, level)
+    namespace = tostring(namespace)
+    level = tostring(level)
+    if not LEVELS[level] then
+        printInit("ignored unknown log level: " .. level, true)
+        return
+    end
+    persisted.ns[namespace] = level
+    local lg = loggers[namespace]
+    if lg then lg:setLogLevel(level) end
+    HyperLogger.saveLevels()
+    return level
+end
+
+-- Snapshot of every live logger's level, sorted by namespace, for a UI.
+function HyperLogger.getLevels()
+    local out = {}
+    for ns, lg in pairs(loggers) do
+        out[#out + 1] = { ns = ns, level = lg:getLogLevel() }
+    end
+    table.sort(out, function(a, b) return a.ns:lower() < b.ns:lower() end)
+    return out
+end
+
+-- Restore global + per-namespace levels saved by a previous session. Applies
+-- the global to all existing loggers, then overlays the per-namespace overrides.
+function HyperLogger.loadLevels()
+    local saved = nil
+    pcall(function() saved = hs.settings.get(SETTINGS_KEY) end)
+    if type(saved) ~= "table" then return end
+
+    if saved.global and LEVELS[saved.global] then
+        HyperLogger.setGlobalLevel(saved.global, true) -- clears ns; skip re-save
+    end
+    if type(saved.ns) == "table" then
+        for ns, level in pairs(saved.ns) do
+            if LEVELS[level] then
+                persisted.ns[ns] = level
+                local lg = loggers[ns]
+                if lg then lg:setLogLevel(level) end
+            end
+        end
+    end
+end
+
+-- Reset everything to the info default and forget all overrides.
+function HyperLogger.resetLevels()
+    HyperLogger.setGlobalLevel("info")  -- clears persisted.ns and saves
+    return "info"
+end
 
 --- Advance the global level one step round the cycle. Returns the new level.
+--- Cycle runs quiet -> loud (LEVEL_CHOICES), wrapping back to error after debug.
 function HyperLogger.cycleGlobalLevel()
+    local cycle = HyperLogger.LEVEL_CHOICES
     local idx = 1
-    for i, l in ipairs(CYCLE) do
+    for i, l in ipairs(cycle) do
         if l == HyperLogger.globalLevel then idx = i; break end
     end
-    return HyperLogger.setGlobalLevel(CYCLE[(idx % #CYCLE) + 1])
+    return HyperLogger.setGlobalLevel(cycle[(idx % #cycle) + 1])
 end
 
 return HyperLogger
