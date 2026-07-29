@@ -597,6 +597,15 @@ function obj:saveConfig()
     hs.alert.show("Configuration saved")
 end
 
+-- Persist the tree/properties divider position. Machine-local UI preference,
+-- so it lives in hs.settings rather than hammerghost_config.json (macro data).
+-- webview.lua reads it back when building the window HTML.
+function obj:setTreeWidth(width)
+    if type(width) == "number" and width >= 150 then
+        hs.settings.set("HammerGhost.treeWidth", width)
+    end
+end
+
 -- Function to reload configuration
 function obj:reloadConfig()
     self.macroTree, self.lastId = config.loadMacros(self.configPath)

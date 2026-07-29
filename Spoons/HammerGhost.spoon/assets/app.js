@@ -460,30 +460,44 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Resizable divider between the tree and properties panels ---
     // Sets #tree-column's width (a style attribute on the column wrapper, not the
     // re-rendered #tree-container), so the chosen width survives innerHTML refreshes.
+    // Pointer capture keeps the drag alive when the cursor leaves the window (a
+    // plain document mouseup never fires out there, leaving a stuck drag state),
+    // and the final width is persisted Lua-side so it survives window reopens.
     const divider = document.getElementById('divider');
     if (divider) {
         let resizing = false;
-        divider.addEventListener('mousedown', (event) => {
-            resizing = true;
-            divider.classList.add('dragging');
-            document.body.style.cursor = 'col-resize';
-            event.preventDefault();
-        });
-        document.addEventListener('mousemove', (event) => {
-            if (!resizing) return;
+        const applyWidth = (clientX) => {
             const min = 150;
             const max = window.innerWidth - 200;
-            let width = event.clientX;
+            let width = clientX;
             if (width < min) width = min;
             if (width > max) width = max;
             if (treeColumn) treeColumn.style.width = width + 'px';
+            return width;
+        };
+        divider.addEventListener('pointerdown', (event) => {
+            resizing = true;
+            // Captured events retarget to the divider but still bubble, so the
+            // document-level move/up listeners below see them either way.
+            try { divider.setPointerCapture(event.pointerId); } catch (e) { /* degrade to in-window drag */ }
+            divider.classList.add('dragging');
+            document.body.classList.add('col-resizing');
+            event.preventDefault();
         });
-        document.addEventListener('mouseup', () => {
+        document.addEventListener('pointermove', (event) => {
+            if (!resizing) return;
+            applyWidth(event.clientX);
+        });
+        const endResize = (event) => {
             if (!resizing) return;
             resizing = false;
             divider.classList.remove('dragging');
-            document.body.style.cursor = '';
-        });
+            document.body.classList.remove('col-resizing');
+            const width = applyWidth(event.clientX);
+            window.location.href = 'hammerspoon://setTreeWidth?width=' + Math.round(width);
+        };
+        document.addEventListener('pointerup', endResize);
+        document.addEventListener('pointercancel', endResize);
     }
 
     // Use event delegation for properties panel actions

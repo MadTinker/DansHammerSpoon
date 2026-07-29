@@ -90,6 +90,15 @@ function M.init(spoon)
     local css = readAsset("styles.css")
     local js = readAsset("app.js")
 
+    -- Restore the persisted divider position (machine-local UI pref; falls back
+    -- to the 300px CSS default when never dragged). Applied as an inline style
+    -- on #tree-column, same place the JS drag writes it.
+    local treeWidth = hs.settings.get("HammerGhost.treeWidth")
+    if type(treeWidth) == "number" and treeWidth >= 150 then
+        htmlContent = htmlContent:gsub('<div id="tree%-column">',
+            string.format('<div id="tree-column" style="width: %dpx">', treeWidth), 1)
+    end
+
     -- Plain-text replacement via function callback so CSS/JS '%' and braces are
     -- not interpreted as gsub replacement escapes.
     htmlContent = htmlContent:gsub('<link rel="stylesheet" href="styles.css">', function()

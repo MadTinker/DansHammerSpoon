@@ -176,16 +176,38 @@ body {
 }
 
 #divider {
+    position: relative;
     flex: 0 0 auto;
     width: 5px;
     cursor: col-resize;
     background-color: var(--border-color);
     transition: background-color 0.12s ease;
+    touch-action: none;
+}
+
+/* Invisible grab zone wider than the 5px visual bar — the sliver itself is a
+   frustrating drag target. */
+#divider::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -4px;
+    right: -4px;
+    z-index: 5;
 }
 
 #divider:hover,
 #divider.dragging {
     background-color: var(--accent-color);
+}
+
+/* Applied to <body> for the duration of a divider drag: keeps the resize cursor
+   steady and stops text selection in the panes being swept over. */
+body.col-resizing {
+    cursor: col-resize;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 #properties-panel {

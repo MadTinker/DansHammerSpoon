@@ -95,6 +95,8 @@ function M.handleURL(spoon, url)
         spoon:pickFile(params.field, params.surface or "main")
     elseif cmd == "pickApp" and params.field then
         spoon:pickApp(params.field, params.surface or "main")
+    elseif cmd == "setTreeWidth" and params.width then
+        spoon:setTreeWidth(tonumber(params.width))
     elseif cmd == "clearLog" then
         spoon:clearLog()
     elseif cmd == "bindEvent" and params.name then
