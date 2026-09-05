@@ -391,7 +391,9 @@
         "fn": "tempFunction"
       },
       "placeholder": true,
-      "migratedFrom": "hotkeys.lua:85"
+      "migratedFrom": "hotkeys.lua:85",
+      "enabled": false,
+      "note": "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it."
     },
     {
       "id": "hyper+F11",
@@ -429,7 +431,9 @@
         "fn": "tempFunction"
       },
       "placeholder": true,
-      "migratedFrom": "hotkeys.lua:88"
+      "migratedFrom": "hotkeys.lua:88",
+      "enabled": false,
+      "note": "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it."
     },
     {
       "id": "hyper+F12",

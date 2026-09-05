@@ -9,11 +9,23 @@
 -- rebindable at runtime. The keymap editor surfaces (HammerGhost tab, artifact,
 -- httpserver) are all just editors for that same file.
 
+-- Singleton (mirrors action_system.lua). hotkeys.lua require()s this module, but
+-- the HammerGhost keymap UI dofile()s its scripts -- and dofile does NOT consult
+-- package.loaded. A second copy starts with an empty `handles` table, so
+-- applyAll() cannot delete the hotkeys the first copy owns: instead of replacing
+-- them it stacks a second binding on every combo, and Hammerspoon silently
+-- shadows the old one (deleting the new one later RE-ENABLES the stale one).
+-- Stash the first instance on a global; later loads get it back.
+if rawget(_G, "_HotkeyBinder") then
+    return _G._HotkeyBinder
+end
+
 local HyperLogger = require('HyperLogger')
 local log = _G.AppLogger or HyperLogger.new()
 local __FILE__ = 'HotkeyBinder.lua'
 
 local HotkeyBinder = {}
+_G._HotkeyBinder = HotkeyBinder
 
 HotkeyBinder.path = hs.configdir .. "/hotkeys.json"
 HotkeyBinder.config = nil
@@ -141,6 +153,15 @@ function HotkeyBinder.resolveMods(mods)
     return nil, "invalid mods (" .. type(mods) .. ")"
 end
 
+--- Drop a binding from HotkeyManager's display registry, so showCombinedList()
+--- never advertises a hotkey that is no longer (or was never) bound.
+function HotkeyBinder.unregisterFromManager(mods, key)
+    local HotkeyManager = _G.HotkeyManager or require('HotkeyManager')
+    if mods and HotkeyManager and HotkeyManager.unregisterBinding then
+        HotkeyManager.unregisterBinding(mods, key)
+    end
+end
+
 --- Bind one entry, replacing any previous handle for the same id.
 function HotkeyBinder.bindOne(binding)
     if not binding.id then
@@ -177,6 +198,12 @@ function HotkeyBinder.bindOne(binding)
         local msg = binding.id .. ": bind failed (" .. tostring(handle) .. ")"
         table.insert(HotkeyBinder.errors, msg)
         log:e(msg, __FILE__, 168)
+        -- hs.hotkey.bind returns nil when macOS already owns the combo
+        -- (RegisterEventHotKey -9878). HotkeyManager's wrapper registers a
+        -- binding BEFORE calling through, so the failed one is now sitting in
+        -- the display registry with no handle to clean it up by -- and
+        -- showCombinedList() would advertise a hotkey that does nothing.
+        HotkeyBinder.unregisterFromManager(mods, binding.key)
         return false
     end
 
@@ -187,20 +214,20 @@ end
 --- Remove a live binding by id (handle + display-registry entry).
 function HotkeyBinder.unbindOne(id)
     local handle = HotkeyBinder.handles[id]
-    if not handle then return false end
+    if handle then
+        pcall(function() handle:delete() end)
+        HotkeyBinder.handles[id] = nil
+    end
 
-    pcall(function() handle:delete() end)
-    HotkeyBinder.handles[id] = nil
-
+    -- Clear the display-registry entry even when there was no handle. A binding
+    -- that failed to enable still got registered by HotkeyManager's wrapper, and
+    -- keying the cleanup off the handle would strand it there until a full
+    -- hs.reload built fresh registry tables.
     local entry = HotkeyBinder.find(id)
     if entry then
-        local mods = HotkeyBinder.resolveMods(entry.mods)
-        local HotkeyManager = _G.HotkeyManager or require('HotkeyManager')
-        if mods and HotkeyManager and HotkeyManager.unregisterBinding then
-            HotkeyManager.unregisterBinding(mods, entry.key)
-        end
+        HotkeyBinder.unregisterFromManager(HotkeyBinder.resolveMods(entry.mods), entry.key)
     end
-    return true
+    return handle ~= nil
 end
 
 -- ─────────────────────────────────────────────────────────────────────────────
