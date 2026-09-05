@@ -30,11 +30,19 @@ local WindowToggler = getModule('WindowToggler')
 local ProjectManager = getModule('ProjectManager')
 local WindowMenu = getModule('WindowMenu')
 local WindowTidy = getModule('WindowTidy')
+local HotkeyBinder = getModule('HotkeyBinder')
+-- Read the binding table up front: the modifier sets below come out of it.
+HotkeyBinder.load()
 
--- Define modifier key combinations
-hammer = { "cmd", "ctrl", "alt" }
-_hyper = { "cmd", "shift", "ctrl", "alt" }
-_meta = { "cmd", "shift", "alt" }
+-- Define modifier key combinations. Sourced from hotkeys.json so the named sets
+-- ("hammer", "hyper", "meta") used by every binding in that file cannot drift
+-- from the globals used by the imperative binds below. The literals are the
+-- fallback for a missing or unparseable hotkeys.json -- losing the whole
+-- keyboard over a stray comma would be a bad trade.
+local modSets = (HotkeyBinder.config or {}).modifierSets or {}
+hammer = modSets.hammer or { "cmd", "ctrl", "alt" }
+_hyper = modSets.hyper or { "cmd", "shift", "ctrl", "alt" }
+_meta = modSets.meta or { "cmd", "shift", "alt" }
 -- NEW: Caps Lock as Hyper key (maps to F18)
 _caps = {} -- Will be set up below with modal system
 
@@ -51,149 +59,30 @@ local FullLayoutState = {
 
 log:d('Keyboard initializing - Beep boop!', __FILE__, 158)
 
--- Keybindings - Top Row
-hs.hotkey.bind(hammer, "F1", "Toggle Console", function() hs.toggleConsole() end)
-hs.hotkey.bind(_hyper, "F1", "LM Studio", function() AppManager.open_lmstudio() end)
-hs.hotkey.bind("cmd", "F1", "Open Warp", function() AppManager.open_terminal() end)
-hs.hotkey.bind(hammer, "F2", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "F2", "Windsurf", function() AppManager.open_windsurf() end)
-hs.hotkey.bind("cmd", "F2", "Open Zen", function() AppManager.open_zen() end)
-hs.hotkey.bind(hammer, "F3", "Toggle USB Logging", function() DeviceManager.toggleUSBLogging() end)
-hs.hotkey.bind(_hyper, "F3", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind("cmd", "F3", "Open madhub", function() AppManager.open_github() end)
-hs.hotkey.bind(hammer, "F4", "Show Layouts Menu", function() spoon.Layouts:chooseLayout() end)
-hs.hotkey.bind(_hyper, "F4", "Save Layout", function() saveLayoutWithDialog() end)
-hs.hotkey.bind("cmd", "F4", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "F5", "Reload Hammerspoon", function() hs.reload() end)
-hs.hotkey.bind(_hyper, "F5", "Open Hammerspoon Preferences", function() hs.openPreferences() end)
-hs.hotkey.bind("cmd", "F5", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "F6", "Save Window Position", function() WindowManager.saveWindowPosition() end)
-hs.hotkey.bind(_hyper, "F6", "Save All Window Positions", function() WindowManager.saveAllWindowPositions() end)
-hs.hotkey.bind("cmd", "F6", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "F7", "Restore Window Position", function() WindowManager.restoreWindowPosition() end)
-hs.hotkey.bind(_hyper, "F7", "Restore All Window Positions", function() WindowManager.restoreAllWindowPositions() end)
-hs.hotkey.bind("cmd", "F8", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "F8", "Raise Window to Front", function() WindowManager.toggleAlwaysOnTop() end)
-hs.hotkey.bind(_hyper, "F8", "Cycle Log Level", function() cycleLogLevel() end)
-hs.hotkey.bind("cmd", "F9", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "F9", "Show Window Config Info", function() WindowToggler.showConfigurationInfo() end)
-hs.hotkey.bind(_hyper, "F9", "Refresh Window Config", function() WindowToggler.refreshConfiguration() end)
-hs.hotkey.bind("cmd", "F10", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "F10", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "F10", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind("cmd", "F11", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "F11", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "F11", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind("cmd", "F12", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "F12", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "F12", "Temporary Function", function() tempFunction() end)
 
--- Keybindings - Number Row
-hs.hotkey.bind(hammer, "`", "Open Cursor with madhub", function() AppManager.open_cursor_with_github() end)
-hs.hotkey.bind(_hyper, "`", "Open Medis", function() AppManager.open_medis() end)
-hs.hotkey.bind(hammer, "1", "Move Top-Left Corner", function() WindowManager.applyLayout("topLeft") end)
-hs.hotkey.bind(_hyper, "1", "Move Bottom-Left Corner", function() WindowManager.applyLayout("bottomLeft") end)
-hs.hotkey.bind(hammer, "2", "Move Top-Right Corner", function() WindowManager.applyLayout("topRight") end)
-hs.hotkey.bind(_hyper, "2", "Move Bottom-Right Corner", function() WindowManager.applyLayout("bottomRight") end)
-hs.hotkey.bind(hammer, "3", "Full Screen", function() WindowManager.toggleFullLayout() end)
-hs.hotkey.bind(_hyper, "3", "Nearly Full Screen", function() WindowManager.applyLayout('sevenByFive') end)
-hs.hotkey.bind(hammer, "4", "Left Wide Layout", function() WindowManager.applyLayout('leftWide') end)
-hs.hotkey.bind(_hyper, "4", "Mini Shuffle", function() WindowManager.miniShuffle() end)
-hs.hotkey.bind(hammer, "5", "Split Vertical", function() WindowManager.applyLayout('splitVertical') end)
-hs.hotkey.bind(_hyper, "5", "Split Horizontal", function() WindowManager.applyLayout('splitHorizontal') end)
-hs.hotkey.bind(hammer, "6", "Left Small Layout", function() WindowManager.toggleLeftLayout() end)
-hs.hotkey.bind(_hyper, "6", "Left Half Layout", function() WindowManager.applyLayout('leftHalf') end)
-hs.hotkey.bind(hammer, "7", "Toggle Right Layout", function() WindowManager.toggleRightLayout() end)
-hs.hotkey.bind(_hyper, "7", "Right Half Layout", function() WindowManager.applyLayout('rightHalf') end)
-hs.hotkey.bind(hammer, "8", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "8", "Open System Preferences", function() AppManager.open_system() end)
-hs.hotkey.bind(hammer, "9", "Move Window to Mouse", function() WindowManager.moveWindowMouseCenter() end)
-hs.hotkey.bind(_hyper, "9", "Open Selected File", function() FileManager.openSelectedFile() end)
-hs.hotkey.bind(hammer, "0", "Horizontal Shuffle", function() WindowManager.halfShuffle(4, 4) end)
-hs.hotkey.bind(_hyper, "0", "Vertical Shuffle", function() WindowManager.halfShuffle(1, 4) end)
--- add - and = and backspace
--- 1/2 swapped: screen index 1 (PHL 278E1 #1) sits lower on desk than index 2, felt flipped
-hs.hotkey.bind(hammer, "-", "Mouse: Monitor 1", function() WindowManager.moveMouseToScreen(2) end)
-hs.hotkey.bind(_hyper, "-", "Mouse: Monitor 2", function() WindowManager.moveMouseToScreen(1) end)
-hs.hotkey.bind(hammer, "=", "Mouse: Monitor 3", function() WindowManager.moveMouseToScreen(3) end)
-hs.hotkey.bind(_hyper, "=", "Mouse: Monitor 4", function() WindowManager.moveMouseToScreen(4) end)
--- hs.hotkey.bind(hammer, "delete", "Temporary Function", function() tempFunction() end) (cant bind while modifier is down)
--- hs.hotkey.bind(_hyper, "delete", "Temporary Function", function() tempFunction() end)
--- hs.hotkey.bind(hammer, "u", "Save Current Layout", function() saveLayoutWithDialog() end)
--- hs.hotkey.bind(hammer, "i", "Restore Layout", function() restoreLayoutChooser() end)
--- hs.hotkey.bind(_hyper, "y", "Delete Layout", function() deleteLayoutChooser() end)
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Declarative bindings
+-- ─────────────────────────────────────────────────────────────────────────────
+-- The ~140 hs.hotkey.bind calls that used to fill this file now live in
+-- hotkeys.json and are applied by HotkeyBinder. Add or change a hotkey THERE,
+-- not here -- by hand, or from the keymap editor. Bindings are data now, which
+-- is the whole point: a UI can read and rewrite them, and HotkeyBinder.reload()
+-- applies changes live (hs.reload() would destroy every open window's state).
+--
+-- Regenerate hotkeys.json from a pre-migration hotkeys.lua:
+--   python3 scripts/extract_hotkeys.py hotkeys.lua hotkeys.json
+--
+-- Check every binding still resolves to a real function:
+--   hs.inspect(require('HotkeyBinder').verify())
+HotkeyBinder.applyAll()
 
--- Keybindings - Tab Row
-hs.hotkey.bind(hammer, "Tab", "Open Mission Control", function() AppManager.open_mission_control() end)
-hs.hotkey.bind(_hyper, "Tab", "Open Launchpad", function() AppManager.open_launchpad() end)
-hs.hotkey.bind(hammer, "q", "Clear Saved Window Positions", function() WindowToggler.clearSavedPositions() end)
-hs.hotkey.bind(_hyper, "q", "Clear All Saved Locations", function() WindowToggler.clearSavedLocations(true) end)
-hs.hotkey.bind(hammer, "w", "Toggle Between Location 1 and 2", function() WindowToggler.toggleWindowPosition() end)
-hs.hotkey.bind(_hyper, "w", "Window Locations Menu", function() WindowToggler.showLocationsMenu() end)
-hs.hotkey.bind(hammer, "e", "Show File Menu", function() FileManager.showFileMenu() end)
-hs.hotkey.bind(_hyper, "e", "Show Editor Menu", function() FileManager.showEditorMenuSafe() end)
-hs.hotkey.bind(hammer, "r", "Show Window Management Menu", function() WindowMenu.toggleMenu() end)
-hs.hotkey.bind(_hyper, "r", "Reset Shuffle Counters", function() WindowManager.resetShuffleCounters() end)
-hs.hotkey.bind(hammer, "t", "Open Barrier", function() AppManager.open_barrier() end)
-hs.hotkey.bind(_hyper, "t", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "y", "AI Tidy Windows", function() WindowTidy.run() end)
-hs.hotkey.bind(_hyper, "y", "AI Tidy Preview (dry run)", function() WindowTidy.preview() end)
-hs.hotkey.bind(hammer, "u", "Open Most Recent Image Folder", function() FileManager.openMostRecentImageFolder() end)
-hs.hotkey.bind(_hyper, "u", "AI Tidy Undo", function() WindowTidy.undo() end)
--- Original behavior: copy most recent image from Desktop to clipboard
-hs.hotkey.bind(hammer, "i", "Copy Most Recent Image", function() FileManager.copyMostRecentImage() end)
-hs.hotkey.bind(_hyper, "i", "Open Most Recent Image", function() FileManager.openMostRecentImage() end)
-hs.hotkey.bind(hammer, "o", "Restore Window to Location 1", function() WindowToggler.restoreToLocation1() end)
-hs.hotkey.bind(_hyper, "o", "Save Window to Location 1", function() WindowToggler.saveToLocation1() end)
--- hs.hotkey.bind(hammer, "p", "Open Antigravity", function() AppManager.open_antigravity() end)
-hs.hotkey.bind(hammer, "p", "Open Postman", function() AppManager.open_postman() end)
-hs.hotkey.bind(_hyper, "p", "Open Cursor", function() AppManager.open_cursor() end)
--- New: dedicated screenshot-to-clipboard hotkey
-hs.hotkey.bind(hammer, "[", "Screenshot to Clipboard", function() FileManager.captureScreenshotToClipboard() end)
-hs.hotkey.bind(_hyper, "[", "Mouse: Previous Monitor", function() WindowManager.moveMouseToScreenRelative("previous") end)
--- ] freed: was Mouse Monitor 1, collided with system/app screenshot tool on cmd+ctrl+alt+]. Monitor jumps now live on -/= (see Number Row above).
-hs.hotkey.bind(hammer, "]", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "]", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "\\", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "\\", "Mouse: Next Monitor", function() WindowManager.moveMouseToScreenRelative("next") end)
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Bindings that stay imperative
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Two cases hotkeys.json deliberately does not model: a body that closes over a
+-- local, and bindings generated from runtime data. Everything else belongs in
+-- the JSON table.
 
--- Keybindings - Caps Lock Row
-hs.hotkey.bind(hammer, "a", "Toggle KineticLatch", function() spoon.KineticLatch:toggle() end)
-hs.hotkey.bind(_hyper, "a", "KineticLatch Status", function() spoon.KineticLatch:showStatus() end)
-hs.hotkey.bind(_meta, "a", "KineticLatch Diagnostics", function() spoon.KineticLatch:diagnose() end)
-hs.hotkey.bind(hammer, "s", "Open Slack", function() AppManager.open_slack() end)
-hs.hotkey.bind(_hyper, "s", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "d", "Open AnythingLLM", function() AppManager.open_anythingllm() end)
-hs.hotkey.bind(_hyper, "d", "Open MongoDB Compass", function() AppManager.open_mongodb() end)
-hs.hotkey.bind(hammer, "f", "Open Scrcpy", function() AppManager.open_scrcpy() end)
-hs.hotkey.bind(_hyper, "f", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "g", "Toggle Mad Tinker Dashboard", function() spoon.HammerGhost:toggleControlPanel() end, nil, function() end)
-hs.hotkey.bind(_hyper, "g", "Open madhub", function() AppManager.open_github() end)
-hs.hotkey.bind(hammer, "h", "Toggle HammerGhost", function() spoon.HammerGhost:toggle() end, nil, function() end)
-hs.hotkey.bind(_hyper, "h", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "j", "Toggle Project Manager", function() ProjectManager.toggleProjectManager() end)
-hs.hotkey.bind(_hyper, "j", "Show Active Project Info", function() ProjectManager.showActiveProjectInfo() end)
-hs.hotkey.bind(hammer, "k", "Reset Project Manager UI", function() ProjectManager.resetUI() end)
-hs.hotkey.bind(_hyper, "k", "Hide Project Manager UI", function() ProjectManager.hideUI() end)
-hs.hotkey.bind(hammer, "l", "Open Logi Options+", function() AppManager.open_logi() end)
-hs.hotkey.bind(_hyper, "l", "Open System Settings", function() AppManager.open_system() end)
-hs.hotkey.bind(hammer, ";", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, ";", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "'", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "'", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "return", "Toggle Native Fullscreen", function() WindowManager.toggleNativeFullScreen() end)
-
--- Shift Row
-hs.hotkey.bind(hammer, "z", "Open Codex", function() AppManager.open_codex() end)
-hs.hotkey.bind(_hyper, "z", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "x", "Toggle Dragon Grid", function() spoon.DragonGrid:toggleGridDisplay() end)
-hs.hotkey.bind(_hyper, "x", "Dragon Grid Settings", function() spoon.DragonGrid:showSettingsMenu() end)
-hs.hotkey.bind(hammer, "c", "Open Claude", function() AppManager.open_claude() end)
-hs.hotkey.bind(_hyper, "c", "Temporary Function", function() tempFunction() end) -- hs.hotkey.bind(_hyper, "c", function() FileManager.clearClipboard() end) broken
-hs.hotkey.bind(hammer, "v", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_hyper, "v", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(hammer, "b", "Open Chrome", function() AppManager.open_chrome() end)
-hs.hotkey.bind(_hyper, "b", "Open Arc Browser", function() AppManager.open_arc() end)
 -- Open Replit team link in Work Chrome profile (profile dir: check chrome://version/ when Work is active)
 local workChromeProfile = "Profile 2"   -- change if your Work profile uses another dir, e.g. "Default" or "Profile 2"
 hs.hotkey.bind({"ctrl", "cmd"}, "b", "Open Replit (Work Chrome)", function()
@@ -202,25 +91,6 @@ hs.hotkey.bind({"ctrl", "cmd"}, "b", "Open Replit (Work Chrome)", function()
         workChromeProfile
     ))
 end)
-hs.hotkey.bind(hammer, "n", "Restore Window to Location 2", function() WindowToggler.restoreToLocation2() end)
-hs.hotkey.bind(_hyper, "n", "Save Window to Location 2", function() WindowToggler.saveToLocation2() end)
-hs.hotkey.bind(hammer, "m", "Toggle HammerGhost", function() spoon.HammerGhost:toggle() end, nil, function() end)
-hs.hotkey.bind(_hyper, "m", "HammerGhost Editor", function() spoon.HammerGhost:showActionEditor() end, nil, function() end)
-
--- Keybindings - Space Row
-hs.hotkey.bind(hammer, "Space", "Show All Hotkeys", function() showCombinedList() end)
-hs.hotkey.bind(_hyper, "Space", "Temporary Function", function() tempFunction() end)
-hs.hotkey.bind(_meta, "Space", "Toggle Hotkey Display Mode", function() toggleHotkeyDisplayMode() end)
-
--- Keybindings - Arrow Row
-hs.hotkey.bind(hammer, "left", "Move Window Left", function() WindowManager.moveWindow("left") end)
-hs.hotkey.bind(_hyper, "left", "Move to Previous Screen", function() WindowManager.moveToScreen("previous", "right") end)
-hs.hotkey.bind(hammer, "right", "Move Window Right", function() WindowManager.moveWindow("right") end)
-hs.hotkey.bind(_hyper, "right", "Move to Next Screen", function() WindowManager.moveToScreen("next", "right") end)
-hs.hotkey.bind(hammer, "up", "Move Window Up", function() WindowManager.moveWindow("up") end)
-hs.hotkey.bind(_hyper, "up", "Center Screen Layout", function() WindowManager.applyLayout('centerScreen') end)
-hs.hotkey.bind(hammer, "down", "Move Window Down", function() WindowManager.moveWindow("down") end)
-hs.hotkey.bind(_hyper, "down", "Bottom Half Layout", function() WindowManager.applyLayout('bottomHalf') end)
 
 -- Dynamic hotkeys for top 9 projects
 for i = 1, 9 do
@@ -232,8 +102,6 @@ for i = 1, 9 do
         end)
     end
 end
-
-hs.hotkey.bind(_meta, "0", "Show Top Projects", function() showTopProjects() end)
 
 -- Add a definition for tempFunction at the end of the file
 function tempFunction()

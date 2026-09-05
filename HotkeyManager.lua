@@ -106,42 +106,59 @@ local function categorizeBinding(description)
     return "Other"
 end
 
--- Register a hotkey binding
-function HotkeyManager.registerBinding(modifiers, key, callback, description)
-    local modType = nil
-
+-- Sort a modifier list into the hammer / hyper / other display buckets. Shared
+-- by registerBinding and unregisterBinding so the two can never disagree about
+-- which bucket a binding lives in (an unregister looking in the wrong bucket
+-- silently leaves a stale entry behind).
+function HotkeyManager.classifyModifiers(modifiers)
     -- Ensure modifiers is a table
     if type(modifiers) ~= "table" then
         -- Convert single string modifiers to a table
-        log:w("Non-table modifiers passed to registerBinding: " .. tostring(modifiers))
+        log:w("Non-table modifiers passed to classifyModifiers: " .. tostring(modifiers))
         if type(modifiers) == "string" then
             modifiers = { modifiers }
         else
-            modType = "other"
+            return "other"
         end
     end
 
-    -- Now we ensure modifiers is a table, determine the type
-    if type(modifiers) == "table" then
-        -- Determine if this is a hammer or hyper binding by checking for presence of modifiers
-        -- regardless of their order
-        if #modifiers == 3 and
-            tableContains(modifiers, "cmd") and
-            tableContains(modifiers, "ctrl") and
-            tableContains(modifiers, "alt") then
-            modType = HotkeyManager.MODIFIERS.HAMMER
-        elseif #modifiers == 4 and
-            tableContains(modifiers, "cmd") and
-            tableContains(modifiers, "shift") and
-            tableContains(modifiers, "ctrl") and
-            tableContains(modifiers, "alt") then
-            modType = HotkeyManager.MODIFIERS.HYPER
-        else
-            modType = "other" -- Store all other combos in 'other'
-        end
-    else
-        modType = "other"
+    -- Determine if this is a hammer or hyper binding by checking for presence of
+    -- modifiers regardless of their order
+    if #modifiers == 3 and
+        tableContains(modifiers, "cmd") and
+        tableContains(modifiers, "ctrl") and
+        tableContains(modifiers, "alt") then
+        return HotkeyManager.MODIFIERS.HAMMER
+    elseif #modifiers == 4 and
+        tableContains(modifiers, "cmd") and
+        tableContains(modifiers, "shift") and
+        tableContains(modifiers, "ctrl") and
+        tableContains(modifiers, "alt") then
+        return HotkeyManager.MODIFIERS.HYPER
     end
+    return "other" -- Store all other combos in 'other'
+end
+
+-- Drop a binding from the display registry. Needed by HotkeyBinder: applying an
+-- edited binding re-runs hs.hotkey.bind, which would otherwise append a second
+-- entry and leave showCombinedList() showing the replaced hotkey forever.
+function HotkeyManager.unregisterBinding(modifiers, key)
+    local list = HotkeyManager.bindings[HotkeyManager.classifyModifiers(modifiers)]
+    if not list then return false end
+
+    local removed = false
+    for i = #list, 1, -1 do
+        if list[i].key == key then
+            table.remove(list, i)
+            removed = true
+        end
+    end
+    return removed
+end
+
+-- Register a hotkey binding
+function HotkeyManager.registerBinding(modifiers, key, callback, description)
+    local modType = HotkeyManager.classifyModifiers(modifiers)
 
     -- Extract function name for description if not provided
     if not description then
