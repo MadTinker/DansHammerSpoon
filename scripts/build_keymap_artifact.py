@@ -24,13 +24,25 @@ def read(name):
     return path.read_text(encoding="utf-8")
 
 
-shell = read("keymap_artifact.html")
+shell = read("keymap_page.html")
 transport = read("keymap_transport_artifact.js")
 renderer = read("keymap.js")
 
-for token, body in (("__TRANSPORT__", transport), ("__RENDERER__", renderer)):
-    if token not in shell:
-        sys.exit(f"shell is missing the {token} placeholder")
+# The artifact surface is honest about being unable to reach the machine; the
+# HTTP surface injects its own notice into this same shell (see keymap_server.lua).
+NOTICE = """<p>
+                    <strong>This is the offline editor.</strong> An artifact is sandboxed away
+                    from your machine, so edits here are saved to this page, not applied to the
+                    live keyboard. Export <code>hotkeys.json</code>, drop it in
+                    <code>~/.hammerspoon</code>, and press <kbd>&#8984;&#8963;&#8997;&#39;</kbd>
+                    to apply &mdash; no reload.
+                </p>"""
+
+for token, body in (("__NOTICE__", NOTICE), ("__TRANSPORT__", transport), ("__RENDERER__", renderer)):
+    # Exactly once: the shell must not mention a token anywhere but its slot,
+    # or the substitution lands in the wrong place (it did, once).
+    if shell.count(token) != 1:
+        sys.exit(f"shell has {shell.count(token)} occurrences of {token}, expected 1")
     # A literal "</script>" inside an inlined script would close the tag early.
     if "</script>" in body:
         sys.exit(f"{token} body contains a literal </script>")

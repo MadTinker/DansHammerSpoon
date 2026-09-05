@@ -698,6 +698,7 @@ local function buildCards()
             status     = "BOUND: " .. bound .. (problems > 0 and ("  \226\154\160 " .. problems) or ""),
             actions    = {
                 { label = "OPEN EDITOR", cmd = "openKeymap", style = "accent" },
+                { label = "IN BROWSER",  cmd = "keymapServer", style = "info" },
             }
         })
     end
@@ -827,6 +828,9 @@ local function handleURL(spoonObj, url)
 
     elseif action == "openKeymap" then
         if spoon.HammerGhost then spoon.HammerGhost:openKeymapEditor() end
+
+    elseif action == "keymapServer" then
+        if spoon.HammerGhost then spoon.HammerGhost:toggleKeymapServer() end
 
     elseif action == "console" then
         hs.openConsole()

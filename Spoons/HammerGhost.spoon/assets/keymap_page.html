@@ -2,7 +2,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
-    /* Palette drawn from enthusiast keycap sets: a cool charcoal base with a
+    /* Shared shell for both STANDALONE keymap surfaces -- the published
+       artifact and the loopback HTTP server. They differ only in the three
+       blocks their builders inject below (notice, transport, renderer), so
+       neither surface forks the page. Do not name those placeholder tokens
+       anywhere else in this file: the builders substitute the first match,
+       and a mention here would swallow it. (The HammerGhost webview has its own keymap.html: it is a panel
+       inside an app window, not a page, and inherits the spoon's styles.css.)
+
+       Palette drawn from enthusiast keycap sets: a cool charcoal base with a
        single warm accent row. Light theme is the "beige/PBT" side of the same
        idea. Every token is declared here first so the un-stamped
        (prefers-color-scheme) state can never fall through to an undefined
@@ -509,12 +517,7 @@
 
         <div class="notice">
             <div>
-                <p>
-                    <strong>This is the offline editor.</strong> An artifact is sandboxed away from
-                    your machine, so edits here are saved to this page, not applied to the live
-                    keyboard. Export <code>hotkeys.json</code>, drop it in
-                    <code>~/.hammerspoon</code>, and press <kbd>⌘⌃⌥'</kbd> to apply — no reload.
-                </p>
+                __NOTICE__
                 <p id="km-notice"></p>
             </div>
         </div>
@@ -549,5 +552,9 @@
 <script>__TRANSPORT__</script>
 <script>__RENDERER__</script>
 <script>
-    window.KeymapExport.init(document.getElementById('km-export'));
+    // Export is the artifact surface's answer to "how does this reach the Mac".
+    // The HTTP surface writes straight through, so it has no use for the button.
+    var exportBtn = document.getElementById('km-export');
+    if (window.KeymapExport) { window.KeymapExport.init(exportBtn); }
+    else { exportBtn.hidden = true; }
 </script>

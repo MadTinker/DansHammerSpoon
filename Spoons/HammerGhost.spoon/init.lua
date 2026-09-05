@@ -52,6 +52,7 @@ local control_panel = dofile(hs.spoons.resourcePath("scripts/control_panel.lua")
 local event_bus = dofile(hs.spoons.resourcePath("scripts/event_bus.lua"))
 local event_sources = dofile(hs.spoons.resourcePath("scripts/event_sources.lua"))
 local keymap_window = dofile(hs.spoons.resourcePath("scripts/keymap_window.lua"))
+local keymap_server = dofile(hs.spoons.resourcePath("scripts/keymap_server.lua"))
 
 -- Percent-decode a URL component. hs.urlevent has no unquote(); the JS side uses
 -- encodeURIComponent (no form-style '+' for spaces), so we only decode %xx bytes.
@@ -470,6 +471,22 @@ function obj:openActionChooser()
     discard(self.actionChooser)
     self.actionChooser = action_chooser.create(self)
     self.actionChooser:show()
+end
+
+--- HammerGhost:toggleKeymapServer()
+--- Method
+--- Starts (or stops) the loopback HTTP server that serves the keymap editor to
+--- a browser tab, and opens it. Bound to localhost with a per-start token; see
+--- scripts/keymap_server.lua for why both are needed.
+function obj:toggleKeymapServer()
+    return keymap_server.toggle(self)
+end
+
+--- HammerGhost:keymapServerURL()
+--- Method
+--- The editor's URL while the server is running, otherwise nil.
+function obj:keymapServerURL()
+    return keymap_server.isRunning() and keymap_server.url() or nil
 end
 
 --- HammerGhost:openKeymapEditor()

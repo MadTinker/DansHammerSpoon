@@ -76,10 +76,17 @@ function M.refresh(win)
     win:evaluateJavaScript(string.format("window.Keymap.render(%s)", payload))
 end
 
+-- hs.json.encode REQUIRES a table and throws on a bare string ("incorrect type
+-- 'string' for argument 1"). Wrapping in an array and stripping the brackets
+-- borrows Hammerspoon's own escaping instead of hand-rolling one.
+local function jsonString(s)
+    return (hs.json.encode({ tostring(s or "") }):sub(2, -2))
+end
+
 --- Report a one-line result into the editor's status area.
 local function say(win, text)
     if not win then return end
-    win:evaluateJavaScript(string.format("window.Keymap.setStatus(%s)", hs.json.encode(text)))
+    win:evaluateJavaScript(string.format("window.Keymap.setStatus(%s)", jsonString(text)))
 end
 
 --- Handle one hammerspoon:// message from the page.
