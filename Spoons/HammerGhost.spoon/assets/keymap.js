@@ -11,24 +11,62 @@
     'use strict';
 
     // ── keyboard geometry ───────────────────────────────────────────────────
-    // Every key currently bound in hotkeys.json fits this layout. Anything that
-    // does not is still rendered, in an "Other keys" row, so a binding can never
-    // become invisible just because the grid does not know the key.
+    // ANSI layout in keyboard units: 1u is one alphanumeric cap, and the row
+    // stagger falls out of the wide keys rather than being faked with padding.
+    // Entries are one of:
+    //   {k}   a bindable key. `k` is the Hammerspoon key name, so it must match
+    //         what hotkeys.json stores ('Space', 'return', 'left', ...).
+    //   {mod} a structural key. The modifiers this whole grid is LAYERED on
+    //         cannot themselves be bound, but the board does not read as a
+    //         keyboard without them, so they are drawn and made inert.
+    //   {sp}  empty space, for the gaps in the function row.
+    // `u` is width in units (default 1); `cap` overrides the printed legend.
+    //
+    // Any bound key missing from this layout is still rendered, in an "Other
+    // keys" row, so a binding can never become invisible.
     var ROWS = [
-        { keys: ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'] },
-        { keys: ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='], gap: true },
-        { keys: ['Tab', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\'] },
-        { keys: ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', "'", 'return'] },
-        { keys: ['z', 'x', 'c', 'v', 'b', 'n', 'm'] },
-        { keys: ['Space'], gap: true },
-        { keys: ['left', 'up', 'down', 'right'] }
+        { keys: [
+            { k: 'escape', cap: 'esc' }, { sp: 1 },
+            { k: 'F1' }, { k: 'F2' }, { k: 'F3' }, { k: 'F4' }, { sp: 0.5 },
+            { k: 'F5' }, { k: 'F6' }, { k: 'F7' }, { k: 'F8' }, { sp: 0.5 },
+            { k: 'F9' }, { k: 'F10' }, { k: 'F11' }, { k: 'F12' }
+        ] },
+        { gap: true, keys: [
+            { k: '`' }, { k: '1' }, { k: '2' }, { k: '3' }, { k: '4' }, { k: '5' },
+            { k: '6' }, { k: '7' }, { k: '8' }, { k: '9' }, { k: '0' }, { k: '-' },
+            { k: '=' }, { k: 'delete', cap: '⌫', u: 2 }
+        ] },
+        { keys: [
+            { k: 'Tab', u: 1.5 },
+            { k: 'q' }, { k: 'w' }, { k: 'e' }, { k: 'r' }, { k: 't' }, { k: 'y' },
+            { k: 'u' }, { k: 'i' }, { k: 'o' }, { k: 'p' }, { k: '[' }, { k: ']' },
+            { k: '\\', u: 1.5 }
+        ] },
+        { keys: [
+            { mod: 'caps', u: 1.75 },
+            { k: 'a' }, { k: 's' }, { k: 'd' }, { k: 'f' }, { k: 'g' }, { k: 'h' },
+            { k: 'j' }, { k: 'k' }, { k: 'l' }, { k: ';' }, { k: "'" },
+            { k: 'return', cap: '⏎', u: 2.25 }
+        ] },
+        { keys: [
+            { mod: '⇧', u: 2.25 },
+            { k: 'z' }, { k: 'x' }, { k: 'c' }, { k: 'v' }, { k: 'b' }, { k: 'n' },
+            { k: 'm' }, { k: ',' }, { k: '.' }, { k: '/' },
+            { mod: '⇧', u: 2.75 }
+        ] },
+        { keys: [
+            { mod: '⌃', u: 1.25 }, { mod: '⌥', u: 1.25 }, { mod: '⌘', u: 1.25 },
+            { k: 'Space', u: 6.25 },
+            { mod: '⌘', u: 1.25 }, { mod: '⌥', u: 1.25 },
+            { sp: 0.5 },
+            { k: 'left', cap: '←' }, { k: 'up', cap: '↑' },
+            { k: 'down', cap: '↓' }, { k: 'right', cap: '→' }
+        ] }
     ];
-
-    var WIDE = { Tab: 'km-wide', 'return': 'km-wide', Space: 'km-xwide' };
 
     var CAPS = {
         'left': '←', 'right': '→', 'up': '↑', 'down': '↓',
-        'return': '⏎', 'Space': 'Space', 'Tab': 'Tab'
+        'return': '⏎', 'Space': 'Space', 'Tab': 'Tab', 'escape': 'esc', 'delete': '⌫'
     };
 
     var MOD_GLYPH = { cmd: '⌘', shift: '⇧', ctrl: '⌃', alt: '⌥', fn: 'fn' };
@@ -158,10 +196,18 @@
 
     // ── rendering: the board ────────────────────────────────────────────────
 
-    function keyNode(key) {
+    function keyNode(entry) {
+        // A structural key: drawn for shape, never bindable, never clickable.
+        if (entry.mod) {
+            var slug = el('div', 'km-key km-mod');
+            slug.style.setProperty('--w', entry.u || 1);
+            slug.appendChild(el('span', 'km-cap', entry.mod));
+            return slug;
+        }
+
+        var key = entry.k;
         var binding = bindingAt(layer, key);
         var cls = ['km-key'];
-        if (WIDE[key]) { cls.push(WIDE[key]); }
 
         if (!binding) {
             cls.push('km-free');
@@ -177,17 +223,16 @@
         if (id === selectedId) { cls.push('km-selected'); }
 
         var node = el('button', cls.join(' '));
-        node.appendChild(el('span', 'km-cap', CAPS[key] || key));
+        node.style.setProperty('--w', entry.u || 1);
+        node.appendChild(el('span', 'km-cap', entry.cap || CAPS[key] || key));
         node.appendChild(el('span', 'km-desc',
             binding ? (binding.description || actionSummary(binding)) : ''));
 
-        if (binding && binding.enabled === false) {
-            node.appendChild(el('span', 'km-badge', 'disabled'));
-        } else if (binding && problemFor(binding)) {
-            node.appendChild(el('span', 'km-badge', 'broken'));
-        } else if (binding && binding.noRepeat) {
-            node.appendChild(el('span', 'km-badge', 'no-repeat'));
-        }
+        // No badge text on the cap. Every state it used to name is already
+        // encoded visually -- struck-through legend for disabled, red for a
+        // broken target, italic for a placeholder -- and the specifics are in
+        // the hover title and the detail panel. A real keycap carries a legend,
+        // not a status line, and the space is better spent on the description.
 
         // The full note/description is worth having on hover; the tile itself
         // only has room for three lines.
@@ -211,9 +256,15 @@
         var placed = {};
         ROWS.forEach(function (row) {
             var r = el('div', 'km-row' + (row.gap ? ' km-gap' : ''));
-            row.keys.forEach(function (key) {
-                placed[key] = true;
-                r.appendChild(keyNode(key));
+            row.keys.forEach(function (entry) {
+                if (entry.sp) {
+                    var spacer = el('div', 'km-spacer');
+                    spacer.style.setProperty('--w', entry.sp);
+                    r.appendChild(spacer);
+                    return;
+                }
+                if (entry.k) { placed[entry.k] = true; }
+                r.appendChild(keyNode(entry));
             });
             host.appendChild(r);
         });
@@ -225,7 +276,7 @@
         if (extras.length) {
             host.appendChild(el('div', 'km-stats', 'Other keys'));
             var r2 = el('div', 'km-row km-gap');
-            extras.forEach(function (key) { r2.appendChild(keyNode(key)); });
+            extras.forEach(function (key) { r2.appendChild(keyNode({ k: key })); });
             host.appendChild(r2);
         }
     }

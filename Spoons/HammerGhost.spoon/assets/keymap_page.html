@@ -256,15 +256,23 @@
         border: 1px solid var(--rule);
         border-radius: 4px;
         overflow-x: auto;
+        /* One keyboard unit. The widest row is 17u -- the arrow cluster
+           overhangs the 15u body, as it does on a real board. */
+        --ku: 66px;
+        --kgap: 6px;
     }
 
-    .km-row { display: flex; gap: 6px; margin-bottom: 6px; }
+    .km-row { display: flex; gap: var(--kgap); margin-bottom: var(--kgap); }
     .km-row.km-gap { margin-top: 16px; }
 
     /* A keycap: raised face, darker edge, legend top-left like a real cap. */
     .km-key {
-        width: 80px;
-        min-height: 56px;
+        /* Width in keyboard units: N caps plus the gaps they span, so a 2u key
+           lines up exactly with the two 1u keys above it. */
+        width: calc(var(--ku) * var(--w, 1) + var(--kgap) * (var(--w, 1) - 1));
+        /* Fixed, not min-: every cap in a row must be the same height or the
+           board stops reading as a keyboard. Long descriptions clamp instead. */
+        height: 72px;
         flex: 0 0 auto;
         display: flex;
         flex-direction: column;
@@ -300,7 +308,7 @@
 
     .km-desc {
         font-size: 10.5px;
-        line-height: 1.24;
+        line-height: 1.2;
         color: var(--ink-soft);
         overflow: hidden;
         display: -webkit-box;
@@ -333,6 +341,7 @@
 
     .km-badge {
         margin-top: auto;
+        white-space: nowrap;
         font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
         font-size: 9px;
         letter-spacing: 0.04em;
@@ -342,8 +351,22 @@
 
     .km-key.km-broken .km-badge { color: var(--bad); }
 
-    .km-wide { width: 120px; }
-    .km-xwide { width: 256px; }
+    /* Empty space in a row (the gaps in the function row). */
+    .km-spacer {
+        flex: 0 0 auto;
+        width: calc(var(--ku) * var(--w, 1) + var(--kgap) * (var(--w, 1) - 1));
+    }
+
+    /* Structural keys: the modifiers this grid is layered on, drawn so the
+       board reads as a keyboard. Not bindable, so not interactive. */
+    .km-mod {
+        cursor: default;
+        opacity: 0.42;
+        box-shadow: none;
+        border-bottom-width: 1px;
+    }
+
+    .km-mod .km-cap { font-weight: 400; }
 
     /* ── detail editor ──────────────────────────────────────────────────── */
     .km-detail {

@@ -108,12 +108,16 @@
             flex: 1 1 auto;
             overflow: auto;
             padding: 14px;
+            /* One keyboard unit. The widest row is 17u (the arrow cluster
+               overhangs, as it does on a real board), which fits this window. */
+            --ku: 58px;
+            --kgap: 6px;
         }
 
         .km-row {
             display: flex;
-            gap: 6px;
-            margin-bottom: 6px;
+            gap: var(--kgap);
+            margin-bottom: var(--kgap);
         }
 
         .km-row.km-gap {
@@ -121,8 +125,13 @@
         }
 
         .km-key {
-            width: 82px;
-            min-height: 52px;
+            /* Width in keyboard units: N caps plus the gaps they span, so a 2u
+               key lines up exactly with the two 1u keys above it. */
+            width: calc(var(--ku) * var(--w, 1) + var(--kgap) * (var(--w, 1) - 1));
+            flex: 0 0 auto;
+            /* Fixed, not min-: every cap in a row must be the same height or
+               the board stops reading as a keyboard. */
+            height: 64px;
             box-sizing: border-box;
             background: var(--input-bg);
             border: 1px solid var(--border-color);
@@ -156,7 +165,7 @@
 
         .km-key .km-desc {
             font-size: 10px;
-            line-height: 1.25;
+            line-height: 1.2;
             color: var(--muted-color);
             overflow: hidden;
             /* Three lines is enough for the longest descriptions in use
@@ -203,16 +212,25 @@
 
         .km-key .km-badge {
             font-size: 9px;
+        white-space: nowrap;
             color: var(--muted-color);
             margin-top: auto;
         }
 
-        .km-wide {
-            width: 124px;
+        .km-spacer {
+            flex: 0 0 auto;
+            width: calc(var(--ku) * var(--w, 1) + var(--kgap) * (var(--w, 1) - 1));
         }
 
-        .km-xwide {
-            width: 260px;
+        /* Structural keys: the modifiers this grid is layered on, drawn so the
+           board reads as a keyboard. Not bindable, so not interactive. */
+        .km-mod {
+            cursor: default;
+            opacity: 0.4;
+        }
+
+        .km-mod .km-cap {
+            font-weight: 400;
         }
 
         /* ── detail panel ───────────────────────────────────────────────── */
