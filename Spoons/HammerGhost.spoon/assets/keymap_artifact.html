@@ -1,0 +1,553 @@
+<title>Hammerspoon Keymap</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+    /* Palette drawn from enthusiast keycap sets: a cool charcoal base with a
+       single warm accent row. Light theme is the "beige/PBT" side of the same
+       idea. Every token is declared here first so the un-stamped
+       (prefers-color-scheme) state can never fall through to an undefined
+       colour. */
+    :root {
+        --ground: #eceef1;
+        --surface: #ffffff;
+        --surface-2: #e3e6ea;
+        --cap: #f6f7f9;
+        --cap-edge: #c9ced6;
+        --ink: #1b1e24;
+        --ink-soft: #5c636e;
+        --ink-faint: #868d98;
+        --rule: #d3d8de;
+        --accent: #c26a25;
+        --accent-ink: #ffffff;
+        --accent-soft: #f6e3d2;
+        --teal: #2f7d94;
+        --bad: #b8392f;
+        --bad-soft: #f7dedb;
+        --warn: #9a6511;
+        --shadow: 0 1px 0 rgba(27, 30, 36, .10), 0 1px 3px rgba(27, 30, 36, .07);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --ground: #16181d;
+            --surface: #1e2128;
+            --surface-2: #262a33;
+            --cap: #23272f;
+            --cap-edge: #333944;
+            --ink: #e7eaef;
+            --ink-soft: #a2aab6;
+            --ink-faint: #6f7885;
+            --rule: #2e333d;
+            --accent: #e08a3c;
+            --accent-ink: #1b1207;
+            --accent-soft: #3a2a17;
+            --teal: #4a9db8;
+            --bad: #e0716a;
+            --bad-soft: #3b1f1d;
+            --warn: #d9a441;
+            --shadow: 0 1px 0 rgba(0, 0, 0, .35), 0 2px 6px rgba(0, 0, 0, .30);
+        }
+    }
+
+    :root[data-theme="dark"] {
+        --ground: #16181d;
+        --surface: #1e2128;
+        --surface-2: #262a33;
+        --cap: #23272f;
+        --cap-edge: #333944;
+        --ink: #e7eaef;
+        --ink-soft: #a2aab6;
+        --ink-faint: #6f7885;
+        --rule: #2e333d;
+        --accent: #e08a3c;
+        --accent-ink: #1b1207;
+        --accent-soft: #3a2a17;
+        --teal: #4a9db8;
+        --bad: #e0716a;
+        --bad-soft: #3b1f1d;
+        --warn: #d9a441;
+        --shadow: 0 1px 0 rgba(0, 0, 0, .35), 0 2px 6px rgba(0, 0, 0, .30);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        background: var(--ground);
+        color: var(--ink);
+        font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.45;
+    }
+
+    .page {
+        /* Wide enough that the longest row (Tab .. backslash, 14 caps) fits
+           without horizontal scrolling; the board still scrolls on narrow
+           viewports rather than letting the page scroll sideways. */
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 28px 24px 56px;
+    }
+
+    /* ── masthead ───────────────────────────────────────────────────────── */
+    .masthead {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 4px;
+    }
+
+    h1 {
+        font-size: 27px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        margin: 0;
+        text-wrap: balance;
+    }
+
+    .lede {
+        color: var(--ink-soft);
+        max-width: 62ch;
+        margin: 6px 0 0;
+    }
+
+    .eyebrow {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 11px;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--accent);
+        font-weight: 600;
+    }
+
+    /* ── sync notice: this surface cannot apply changes, and says so ────── */
+    .notice {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        margin: 20px 0 0;
+        padding: 12px 14px;
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-left: 3px solid var(--accent);
+        border-radius: 3px;
+    }
+
+    .notice p {
+        margin: 0;
+        color: var(--ink-soft);
+        font-size: 13px;
+        max-width: 70ch;
+    }
+
+    .notice strong { color: var(--ink); font-weight: 600; }
+
+    .notice kbd {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        background: var(--surface-2);
+        border: 1px solid var(--cap-edge);
+        border-radius: 3px;
+        padding: 1px 5px;
+        color: var(--ink);
+    }
+
+    #km-notice { color: var(--warn); }
+    #km-notice:empty { display: none; }
+
+    /* ── toolbar ────────────────────────────────────────────────────────── */
+    .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 22px 0 0;
+        flex-wrap: wrap;
+    }
+
+    .km-search {
+        flex: 1 1 260px;
+        min-width: 180px;
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        color: var(--ink);
+        padding: 8px 11px;
+        font-family: inherit;
+        font-size: 13px;
+    }
+
+    .km-search::placeholder { color: var(--ink-faint); }
+
+    .km-search:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: -1px;
+        border-color: var(--accent);
+    }
+
+    .km-stats {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        color: var(--ink-faint);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .km-stats .km-warn { color: var(--warn); font-weight: 500; }
+
+    /* ── layer tabs: the modifier stack is the primary axis ─────────────── */
+    .km-layers {
+        display: flex;
+        gap: 7px;
+        margin: 16px 0 0;
+        flex-wrap: wrap;
+    }
+
+    .km-layer {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        color: var(--ink-soft);
+        padding: 7px 13px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+    }
+
+    .km-layer:hover { border-color: var(--cap-edge); color: var(--ink); }
+
+    .km-layer:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .km-layer.km-active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-ink);
+    }
+
+    .km-glyph {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+    }
+
+    .km-count {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 11px;
+        opacity: 0.72;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ── the board ──────────────────────────────────────────────────────── */
+    .km-board {
+        margin: 18px 0 0;
+        padding: 16px;
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        overflow-x: auto;
+    }
+
+    .km-row { display: flex; gap: 6px; margin-bottom: 6px; }
+    .km-row.km-gap { margin-top: 16px; }
+
+    /* A keycap: raised face, darker edge, legend top-left like a real cap. */
+    .km-key {
+        width: 80px;
+        min-height: 56px;
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding: 6px 7px;
+        text-align: left;
+        background: var(--cap);
+        border: 1px solid var(--cap-edge);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        color: var(--ink);
+        font-family: inherit;
+        cursor: pointer;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .km-key:hover { border-color: var(--accent); }
+    .km-key:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .km-key.km-selected {
+        background: var(--accent-soft);
+        border-color: var(--accent);
+    }
+
+    .km-cap {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink);
+        flex: 0 0 auto;
+    }
+
+    .km-desc {
+        font-size: 10.5px;
+        line-height: 1.24;
+        color: var(--ink-soft);
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+
+    /* State reads at a glance: an unbound cap is blank and recessive, so the
+       eye lands on what IS bound and on what is broken. */
+    .km-key.km-free {
+        background: transparent;
+        border-style: dashed;
+        border-bottom-width: 1px;
+        box-shadow: none;
+    }
+
+    .km-key.km-free .km-cap { color: var(--ink-faint); font-weight: 400; }
+
+    .km-key.km-bound .km-desc { color: var(--ink); }
+
+    .km-key.km-placeholder .km-desc { font-style: italic; color: var(--ink-faint); }
+
+    .km-key.km-disabled { opacity: 0.55; }
+    .km-key.km-disabled .km-cap { text-decoration: line-through; }
+
+    .km-key.km-broken { border-color: var(--bad); background: var(--bad-soft); }
+    .km-key.km-broken .km-desc { color: var(--bad); }
+
+    .km-key.km-dimmed { opacity: 0.16; }
+
+    .km-badge {
+        margin-top: auto;
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 9px;
+        letter-spacing: 0.04em;
+        color: var(--ink-faint);
+        text-transform: uppercase;
+    }
+
+    .km-key.km-broken .km-badge { color: var(--bad); }
+
+    .km-wide { width: 120px; }
+    .km-xwide { width: 256px; }
+
+    /* ── detail editor ──────────────────────────────────────────────────── */
+    .km-detail {
+        margin: 18px 0 0;
+        padding: 18px;
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+    }
+
+    .km-empty { color: var(--ink-faint); font-size: 13px; }
+
+    .km-detail-head {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--rule);
+        flex-wrap: wrap;
+    }
+
+    .km-combo {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .km-field { margin-bottom: 13px; }
+
+    .km-field label {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+
+    .km-field input[type="text"],
+    .km-field select,
+    .km-field textarea {
+        width: 100%;
+        background: var(--ground);
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        color: var(--ink);
+        padding: 8px 10px;
+        font-family: inherit;
+        font-size: 13px;
+    }
+
+    .km-field input[type="text"],
+    .km-field textarea {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 12.5px;
+    }
+
+    .km-field textarea { resize: vertical; min-height: 68px; }
+
+    .km-field input:focus,
+    .km-field select:focus,
+    .km-field textarea:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: -1px;
+        border-color: var(--accent);
+    }
+
+    .km-cols { display: flex; gap: 26px; flex-wrap: wrap; }
+
+    .km-check {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 13px;
+        color: var(--ink-soft);
+        cursor: pointer;
+    }
+
+    .km-check input { accent-color: var(--accent); }
+
+    .km-note {
+        font-size: 12.5px;
+        color: var(--ink-soft);
+        background: var(--ground);
+        border-left: 2px solid var(--teal);
+        padding: 9px 12px;
+        margin-bottom: 13px;
+        line-height: 1.45;
+        max-width: 78ch;
+    }
+
+    .km-note-error {
+        border-left-color: var(--bad);
+        color: var(--bad);
+        background: var(--bad-soft);
+    }
+
+    .km-actions {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+        margin-top: 18px;
+        flex-wrap: wrap;
+    }
+
+    .km-btn {
+        background: var(--surface-2);
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        color: var(--ink);
+        padding: 8px 18px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .km-btn:hover { border-color: var(--cap-edge); }
+    .km-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .km-primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-ink);
+    }
+
+    .km-primary:hover { filter: brightness(1.06); border-color: var(--accent); }
+
+    .km-danger:hover { border-color: var(--bad); color: var(--bad); }
+
+    .km-status {
+        font-size: 12.5px;
+        color: var(--ink-soft);
+        margin-left: auto;
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    }
+
+    .km-hide { display: none !important; }
+
+    footer {
+        margin-top: 26px;
+        padding-top: 16px;
+        border-top: 1px solid var(--rule);
+        color: var(--ink-faint);
+        font-size: 12.5px;
+        max-width: 76ch;
+    }
+
+    footer code {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        color: var(--ink-soft);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+    }
+</style>
+
+<div class="page">
+    <header>
+        <div class="masthead">
+            <h1>Hammerspoon Keymap</h1>
+            <span class="eyebrow">hotkeys.json</span>
+        </div>
+        <p class="lede">
+            Every hotkey on the Mac, laid out on the keyboard it lives on. Pick a modifier
+            layer, click a key, change what it does.
+        </p>
+
+        <div class="notice">
+            <div>
+                <p>
+                    <strong>This is the offline editor.</strong> An artifact is sandboxed away from
+                    your machine, so edits here are saved to this page, not applied to the live
+                    keyboard. Export <code>hotkeys.json</code>, drop it in
+                    <code>~/.hammerspoon</code>, and press <kbd>⌘⌃⌥'</kbd> to apply — no reload.
+                </p>
+                <p id="km-notice"></p>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <input type="text" id="km-search" class="km-search"
+                   placeholder="Filter by description, key or function…">
+            <span class="km-stats" id="km-stats"></span>
+            <button type="button" id="km-export" class="km-btn">Export hotkeys.json</button>
+        </div>
+
+        <div class="km-layers" id="km-layers"></div>
+    </header>
+
+    <main>
+        <div class="km-board" id="km-board"></div>
+
+        <div class="km-detail" id="km-detail">
+            <div class="km-empty">Select a key to see or change what it does.</div>
+        </div>
+    </main>
+
+    <footer>
+        Bindings are stored as <code>{ id, mods, key, description, action }</code>. A
+        <code>call</code> action names a function in the loaded Hammerspoon modules
+        (<code>WindowManager.applyLayout</code>); an <code>action</code> hands off to
+        HammerGhost's action system, which can run a shell command, publish MQTT or fire an
+        HTTP request without any new Lua.
+    </footer>
+</div>
+
+<script>__TRANSPORT__</script>
+<script>__RENDERER__</script>
+<script>
+    window.KeymapExport.init(document.getElementById('km-export'));
+</script>
