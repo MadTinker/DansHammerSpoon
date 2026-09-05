@@ -51,6 +51,7 @@ local xmlparser = dofile(hs.spoons.resourcePath("scripts/xmlparser.lua"))
 local control_panel = dofile(hs.spoons.resourcePath("scripts/control_panel.lua"))
 local event_bus = dofile(hs.spoons.resourcePath("scripts/event_bus.lua"))
 local event_sources = dofile(hs.spoons.resourcePath("scripts/event_sources.lua"))
+local keymap_window = dofile(hs.spoons.resourcePath("scripts/keymap_window.lua"))
 
 -- Percent-decode a URL component. hs.urlevent has no unquote(); the JS side uses
 -- encodeURIComponent (no form-style '+' for spaces), so we only decode %xx bytes.
@@ -118,6 +119,7 @@ obj.actionEditor = nil
 obj.sequenceEditor = nil
 obj.actionChooser = nil
 obj.conditionEditor = nil
+obj.keymapEditor = nil
 obj.configPath = hs.configdir .. "/hammerghost_config.json"
 obj.macroTree = {}
 obj.currentSelection = nil
@@ -468,6 +470,28 @@ function obj:openActionChooser()
     discard(self.actionChooser)
     self.actionChooser = action_chooser.create(self)
     self.actionChooser:show()
+end
+
+--- HammerGhost:openKeymapEditor()
+--- Method
+--- Opens the keyboard-grid editor for hotkeys.json. Changes made there are
+--- applied to the live keyboard immediately -- no hs.reload(), which would
+--- destroy every open window's state.
+function obj:openKeymapEditor()
+    discard(self.keymapEditor)
+    self.keymapEditor = keymap_window.create(self)
+    if self.keymapEditor then self.keymapEditor:show() end
+end
+
+--- HammerGhost:toggleKeymapEditor()
+--- Method
+--- Shows the keymap editor, or hides it if it is already up.
+function obj:toggleKeymapEditor()
+    if self.keymapEditor and self.keymapEditor:isVisible() then
+        self.keymapEditor:hide()
+        return
+    end
+    self:openKeymapEditor()
 end
 
 function obj:openConditionEditor(condition)

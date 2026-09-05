@@ -678,6 +678,30 @@ local function buildCards()
         })
     end
 
+    -- ── Keymap editor ────────────────────────────────────────────────────────
+    -- Reads the same hotkeys.json HotkeyBinder applies, so the count here is the
+    -- real bound total rather than a hardcoded guess.
+    do
+        local bound, problems = 0, 0
+        local okBinder, B = pcall(require, 'HotkeyBinder')
+        if okBinder and B then
+            for _ in pairs(B.handles or {}) do bound = bound + 1 end
+            problems = #(B.errors or {}) + #B.verify()
+        end
+        table.insert(cards, {
+            id         = "_keymap",
+            name       = "Keymap",
+            icon       = "\226\140\152",
+            desc       = "Keyboard grid for hotkeys.json \194\183 edit a hotkey and it applies live",
+            active     = true,
+            toggleable = false,
+            status     = "BOUND: " .. bound .. (problems > 0 and ("  \226\154\160 " .. problems) or ""),
+            actions    = {
+                { label = "OPEN EDITOR", cmd = "openKeymap", style = "accent" },
+            }
+        })
+    end
+
     -- ── System / Quick actions ────────────────────────────────────────────────
     table.insert(cards, {
         id         = "_system",
@@ -800,6 +824,9 @@ local function handleURL(spoonObj, url)
     -- ── System actions ─────────────────────────────────────────────────────────
     elseif action == "reload" then
         hs.reload()
+
+    elseif action == "openKeymap" then
+        if spoon.HammerGhost then spoon.HammerGhost:openKeymapEditor() end
 
     elseif action == "console" then
         hs.openConsole()

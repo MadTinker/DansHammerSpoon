@@ -19,6 +19,13 @@
 
 local M = {}
 
+-- Escape Lua pattern magic so a filename is matched literally. Filenames carry
+-- a '.', which as a pattern means "any character" -- harmless for the names in
+-- use, but the <script src> substitutions below should match what they say.
+local function escapePattern(s)
+    return (s:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1"))
+end
+
 -- Read a file from the assets directory, returning its contents or "" on failure.
 local function readAsset(name)
     local path = hs.spoons.resourcePath("../assets/" .. name)
@@ -92,7 +99,19 @@ function M.create(opts)
     html = html:gsub('<script src="param_widgets.js"></script>', function()
         return "<script>\n" .. widgets .. "\n</script>"
     end)
-    html = html:gsub('<script src="' .. opts.js .. '"></script>', function()
+
+    -- opts.extraJs: further scripts the page <script src=>'s, inlined in the
+    -- order given and BEFORE opts.js. The keymap editor uses this for its
+    -- transport adapter, which must define window.KeymapTransport before the
+    -- renderer runs.
+    for _, name in ipairs(opts.extraJs or {}) do
+        local body = readAsset(name)
+        html = html:gsub('<script src="' .. escapePattern(name) .. '"></script>', function()
+            return "<script>\n" .. body .. "\n</script>"
+        end)
+    end
+
+    html = html:gsub('<script src="' .. escapePattern(opts.js) .. '"></script>', function()
         return "<script>\n" .. js .. "\n</script>"
     end)
 

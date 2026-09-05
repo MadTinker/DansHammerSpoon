@@ -1,1706 +1,1705 @@
 {
-  "version": 1,
-  "_comment": "Declarative hotkey table. Edited by hand, by the HammerGhost keymap tab, or by the artifact editor -- all three write this same schema. HotkeyBinder.lua applies it; HotkeyBinder.reload() re-applies without hs.reload(). 'migratedFrom' cites the pre-migration hotkeys.lua line for provenance (see git history).",
-  "modifierSets": {
-    "hammer": [
+  "bindings" : [
+    {
+      "mods" : "hammer",
+      "id" : "hammer+F1",
+      "key" : "F1",
+      "description" : "Toggle Console",
+      "migratedFrom" : "hotkeys.lua:55",
+      "action" : {
+        "kind" : "call",
+        "fn" : "hs.toggleConsole"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+F1",
+      "key" : "F1",
+      "description" : "LM Studio",
+      "migratedFrom" : "hotkeys.lua:56",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_lmstudio"
+      }
+    },
+    {
+      "mods" : [
+        "cmd"
+      ],
+      "id" : "cmd+F1",
+      "key" : "F1",
+      "description" : "Open Warp",
+      "migratedFrom" : "hotkeys.lua:57",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_terminal"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hammer+F2",
+      "mods" : "hammer",
+      "key" : "F2",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:58"
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+F2",
+      "key" : "F2",
+      "description" : "Windsurf",
+      "migratedFrom" : "hotkeys.lua:59",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_windsurf"
+      }
+    },
+    {
+      "mods" : [
+        "cmd"
+      ],
+      "id" : "cmd+F2",
+      "key" : "F2",
+      "description" : "Open Zen",
+      "migratedFrom" : "hotkeys.lua:60",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_zen"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+F3",
+      "key" : "F3",
+      "description" : "Toggle USB Logging",
+      "migratedFrom" : "hotkeys.lua:61",
+      "action" : {
+        "kind" : "call",
+        "fn" : "DeviceManager.toggleUSBLogging"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+F3",
+      "mods" : "hyper",
+      "key" : "F3",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:62"
+    },
+    {
+      "mods" : [
+        "cmd"
+      ],
+      "id" : "cmd+F3",
+      "key" : "F3",
+      "description" : "Open madhub",
+      "migratedFrom" : "hotkeys.lua:63",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_github"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+F4",
+      "key" : "F4",
+      "description" : "Show Layouts Menu",
+      "migratedFrom" : "hotkeys.lua:64",
+      "action" : {
+        "kind" : "call",
+        "fn" : "spoon.Layouts:chooseLayout"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+F4",
+      "key" : "F4",
+      "description" : "Save Layout",
+      "migratedFrom" : "hotkeys.lua:65",
+      "action" : {
+        "kind" : "call",
+        "fn" : "saveLayoutWithDialog"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "cmd+F4",
+      "mods" : [
+        "cmd"
+      ],
+      "key" : "F4",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:66"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+F5",
+      "key" : "F5",
+      "description" : "Reload Hammerspoon",
+      "migratedFrom" : "hotkeys.lua:67",
+      "action" : {
+        "kind" : "call",
+        "fn" : "hs.reload"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+F5",
+      "key" : "F5",
+      "description" : "Open Hammerspoon Preferences",
+      "migratedFrom" : "hotkeys.lua:68",
+      "action" : {
+        "kind" : "call",
+        "fn" : "hs.openPreferences"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "cmd+F5",
+      "mods" : [
+        "cmd"
+      ],
+      "key" : "F5",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:69"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+F6",
+      "key" : "F6",
+      "description" : "Save Window Position",
+      "migratedFrom" : "hotkeys.lua:70",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.saveWindowPosition"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+F6",
+      "key" : "F6",
+      "description" : "Save All Window Positions",
+      "migratedFrom" : "hotkeys.lua:71",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.saveAllWindowPositions"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "cmd+F6",
+      "mods" : [
+        "cmd"
+      ],
+      "key" : "F6",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:72"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+F7",
+      "key" : "F7",
+      "description" : "Restore Window Position",
+      "migratedFrom" : "hotkeys.lua:73",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.restoreWindowPosition"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+F7",
+      "key" : "F7",
+      "description" : "Restore All Window Positions",
+      "migratedFrom" : "hotkeys.lua:74",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.restoreAllWindowPositions"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "cmd+F8",
+      "mods" : [
+        "cmd"
+      ],
+      "key" : "F8",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:75"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+F8",
+      "key" : "F8",
+      "description" : "Raise Window to Front",
+      "migratedFrom" : "hotkeys.lua:76",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.toggleAlwaysOnTop"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+F8",
+      "key" : "F8",
+      "description" : "Cycle Log Level",
+      "migratedFrom" : "hotkeys.lua:77",
+      "action" : {
+        "kind" : "call",
+        "fn" : "cycleLogLevel"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "cmd+F9",
+      "mods" : [
+        "cmd"
+      ],
+      "key" : "F9",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:78"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+F9",
+      "key" : "F9",
+      "description" : "Show Window Config Info",
+      "migratedFrom" : "hotkeys.lua:79",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowToggler.showConfigurationInfo"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+F9",
+      "key" : "F9",
+      "description" : "Refresh Window Config",
+      "migratedFrom" : "hotkeys.lua:80",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowToggler.refreshConfiguration"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "cmd+F10",
+      "mods" : [
+        "cmd"
+      ],
+      "key" : "F10",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:81"
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hammer+F10",
+      "mods" : "hammer",
+      "key" : "F10",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:82"
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+F10",
+      "mods" : "hyper",
+      "key" : "F10",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:83"
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "cmd+F11",
+      "mods" : [
+        "cmd"
+      ],
+      "key" : "F11",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:84"
+    },
+    {
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "placeholder" : true,
+      "enabled" : false,
+      "id" : "hammer+F11",
+      "note" : "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it.",
+      "mods" : "hammer",
+      "key" : "F11",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:85"
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+F11",
+      "mods" : "hyper",
+      "key" : "F11",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:86"
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "cmd+F12",
+      "mods" : [
+        "cmd"
+      ],
+      "key" : "F12",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:87"
+    },
+    {
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "placeholder" : true,
+      "enabled" : false,
+      "id" : "hammer+F12",
+      "note" : "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it.",
+      "mods" : "hammer",
+      "key" : "F12",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:88"
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+F12",
+      "mods" : "hyper",
+      "key" : "F12",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:89"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+`",
+      "key" : "`",
+      "description" : "Open Cursor with madhub",
+      "migratedFrom" : "hotkeys.lua:92",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_cursor_with_github"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+`",
+      "key" : "`",
+      "description" : "Open Medis",
+      "migratedFrom" : "hotkeys.lua:93",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_medis"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+1",
+      "key" : "1",
+      "description" : "Move Top-Left Corner",
+      "migratedFrom" : "hotkeys.lua:94",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "topLeft"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+1",
+      "key" : "1",
+      "description" : "Move Bottom-Left Corner",
+      "migratedFrom" : "hotkeys.lua:95",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "bottomLeft"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+2",
+      "key" : "2",
+      "description" : "Move Top-Right Corner",
+      "migratedFrom" : "hotkeys.lua:96",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "topRight"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+2",
+      "key" : "2",
+      "description" : "Move Bottom-Right Corner",
+      "migratedFrom" : "hotkeys.lua:97",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "bottomRight"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+3",
+      "key" : "3",
+      "description" : "Full Screen",
+      "migratedFrom" : "hotkeys.lua:98",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.toggleFullLayout"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+3",
+      "key" : "3",
+      "description" : "Nearly Full Screen",
+      "migratedFrom" : "hotkeys.lua:99",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "sevenByFive"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+4",
+      "key" : "4",
+      "description" : "Left Wide Layout",
+      "migratedFrom" : "hotkeys.lua:100",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "leftWide"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+4",
+      "key" : "4",
+      "description" : "Mini Shuffle",
+      "migratedFrom" : "hotkeys.lua:101",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.miniShuffle"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+5",
+      "key" : "5",
+      "description" : "Split Vertical",
+      "migratedFrom" : "hotkeys.lua:102",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "splitVertical"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+5",
+      "key" : "5",
+      "description" : "Split Horizontal",
+      "migratedFrom" : "hotkeys.lua:103",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "splitHorizontal"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+6",
+      "key" : "6",
+      "description" : "Left Small Layout",
+      "migratedFrom" : "hotkeys.lua:104",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.toggleLeftLayout"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+6",
+      "key" : "6",
+      "description" : "Left Half Layout",
+      "migratedFrom" : "hotkeys.lua:105",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "leftHalf"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+7",
+      "key" : "7",
+      "description" : "Toggle Right Layout",
+      "migratedFrom" : "hotkeys.lua:106",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.toggleRightLayout"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+7",
+      "key" : "7",
+      "description" : "Right Half Layout",
+      "migratedFrom" : "hotkeys.lua:107",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "rightHalf"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hammer+8",
+      "mods" : "hammer",
+      "key" : "8",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:108"
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+8",
+      "key" : "8",
+      "description" : "Open System Preferences",
+      "migratedFrom" : "hotkeys.lua:109",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_system"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+9",
+      "key" : "9",
+      "description" : "Move Window to Mouse",
+      "migratedFrom" : "hotkeys.lua:110",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.moveWindowMouseCenter"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+9",
+      "key" : "9",
+      "description" : "Open Selected File",
+      "migratedFrom" : "hotkeys.lua:111",
+      "action" : {
+        "kind" : "call",
+        "fn" : "FileManager.openSelectedFile"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+0",
+      "key" : "0",
+      "description" : "Horizontal Shuffle",
+      "migratedFrom" : "hotkeys.lua:112",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          4,
+          4
+        ],
+        "fn" : "WindowManager.halfShuffle"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+0",
+      "key" : "0",
+      "description" : "Vertical Shuffle",
+      "migratedFrom" : "hotkeys.lua:113",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          1,
+          4
+        ],
+        "fn" : "WindowManager.halfShuffle"
+      }
+    },
+    {
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          2
+        ],
+        "fn" : "WindowManager.moveMouseToScreen"
+      },
+      "note" : "add - and = and backspace 1\/2 swapped: screen index 1 (PHL 278E1 #1) sits lower on desk than index 2, felt flipped",
+      "id" : "hammer+-",
+      "mods" : "hammer",
+      "key" : "-",
+      "description" : "Mouse: Monitor 1",
+      "migratedFrom" : "hotkeys.lua:116"
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+-",
+      "key" : "-",
+      "description" : "Mouse: Monitor 2",
+      "migratedFrom" : "hotkeys.lua:117",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          1
+        ],
+        "fn" : "WindowManager.moveMouseToScreen"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+=",
+      "key" : "=",
+      "description" : "Mouse: Monitor 3",
+      "migratedFrom" : "hotkeys.lua:118",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          3
+        ],
+        "fn" : "WindowManager.moveMouseToScreen"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+=",
+      "key" : "=",
+      "description" : "Mouse: Monitor 4",
+      "migratedFrom" : "hotkeys.lua:119",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          4
+        ],
+        "fn" : "WindowManager.moveMouseToScreen"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+Tab",
+      "key" : "Tab",
+      "description" : "Open Mission Control",
+      "migratedFrom" : "hotkeys.lua:127",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_mission_control"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+Tab",
+      "key" : "Tab",
+      "description" : "Open Launchpad",
+      "migratedFrom" : "hotkeys.lua:128",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_launchpad"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+q",
+      "key" : "q",
+      "description" : "Clear Saved Window Positions",
+      "migratedFrom" : "hotkeys.lua:129",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowToggler.clearSavedPositions"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+q",
+      "key" : "q",
+      "description" : "Clear All Saved Locations",
+      "migratedFrom" : "hotkeys.lua:130",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          1
+        ],
+        "fn" : "WindowToggler.clearSavedLocations"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+w",
+      "key" : "w",
+      "description" : "Toggle Between Location 1 and 2",
+      "migratedFrom" : "hotkeys.lua:131",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowToggler.toggleWindowPosition"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+w",
+      "key" : "w",
+      "description" : "Window Locations Menu",
+      "migratedFrom" : "hotkeys.lua:132",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowToggler.showLocationsMenu"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+e",
+      "key" : "e",
+      "description" : "Show File Menu",
+      "migratedFrom" : "hotkeys.lua:133",
+      "action" : {
+        "kind" : "call",
+        "fn" : "FileManager.showFileMenu"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+e",
+      "key" : "e",
+      "description" : "Show Editor Menu",
+      "migratedFrom" : "hotkeys.lua:134",
+      "action" : {
+        "kind" : "call",
+        "fn" : "FileManager.showEditorMenuSafe"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+r",
+      "key" : "r",
+      "description" : "Show Window Management Menu",
+      "migratedFrom" : "hotkeys.lua:135",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowMenu.toggleMenu"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+r",
+      "key" : "r",
+      "description" : "Reset Shuffle Counters",
+      "migratedFrom" : "hotkeys.lua:136",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.resetShuffleCounters"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+t",
+      "key" : "t",
+      "description" : "Open Barrier",
+      "migratedFrom" : "hotkeys.lua:137",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_barrier"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+t",
+      "mods" : "hyper",
+      "key" : "t",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:138"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+y",
+      "key" : "y",
+      "description" : "AI Tidy Windows",
+      "migratedFrom" : "hotkeys.lua:139",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowTidy.run"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+y",
+      "key" : "y",
+      "description" : "AI Tidy Preview (dry run)",
+      "migratedFrom" : "hotkeys.lua:140",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowTidy.preview"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+u",
+      "key" : "u",
+      "description" : "Open Most Recent Image Folder",
+      "migratedFrom" : "hotkeys.lua:141",
+      "action" : {
+        "kind" : "call",
+        "fn" : "FileManager.openMostRecentImageFolder"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+u",
+      "key" : "u",
+      "description" : "AI Tidy Undo",
+      "migratedFrom" : "hotkeys.lua:142",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowTidy.undo"
+      }
+    },
+    {
+      "action" : {
+        "kind" : "call",
+        "fn" : "FileManager.copyMostRecentImage"
+      },
+      "note" : "Original behavior: copy most recent image from Desktop to clipboard",
+      "id" : "hammer+i",
+      "mods" : "hammer",
+      "key" : "i",
+      "description" : "Copy Most Recent Image",
+      "migratedFrom" : "hotkeys.lua:144"
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+i",
+      "key" : "i",
+      "description" : "Open Most Recent Image",
+      "migratedFrom" : "hotkeys.lua:145",
+      "action" : {
+        "kind" : "call",
+        "fn" : "FileManager.openMostRecentImage"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+o",
+      "key" : "o",
+      "description" : "Restore Window to Location 1",
+      "migratedFrom" : "hotkeys.lua:146",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowToggler.restoreToLocation1"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+o",
+      "key" : "o",
+      "description" : "Save Window to Location 1",
+      "migratedFrom" : "hotkeys.lua:147",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowToggler.saveToLocation1"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+p",
+      "key" : "p",
+      "description" : "Open Postman",
+      "migratedFrom" : "hotkeys.lua:149",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_postman"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+p",
+      "key" : "p",
+      "description" : "Open Cursor",
+      "migratedFrom" : "hotkeys.lua:150",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_cursor"
+      }
+    },
+    {
+      "action" : {
+        "kind" : "call",
+        "fn" : "FileManager.captureScreenshotToClipboard"
+      },
+      "note" : "New: dedicated screenshot-to-clipboard hotkey",
+      "id" : "hammer+[",
+      "mods" : "hammer",
+      "key" : "[",
+      "description" : "Screenshot to Clipboard",
+      "migratedFrom" : "hotkeys.lua:152"
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+[",
+      "key" : "[",
+      "description" : "Mouse: Previous Monitor",
+      "migratedFrom" : "hotkeys.lua:153",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "previous"
+        ],
+        "fn" : "WindowManager.moveMouseToScreenRelative"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "note" : "] freed: was Mouse Monitor 1, collided with system\/app screenshot tool on cmd+ctrl+alt+]. Monitor jumps now live on -\/= (see Number Row above).",
+      "id" : "hammer+]",
+      "mods" : "hammer",
+      "key" : "]",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:155"
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+]",
+      "mods" : "hyper",
+      "key" : "]",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:156"
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hammer+\\",
+      "mods" : "hammer",
+      "key" : "\\",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:157"
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+\\",
+      "key" : "\\",
+      "description" : "Mouse: Next Monitor",
+      "migratedFrom" : "hotkeys.lua:158",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "next"
+        ],
+        "fn" : "WindowManager.moveMouseToScreenRelative"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+a",
+      "key" : "a",
+      "description" : "Toggle KineticLatch",
+      "migratedFrom" : "hotkeys.lua:161",
+      "action" : {
+        "kind" : "call",
+        "fn" : "spoon.KineticLatch:toggle"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+a",
+      "key" : "a",
+      "description" : "KineticLatch Status",
+      "migratedFrom" : "hotkeys.lua:162",
+      "action" : {
+        "kind" : "call",
+        "fn" : "spoon.KineticLatch:showStatus"
+      }
+    },
+    {
+      "mods" : "meta",
+      "id" : "meta+a",
+      "key" : "a",
+      "description" : "KineticLatch Diagnostics",
+      "migratedFrom" : "hotkeys.lua:163",
+      "action" : {
+        "kind" : "call",
+        "fn" : "spoon.KineticLatch:diagnose"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+s",
+      "key" : "s",
+      "description" : "Open Slack",
+      "migratedFrom" : "hotkeys.lua:164",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_slack"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+s",
+      "mods" : "hyper",
+      "key" : "s",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:165"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+d",
+      "key" : "d",
+      "description" : "Open AnythingLLM",
+      "migratedFrom" : "hotkeys.lua:166",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_anythingllm"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+d",
+      "key" : "d",
+      "description" : "Open MongoDB Compass",
+      "migratedFrom" : "hotkeys.lua:167",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_mongodb"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+f",
+      "key" : "f",
+      "description" : "Open Scrcpy",
+      "migratedFrom" : "hotkeys.lua:168",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_scrcpy"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+f",
+      "mods" : "hyper",
+      "key" : "f",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:169"
+    },
+    {
+      "action" : {
+        "kind" : "call",
+        "fn" : "spoon.HammerGhost:toggleControlPanel"
+      },
+      "id" : "hammer+g",
+      "mods" : "hammer",
+      "key" : "g",
+      "noRepeat" : true,
+      "description" : "Toggle Mad Tinker Dashboard",
+      "migratedFrom" : "hotkeys.lua:170"
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+g",
+      "key" : "g",
+      "description" : "Open madhub",
+      "migratedFrom" : "hotkeys.lua:171",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_github"
+      }
+    },
+    {
+      "action" : {
+        "kind" : "call",
+        "fn" : "spoon.HammerGhost:toggle"
+      },
+      "id" : "hammer+h",
+      "mods" : "hammer",
+      "key" : "h",
+      "noRepeat" : true,
+      "description" : "Toggle HammerGhost",
+      "migratedFrom" : "hotkeys.lua:172"
+    },
+    {
+      "action" : {
+        "kind" : "call",
+        "fn" : "spoon.HammerGhost:toggleKeymapEditor"
+      },
+      "note" : "Keyboard-grid editor for this file. Sits beside hammer+h (HammerGhost) on purpose.",
+      "id" : "hyper+h",
+      "mods" : "hyper",
+      "key" : "h",
+      "description" : "Toggle Keymap Editor",
+      "migratedFrom" : "hotkeys.lua:173"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+j",
+      "key" : "j",
+      "description" : "Toggle Project Manager",
+      "migratedFrom" : "hotkeys.lua:174",
+      "action" : {
+        "kind" : "call",
+        "fn" : "ProjectManager.toggleProjectManager"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+j",
+      "key" : "j",
+      "description" : "Show Active Project Info",
+      "migratedFrom" : "hotkeys.lua:175",
+      "action" : {
+        "kind" : "call",
+        "fn" : "ProjectManager.showActiveProjectInfo"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+k",
+      "key" : "k",
+      "description" : "Reset Project Manager UI",
+      "migratedFrom" : "hotkeys.lua:176",
+      "action" : {
+        "kind" : "call",
+        "fn" : "ProjectManager.resetUI"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+k",
+      "key" : "k",
+      "description" : "Hide Project Manager UI",
+      "migratedFrom" : "hotkeys.lua:177",
+      "action" : {
+        "kind" : "call",
+        "fn" : "ProjectManager.hideUI"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+l",
+      "key" : "l",
+      "description" : "Open Logi Options+",
+      "migratedFrom" : "hotkeys.lua:178",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_logi"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+l",
+      "key" : "l",
+      "description" : "Open System Settings",
+      "migratedFrom" : "hotkeys.lua:179",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_system"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hammer+;",
+      "mods" : "hammer",
+      "key" : ";",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:180"
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+;",
+      "mods" : "hyper",
+      "key" : ";",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:181"
+    },
+    {
+      "id" : "hammer+'",
+      "enabled" : true,
+      "key" : "'",
+      "description" : "Reload Hotkeys From Disk",
+      "mods" : "hammer",
+      "action" : {
+        "kind" : "call",
+        "fn" : "HotkeyBinder.reload"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+'",
+      "mods" : "hyper",
+      "key" : "'",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:183"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+return",
+      "key" : "return",
+      "description" : "Toggle Native Fullscreen",
+      "migratedFrom" : "hotkeys.lua:184",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowManager.toggleNativeFullScreen"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+z",
+      "key" : "z",
+      "description" : "Open Codex",
+      "migratedFrom" : "hotkeys.lua:187",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_codex"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+z",
+      "mods" : "hyper",
+      "key" : "z",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:188"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+x",
+      "key" : "x",
+      "description" : "Toggle Dragon Grid",
+      "migratedFrom" : "hotkeys.lua:189",
+      "action" : {
+        "kind" : "call",
+        "fn" : "spoon.DragonGrid:toggleGridDisplay"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+x",
+      "key" : "x",
+      "description" : "Dragon Grid Settings",
+      "migratedFrom" : "hotkeys.lua:190",
+      "action" : {
+        "kind" : "call",
+        "fn" : "spoon.DragonGrid:showSettingsMenu"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+c",
+      "key" : "c",
+      "description" : "Open Claude",
+      "migratedFrom" : "hotkeys.lua:191",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_claude"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+c",
+      "mods" : "hyper",
+      "key" : "c",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:192"
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hammer+v",
+      "mods" : "hammer",
+      "key" : "v",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:193"
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+v",
+      "mods" : "hyper",
+      "key" : "v",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:194"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+b",
+      "key" : "b",
+      "description" : "Open Chrome",
+      "migratedFrom" : "hotkeys.lua:195",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_chrome"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+b",
+      "key" : "b",
+      "description" : "Open Arc Browser",
+      "migratedFrom" : "hotkeys.lua:196",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.open_arc"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+n",
+      "key" : "n",
+      "description" : "Restore Window to Location 2",
+      "migratedFrom" : "hotkeys.lua:205",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowToggler.restoreToLocation2"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+n",
+      "key" : "n",
+      "description" : "Save Window to Location 2",
+      "migratedFrom" : "hotkeys.lua:206",
+      "action" : {
+        "kind" : "call",
+        "fn" : "WindowToggler.saveToLocation2"
+      }
+    },
+    {
+      "action" : {
+        "kind" : "call",
+        "fn" : "spoon.HammerGhost:toggle"
+      },
+      "id" : "hammer+m",
+      "mods" : "hammer",
+      "key" : "m",
+      "noRepeat" : true,
+      "description" : "Toggle HammerGhost",
+      "migratedFrom" : "hotkeys.lua:207"
+    },
+    {
+      "action" : {
+        "kind" : "call",
+        "fn" : "spoon.HammerGhost:openActionEditor"
+      },
+      "note" : "was spoon.HammerGhost:showActionEditor, which is not a method on the spoon (only a key in its bindHotkeys mapping) -- this binding threw on every press before the migration",
+      "id" : "hyper+m",
+      "mods" : "hyper",
+      "key" : "m",
+      "noRepeat" : true,
+      "description" : "HammerGhost Editor",
+      "migratedFrom" : "hotkeys.lua:208"
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+Space",
+      "key" : "Space",
+      "description" : "Show All Hotkeys",
+      "migratedFrom" : "hotkeys.lua:211",
+      "action" : {
+        "kind" : "call",
+        "fn" : "showCombinedList"
+      }
+    },
+    {
+      "placeholder" : true,
+      "action" : {
+        "kind" : "call",
+        "fn" : "tempFunction"
+      },
+      "id" : "hyper+Space",
+      "mods" : "hyper",
+      "key" : "Space",
+      "description" : "Temporary Function",
+      "migratedFrom" : "hotkeys.lua:212"
+    },
+    {
+      "mods" : "meta",
+      "id" : "meta+Space",
+      "key" : "Space",
+      "description" : "Toggle Hotkey Display Mode",
+      "migratedFrom" : "hotkeys.lua:213",
+      "action" : {
+        "kind" : "call",
+        "fn" : "toggleHotkeyDisplayMode"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+left",
+      "key" : "left",
+      "description" : "Move Window Left",
+      "migratedFrom" : "hotkeys.lua:216",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "left"
+        ],
+        "fn" : "WindowManager.moveWindow"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+left",
+      "key" : "left",
+      "description" : "Move to Previous Screen",
+      "migratedFrom" : "hotkeys.lua:217",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "previous",
+          "right"
+        ],
+        "fn" : "WindowManager.moveToScreen"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+right",
+      "key" : "right",
+      "description" : "Move Window Right",
+      "migratedFrom" : "hotkeys.lua:218",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "right"
+        ],
+        "fn" : "WindowManager.moveWindow"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+right",
+      "key" : "right",
+      "description" : "Move to Next Screen",
+      "migratedFrom" : "hotkeys.lua:219",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "next",
+          "right"
+        ],
+        "fn" : "WindowManager.moveToScreen"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+up",
+      "key" : "up",
+      "description" : "Move Window Up",
+      "migratedFrom" : "hotkeys.lua:220",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "up"
+        ],
+        "fn" : "WindowManager.moveWindow"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+up",
+      "key" : "up",
+      "description" : "Center Screen Layout",
+      "migratedFrom" : "hotkeys.lua:221",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "centerScreen"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "mods" : "hammer",
+      "id" : "hammer+down",
+      "key" : "down",
+      "description" : "Move Window Down",
+      "migratedFrom" : "hotkeys.lua:222",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "down"
+        ],
+        "fn" : "WindowManager.moveWindow"
+      }
+    },
+    {
+      "mods" : "hyper",
+      "id" : "hyper+down",
+      "key" : "down",
+      "description" : "Bottom Half Layout",
+      "migratedFrom" : "hotkeys.lua:223",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "bottomHalf"
+        ],
+        "fn" : "WindowManager.applyLayout"
+      }
+    },
+    {
+      "mods" : "meta",
+      "id" : "meta+0",
+      "key" : "0",
+      "description" : "Show Top Projects",
+      "migratedFrom" : "hotkeys.lua:236",
+      "action" : {
+        "kind" : "call",
+        "fn" : "showTopProjects"
+      }
+    }
+  ],
+  "_comment" : "Declarative hotkey table. Edited by hand, by the HammerGhost keymap tab, or by the artifact editor -- all three write this same schema. HotkeyBinder.lua applies it; HotkeyBinder.reload() re-applies without hs.reload(). 'migratedFrom' cites the pre-migration hotkeys.lua line for provenance (see git history).",
+  "modifierSets" : {
+    "hammer" : [
       "cmd",
       "ctrl",
       "alt"
     ],
-    "hyper": [
+    "hyper" : [
       "cmd",
       "shift",
       "ctrl",
       "alt"
     ],
-    "meta": [
+    "meta" : [
       "cmd",
       "shift",
       "alt"
     ]
   },
-  "bindings": [
-    {
-      "id": "hammer+F1",
-      "mods": "hammer",
-      "key": "F1",
-      "description": "Toggle Console",
-      "action": {
-        "kind": "call",
-        "fn": "hs.toggleConsole"
-      },
-      "migratedFrom": "hotkeys.lua:55"
-    },
-    {
-      "id": "hyper+F1",
-      "mods": "hyper",
-      "key": "F1",
-      "description": "LM Studio",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_lmstudio"
-      },
-      "migratedFrom": "hotkeys.lua:56"
-    },
-    {
-      "id": "cmd+F1",
-      "mods": [
-        "cmd"
-      ],
-      "key": "F1",
-      "description": "Open Warp",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_terminal"
-      },
-      "migratedFrom": "hotkeys.lua:57"
-    },
-    {
-      "id": "hammer+F2",
-      "mods": "hammer",
-      "key": "F2",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:58"
-    },
-    {
-      "id": "hyper+F2",
-      "mods": "hyper",
-      "key": "F2",
-      "description": "Windsurf",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_windsurf"
-      },
-      "migratedFrom": "hotkeys.lua:59"
-    },
-    {
-      "id": "cmd+F2",
-      "mods": [
-        "cmd"
-      ],
-      "key": "F2",
-      "description": "Open Zen",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_zen"
-      },
-      "migratedFrom": "hotkeys.lua:60"
-    },
-    {
-      "id": "hammer+F3",
-      "mods": "hammer",
-      "key": "F3",
-      "description": "Toggle USB Logging",
-      "action": {
-        "kind": "call",
-        "fn": "DeviceManager.toggleUSBLogging"
-      },
-      "migratedFrom": "hotkeys.lua:61"
-    },
-    {
-      "id": "hyper+F3",
-      "mods": "hyper",
-      "key": "F3",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:62"
-    },
-    {
-      "id": "cmd+F3",
-      "mods": [
-        "cmd"
-      ],
-      "key": "F3",
-      "description": "Open madhub",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_github"
-      },
-      "migratedFrom": "hotkeys.lua:63"
-    },
-    {
-      "id": "hammer+F4",
-      "mods": "hammer",
-      "key": "F4",
-      "description": "Show Layouts Menu",
-      "action": {
-        "kind": "call",
-        "fn": "spoon.Layouts:chooseLayout"
-      },
-      "migratedFrom": "hotkeys.lua:64"
-    },
-    {
-      "id": "hyper+F4",
-      "mods": "hyper",
-      "key": "F4",
-      "description": "Save Layout",
-      "action": {
-        "kind": "call",
-        "fn": "saveLayoutWithDialog"
-      },
-      "migratedFrom": "hotkeys.lua:65"
-    },
-    {
-      "id": "cmd+F4",
-      "mods": [
-        "cmd"
-      ],
-      "key": "F4",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:66"
-    },
-    {
-      "id": "hammer+F5",
-      "mods": "hammer",
-      "key": "F5",
-      "description": "Reload Hammerspoon",
-      "action": {
-        "kind": "call",
-        "fn": "hs.reload"
-      },
-      "migratedFrom": "hotkeys.lua:67"
-    },
-    {
-      "id": "hyper+F5",
-      "mods": "hyper",
-      "key": "F5",
-      "description": "Open Hammerspoon Preferences",
-      "action": {
-        "kind": "call",
-        "fn": "hs.openPreferences"
-      },
-      "migratedFrom": "hotkeys.lua:68"
-    },
-    {
-      "id": "cmd+F5",
-      "mods": [
-        "cmd"
-      ],
-      "key": "F5",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:69"
-    },
-    {
-      "id": "hammer+F6",
-      "mods": "hammer",
-      "key": "F6",
-      "description": "Save Window Position",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.saveWindowPosition"
-      },
-      "migratedFrom": "hotkeys.lua:70"
-    },
-    {
-      "id": "hyper+F6",
-      "mods": "hyper",
-      "key": "F6",
-      "description": "Save All Window Positions",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.saveAllWindowPositions"
-      },
-      "migratedFrom": "hotkeys.lua:71"
-    },
-    {
-      "id": "cmd+F6",
-      "mods": [
-        "cmd"
-      ],
-      "key": "F6",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:72"
-    },
-    {
-      "id": "hammer+F7",
-      "mods": "hammer",
-      "key": "F7",
-      "description": "Restore Window Position",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.restoreWindowPosition"
-      },
-      "migratedFrom": "hotkeys.lua:73"
-    },
-    {
-      "id": "hyper+F7",
-      "mods": "hyper",
-      "key": "F7",
-      "description": "Restore All Window Positions",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.restoreAllWindowPositions"
-      },
-      "migratedFrom": "hotkeys.lua:74"
-    },
-    {
-      "id": "cmd+F8",
-      "mods": [
-        "cmd"
-      ],
-      "key": "F8",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:75"
-    },
-    {
-      "id": "hammer+F8",
-      "mods": "hammer",
-      "key": "F8",
-      "description": "Raise Window to Front",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.toggleAlwaysOnTop"
-      },
-      "migratedFrom": "hotkeys.lua:76"
-    },
-    {
-      "id": "hyper+F8",
-      "mods": "hyper",
-      "key": "F8",
-      "description": "Cycle Log Level",
-      "action": {
-        "kind": "call",
-        "fn": "cycleLogLevel"
-      },
-      "migratedFrom": "hotkeys.lua:77"
-    },
-    {
-      "id": "cmd+F9",
-      "mods": [
-        "cmd"
-      ],
-      "key": "F9",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:78"
-    },
-    {
-      "id": "hammer+F9",
-      "mods": "hammer",
-      "key": "F9",
-      "description": "Show Window Config Info",
-      "action": {
-        "kind": "call",
-        "fn": "WindowToggler.showConfigurationInfo"
-      },
-      "migratedFrom": "hotkeys.lua:79"
-    },
-    {
-      "id": "hyper+F9",
-      "mods": "hyper",
-      "key": "F9",
-      "description": "Refresh Window Config",
-      "action": {
-        "kind": "call",
-        "fn": "WindowToggler.refreshConfiguration"
-      },
-      "migratedFrom": "hotkeys.lua:80"
-    },
-    {
-      "id": "cmd+F10",
-      "mods": [
-        "cmd"
-      ],
-      "key": "F10",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:81"
-    },
-    {
-      "id": "hammer+F10",
-      "mods": "hammer",
-      "key": "F10",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:82"
-    },
-    {
-      "id": "hyper+F10",
-      "mods": "hyper",
-      "key": "F10",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:83"
-    },
-    {
-      "id": "cmd+F11",
-      "mods": [
-        "cmd"
-      ],
-      "key": "F11",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:84"
-    },
-    {
-      "id": "hammer+F11",
-      "mods": "hammer",
-      "key": "F11",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:85",
-      "enabled": false,
-      "note": "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it."
-    },
-    {
-      "id": "hyper+F11",
-      "mods": "hyper",
-      "key": "F11",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:86"
-    },
-    {
-      "id": "cmd+F12",
-      "mods": [
-        "cmd"
-      ],
-      "key": "F12",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:87"
-    },
-    {
-      "id": "hammer+F12",
-      "mods": "hammer",
-      "key": "F12",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:88",
-      "enabled": false,
-      "note": "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it."
-    },
-    {
-      "id": "hyper+F12",
-      "mods": "hyper",
-      "key": "F12",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:89"
-    },
-    {
-      "id": "hammer+`",
-      "mods": "hammer",
-      "key": "`",
-      "description": "Open Cursor with madhub",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_cursor_with_github"
-      },
-      "migratedFrom": "hotkeys.lua:92"
-    },
-    {
-      "id": "hyper+`",
-      "mods": "hyper",
-      "key": "`",
-      "description": "Open Medis",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_medis"
-      },
-      "migratedFrom": "hotkeys.lua:93"
-    },
-    {
-      "id": "hammer+1",
-      "mods": "hammer",
-      "key": "1",
-      "description": "Move Top-Left Corner",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "topLeft"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:94"
-    },
-    {
-      "id": "hyper+1",
-      "mods": "hyper",
-      "key": "1",
-      "description": "Move Bottom-Left Corner",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "bottomLeft"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:95"
-    },
-    {
-      "id": "hammer+2",
-      "mods": "hammer",
-      "key": "2",
-      "description": "Move Top-Right Corner",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "topRight"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:96"
-    },
-    {
-      "id": "hyper+2",
-      "mods": "hyper",
-      "key": "2",
-      "description": "Move Bottom-Right Corner",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "bottomRight"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:97"
-    },
-    {
-      "id": "hammer+3",
-      "mods": "hammer",
-      "key": "3",
-      "description": "Full Screen",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.toggleFullLayout"
-      },
-      "migratedFrom": "hotkeys.lua:98"
-    },
-    {
-      "id": "hyper+3",
-      "mods": "hyper",
-      "key": "3",
-      "description": "Nearly Full Screen",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "sevenByFive"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:99"
-    },
-    {
-      "id": "hammer+4",
-      "mods": "hammer",
-      "key": "4",
-      "description": "Left Wide Layout",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "leftWide"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:100"
-    },
-    {
-      "id": "hyper+4",
-      "mods": "hyper",
-      "key": "4",
-      "description": "Mini Shuffle",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.miniShuffle"
-      },
-      "migratedFrom": "hotkeys.lua:101"
-    },
-    {
-      "id": "hammer+5",
-      "mods": "hammer",
-      "key": "5",
-      "description": "Split Vertical",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "splitVertical"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:102"
-    },
-    {
-      "id": "hyper+5",
-      "mods": "hyper",
-      "key": "5",
-      "description": "Split Horizontal",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "splitHorizontal"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:103"
-    },
-    {
-      "id": "hammer+6",
-      "mods": "hammer",
-      "key": "6",
-      "description": "Left Small Layout",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.toggleLeftLayout"
-      },
-      "migratedFrom": "hotkeys.lua:104"
-    },
-    {
-      "id": "hyper+6",
-      "mods": "hyper",
-      "key": "6",
-      "description": "Left Half Layout",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "leftHalf"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:105"
-    },
-    {
-      "id": "hammer+7",
-      "mods": "hammer",
-      "key": "7",
-      "description": "Toggle Right Layout",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.toggleRightLayout"
-      },
-      "migratedFrom": "hotkeys.lua:106"
-    },
-    {
-      "id": "hyper+7",
-      "mods": "hyper",
-      "key": "7",
-      "description": "Right Half Layout",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "rightHalf"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:107"
-    },
-    {
-      "id": "hammer+8",
-      "mods": "hammer",
-      "key": "8",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:108"
-    },
-    {
-      "id": "hyper+8",
-      "mods": "hyper",
-      "key": "8",
-      "description": "Open System Preferences",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_system"
-      },
-      "migratedFrom": "hotkeys.lua:109"
-    },
-    {
-      "id": "hammer+9",
-      "mods": "hammer",
-      "key": "9",
-      "description": "Move Window to Mouse",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveWindowMouseCenter"
-      },
-      "migratedFrom": "hotkeys.lua:110"
-    },
-    {
-      "id": "hyper+9",
-      "mods": "hyper",
-      "key": "9",
-      "description": "Open Selected File",
-      "action": {
-        "kind": "call",
-        "fn": "FileManager.openSelectedFile"
-      },
-      "migratedFrom": "hotkeys.lua:111"
-    },
-    {
-      "id": "hammer+0",
-      "mods": "hammer",
-      "key": "0",
-      "description": "Horizontal Shuffle",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.halfShuffle",
-        "args": [
-          4,
-          4
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:112"
-    },
-    {
-      "id": "hyper+0",
-      "mods": "hyper",
-      "key": "0",
-      "description": "Vertical Shuffle",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.halfShuffle",
-        "args": [
-          1,
-          4
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:113"
-    },
-    {
-      "id": "hammer+-",
-      "mods": "hammer",
-      "key": "-",
-      "description": "Mouse: Monitor 1",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveMouseToScreen",
-        "args": [
-          2
-        ]
-      },
-      "note": "add - and = and backspace 1/2 swapped: screen index 1 (PHL 278E1 #1) sits lower on desk than index 2, felt flipped",
-      "migratedFrom": "hotkeys.lua:116"
-    },
-    {
-      "id": "hyper+-",
-      "mods": "hyper",
-      "key": "-",
-      "description": "Mouse: Monitor 2",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveMouseToScreen",
-        "args": [
-          1
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:117"
-    },
-    {
-      "id": "hammer+=",
-      "mods": "hammer",
-      "key": "=",
-      "description": "Mouse: Monitor 3",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveMouseToScreen",
-        "args": [
-          3
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:118"
-    },
-    {
-      "id": "hyper+=",
-      "mods": "hyper",
-      "key": "=",
-      "description": "Mouse: Monitor 4",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveMouseToScreen",
-        "args": [
-          4
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:119"
-    },
-    {
-      "id": "hammer+Tab",
-      "mods": "hammer",
-      "key": "Tab",
-      "description": "Open Mission Control",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_mission_control"
-      },
-      "migratedFrom": "hotkeys.lua:127"
-    },
-    {
-      "id": "hyper+Tab",
-      "mods": "hyper",
-      "key": "Tab",
-      "description": "Open Launchpad",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_launchpad"
-      },
-      "migratedFrom": "hotkeys.lua:128"
-    },
-    {
-      "id": "hammer+q",
-      "mods": "hammer",
-      "key": "q",
-      "description": "Clear Saved Window Positions",
-      "action": {
-        "kind": "call",
-        "fn": "WindowToggler.clearSavedPositions"
-      },
-      "migratedFrom": "hotkeys.lua:129"
-    },
-    {
-      "id": "hyper+q",
-      "mods": "hyper",
-      "key": "q",
-      "description": "Clear All Saved Locations",
-      "action": {
-        "kind": "call",
-        "fn": "WindowToggler.clearSavedLocations",
-        "args": [
-          true
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:130"
-    },
-    {
-      "id": "hammer+w",
-      "mods": "hammer",
-      "key": "w",
-      "description": "Toggle Between Location 1 and 2",
-      "action": {
-        "kind": "call",
-        "fn": "WindowToggler.toggleWindowPosition"
-      },
-      "migratedFrom": "hotkeys.lua:131"
-    },
-    {
-      "id": "hyper+w",
-      "mods": "hyper",
-      "key": "w",
-      "description": "Window Locations Menu",
-      "action": {
-        "kind": "call",
-        "fn": "WindowToggler.showLocationsMenu"
-      },
-      "migratedFrom": "hotkeys.lua:132"
-    },
-    {
-      "id": "hammer+e",
-      "mods": "hammer",
-      "key": "e",
-      "description": "Show File Menu",
-      "action": {
-        "kind": "call",
-        "fn": "FileManager.showFileMenu"
-      },
-      "migratedFrom": "hotkeys.lua:133"
-    },
-    {
-      "id": "hyper+e",
-      "mods": "hyper",
-      "key": "e",
-      "description": "Show Editor Menu",
-      "action": {
-        "kind": "call",
-        "fn": "FileManager.showEditorMenuSafe"
-      },
-      "migratedFrom": "hotkeys.lua:134"
-    },
-    {
-      "id": "hammer+r",
-      "mods": "hammer",
-      "key": "r",
-      "description": "Show Window Management Menu",
-      "action": {
-        "kind": "call",
-        "fn": "WindowMenu.toggleMenu"
-      },
-      "migratedFrom": "hotkeys.lua:135"
-    },
-    {
-      "id": "hyper+r",
-      "mods": "hyper",
-      "key": "r",
-      "description": "Reset Shuffle Counters",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.resetShuffleCounters"
-      },
-      "migratedFrom": "hotkeys.lua:136"
-    },
-    {
-      "id": "hammer+t",
-      "mods": "hammer",
-      "key": "t",
-      "description": "Open Barrier",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_barrier"
-      },
-      "migratedFrom": "hotkeys.lua:137"
-    },
-    {
-      "id": "hyper+t",
-      "mods": "hyper",
-      "key": "t",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:138"
-    },
-    {
-      "id": "hammer+y",
-      "mods": "hammer",
-      "key": "y",
-      "description": "AI Tidy Windows",
-      "action": {
-        "kind": "call",
-        "fn": "WindowTidy.run"
-      },
-      "migratedFrom": "hotkeys.lua:139"
-    },
-    {
-      "id": "hyper+y",
-      "mods": "hyper",
-      "key": "y",
-      "description": "AI Tidy Preview (dry run)",
-      "action": {
-        "kind": "call",
-        "fn": "WindowTidy.preview"
-      },
-      "migratedFrom": "hotkeys.lua:140"
-    },
-    {
-      "id": "hammer+u",
-      "mods": "hammer",
-      "key": "u",
-      "description": "Open Most Recent Image Folder",
-      "action": {
-        "kind": "call",
-        "fn": "FileManager.openMostRecentImageFolder"
-      },
-      "migratedFrom": "hotkeys.lua:141"
-    },
-    {
-      "id": "hyper+u",
-      "mods": "hyper",
-      "key": "u",
-      "description": "AI Tidy Undo",
-      "action": {
-        "kind": "call",
-        "fn": "WindowTidy.undo"
-      },
-      "migratedFrom": "hotkeys.lua:142"
-    },
-    {
-      "id": "hammer+i",
-      "mods": "hammer",
-      "key": "i",
-      "description": "Copy Most Recent Image",
-      "action": {
-        "kind": "call",
-        "fn": "FileManager.copyMostRecentImage"
-      },
-      "note": "Original behavior: copy most recent image from Desktop to clipboard",
-      "migratedFrom": "hotkeys.lua:144"
-    },
-    {
-      "id": "hyper+i",
-      "mods": "hyper",
-      "key": "i",
-      "description": "Open Most Recent Image",
-      "action": {
-        "kind": "call",
-        "fn": "FileManager.openMostRecentImage"
-      },
-      "migratedFrom": "hotkeys.lua:145"
-    },
-    {
-      "id": "hammer+o",
-      "mods": "hammer",
-      "key": "o",
-      "description": "Restore Window to Location 1",
-      "action": {
-        "kind": "call",
-        "fn": "WindowToggler.restoreToLocation1"
-      },
-      "migratedFrom": "hotkeys.lua:146"
-    },
-    {
-      "id": "hyper+o",
-      "mods": "hyper",
-      "key": "o",
-      "description": "Save Window to Location 1",
-      "action": {
-        "kind": "call",
-        "fn": "WindowToggler.saveToLocation1"
-      },
-      "migratedFrom": "hotkeys.lua:147"
-    },
-    {
-      "id": "hammer+p",
-      "mods": "hammer",
-      "key": "p",
-      "description": "Open Postman",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_postman"
-      },
-      "migratedFrom": "hotkeys.lua:149"
-    },
-    {
-      "id": "hyper+p",
-      "mods": "hyper",
-      "key": "p",
-      "description": "Open Cursor",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_cursor"
-      },
-      "migratedFrom": "hotkeys.lua:150"
-    },
-    {
-      "id": "hammer+[",
-      "mods": "hammer",
-      "key": "[",
-      "description": "Screenshot to Clipboard",
-      "action": {
-        "kind": "call",
-        "fn": "FileManager.captureScreenshotToClipboard"
-      },
-      "note": "New: dedicated screenshot-to-clipboard hotkey",
-      "migratedFrom": "hotkeys.lua:152"
-    },
-    {
-      "id": "hyper+[",
-      "mods": "hyper",
-      "key": "[",
-      "description": "Mouse: Previous Monitor",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveMouseToScreenRelative",
-        "args": [
-          "previous"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:153"
-    },
-    {
-      "id": "hammer+]",
-      "mods": "hammer",
-      "key": "]",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "note": "] freed: was Mouse Monitor 1, collided with system/app screenshot tool on cmd+ctrl+alt+]. Monitor jumps now live on -/= (see Number Row above).",
-      "migratedFrom": "hotkeys.lua:155"
-    },
-    {
-      "id": "hyper+]",
-      "mods": "hyper",
-      "key": "]",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:156"
-    },
-    {
-      "id": "hammer+\\",
-      "mods": "hammer",
-      "key": "\\",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:157"
-    },
-    {
-      "id": "hyper+\\",
-      "mods": "hyper",
-      "key": "\\",
-      "description": "Mouse: Next Monitor",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveMouseToScreenRelative",
-        "args": [
-          "next"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:158"
-    },
-    {
-      "id": "hammer+a",
-      "mods": "hammer",
-      "key": "a",
-      "description": "Toggle KineticLatch",
-      "action": {
-        "kind": "call",
-        "fn": "spoon.KineticLatch:toggle"
-      },
-      "migratedFrom": "hotkeys.lua:161"
-    },
-    {
-      "id": "hyper+a",
-      "mods": "hyper",
-      "key": "a",
-      "description": "KineticLatch Status",
-      "action": {
-        "kind": "call",
-        "fn": "spoon.KineticLatch:showStatus"
-      },
-      "migratedFrom": "hotkeys.lua:162"
-    },
-    {
-      "id": "meta+a",
-      "mods": "meta",
-      "key": "a",
-      "description": "KineticLatch Diagnostics",
-      "action": {
-        "kind": "call",
-        "fn": "spoon.KineticLatch:diagnose"
-      },
-      "migratedFrom": "hotkeys.lua:163"
-    },
-    {
-      "id": "hammer+s",
-      "mods": "hammer",
-      "key": "s",
-      "description": "Open Slack",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_slack"
-      },
-      "migratedFrom": "hotkeys.lua:164"
-    },
-    {
-      "id": "hyper+s",
-      "mods": "hyper",
-      "key": "s",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:165"
-    },
-    {
-      "id": "hammer+d",
-      "mods": "hammer",
-      "key": "d",
-      "description": "Open AnythingLLM",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_anythingllm"
-      },
-      "migratedFrom": "hotkeys.lua:166"
-    },
-    {
-      "id": "hyper+d",
-      "mods": "hyper",
-      "key": "d",
-      "description": "Open MongoDB Compass",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_mongodb"
-      },
-      "migratedFrom": "hotkeys.lua:167"
-    },
-    {
-      "id": "hammer+f",
-      "mods": "hammer",
-      "key": "f",
-      "description": "Open Scrcpy",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_scrcpy"
-      },
-      "migratedFrom": "hotkeys.lua:168"
-    },
-    {
-      "id": "hyper+f",
-      "mods": "hyper",
-      "key": "f",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:169"
-    },
-    {
-      "id": "hammer+g",
-      "mods": "hammer",
-      "key": "g",
-      "description": "Toggle Mad Tinker Dashboard",
-      "action": {
-        "kind": "call",
-        "fn": "spoon.HammerGhost:toggleControlPanel"
-      },
-      "noRepeat": true,
-      "migratedFrom": "hotkeys.lua:170"
-    },
-    {
-      "id": "hyper+g",
-      "mods": "hyper",
-      "key": "g",
-      "description": "Open madhub",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_github"
-      },
-      "migratedFrom": "hotkeys.lua:171"
-    },
-    {
-      "id": "hammer+h",
-      "mods": "hammer",
-      "key": "h",
-      "description": "Toggle HammerGhost",
-      "action": {
-        "kind": "call",
-        "fn": "spoon.HammerGhost:toggle"
-      },
-      "noRepeat": true,
-      "migratedFrom": "hotkeys.lua:172"
-    },
-    {
-      "id": "hyper+h",
-      "mods": "hyper",
-      "key": "h",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:173"
-    },
-    {
-      "id": "hammer+j",
-      "mods": "hammer",
-      "key": "j",
-      "description": "Toggle Project Manager",
-      "action": {
-        "kind": "call",
-        "fn": "ProjectManager.toggleProjectManager"
-      },
-      "migratedFrom": "hotkeys.lua:174"
-    },
-    {
-      "id": "hyper+j",
-      "mods": "hyper",
-      "key": "j",
-      "description": "Show Active Project Info",
-      "action": {
-        "kind": "call",
-        "fn": "ProjectManager.showActiveProjectInfo"
-      },
-      "migratedFrom": "hotkeys.lua:175"
-    },
-    {
-      "id": "hammer+k",
-      "mods": "hammer",
-      "key": "k",
-      "description": "Reset Project Manager UI",
-      "action": {
-        "kind": "call",
-        "fn": "ProjectManager.resetUI"
-      },
-      "migratedFrom": "hotkeys.lua:176"
-    },
-    {
-      "id": "hyper+k",
-      "mods": "hyper",
-      "key": "k",
-      "description": "Hide Project Manager UI",
-      "action": {
-        "kind": "call",
-        "fn": "ProjectManager.hideUI"
-      },
-      "migratedFrom": "hotkeys.lua:177"
-    },
-    {
-      "id": "hammer+l",
-      "mods": "hammer",
-      "key": "l",
-      "description": "Open Logi Options+",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_logi"
-      },
-      "migratedFrom": "hotkeys.lua:178"
-    },
-    {
-      "id": "hyper+l",
-      "mods": "hyper",
-      "key": "l",
-      "description": "Open System Settings",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_system"
-      },
-      "migratedFrom": "hotkeys.lua:179"
-    },
-    {
-      "id": "hammer+;",
-      "mods": "hammer",
-      "key": ";",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:180"
-    },
-    {
-      "id": "hyper+;",
-      "mods": "hyper",
-      "key": ";",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:181"
-    },
-    {
-      "id": "hammer+'",
-      "mods": "hammer",
-      "key": "'",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:182"
-    },
-    {
-      "id": "hyper+'",
-      "mods": "hyper",
-      "key": "'",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:183"
-    },
-    {
-      "id": "hammer+return",
-      "mods": "hammer",
-      "key": "return",
-      "description": "Toggle Native Fullscreen",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.toggleNativeFullScreen"
-      },
-      "migratedFrom": "hotkeys.lua:184"
-    },
-    {
-      "id": "hammer+z",
-      "mods": "hammer",
-      "key": "z",
-      "description": "Open Codex",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_codex"
-      },
-      "migratedFrom": "hotkeys.lua:187"
-    },
-    {
-      "id": "hyper+z",
-      "mods": "hyper",
-      "key": "z",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:188"
-    },
-    {
-      "id": "hammer+x",
-      "mods": "hammer",
-      "key": "x",
-      "description": "Toggle Dragon Grid",
-      "action": {
-        "kind": "call",
-        "fn": "spoon.DragonGrid:toggleGridDisplay"
-      },
-      "migratedFrom": "hotkeys.lua:189"
-    },
-    {
-      "id": "hyper+x",
-      "mods": "hyper",
-      "key": "x",
-      "description": "Dragon Grid Settings",
-      "action": {
-        "kind": "call",
-        "fn": "spoon.DragonGrid:showSettingsMenu"
-      },
-      "migratedFrom": "hotkeys.lua:190"
-    },
-    {
-      "id": "hammer+c",
-      "mods": "hammer",
-      "key": "c",
-      "description": "Open Claude",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_claude"
-      },
-      "migratedFrom": "hotkeys.lua:191"
-    },
-    {
-      "id": "hyper+c",
-      "mods": "hyper",
-      "key": "c",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:192"
-    },
-    {
-      "id": "hammer+v",
-      "mods": "hammer",
-      "key": "v",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:193"
-    },
-    {
-      "id": "hyper+v",
-      "mods": "hyper",
-      "key": "v",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:194"
-    },
-    {
-      "id": "hammer+b",
-      "mods": "hammer",
-      "key": "b",
-      "description": "Open Chrome",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_chrome"
-      },
-      "migratedFrom": "hotkeys.lua:195"
-    },
-    {
-      "id": "hyper+b",
-      "mods": "hyper",
-      "key": "b",
-      "description": "Open Arc Browser",
-      "action": {
-        "kind": "call",
-        "fn": "AppManager.open_arc"
-      },
-      "migratedFrom": "hotkeys.lua:196"
-    },
-    {
-      "id": "hammer+n",
-      "mods": "hammer",
-      "key": "n",
-      "description": "Restore Window to Location 2",
-      "action": {
-        "kind": "call",
-        "fn": "WindowToggler.restoreToLocation2"
-      },
-      "migratedFrom": "hotkeys.lua:205"
-    },
-    {
-      "id": "hyper+n",
-      "mods": "hyper",
-      "key": "n",
-      "description": "Save Window to Location 2",
-      "action": {
-        "kind": "call",
-        "fn": "WindowToggler.saveToLocation2"
-      },
-      "migratedFrom": "hotkeys.lua:206"
-    },
-    {
-      "id": "hammer+m",
-      "mods": "hammer",
-      "key": "m",
-      "description": "Toggle HammerGhost",
-      "action": {
-        "kind": "call",
-        "fn": "spoon.HammerGhost:toggle"
-      },
-      "noRepeat": true,
-      "migratedFrom": "hotkeys.lua:207"
-    },
-    {
-      "id": "hyper+m",
-      "mods": "hyper",
-      "key": "m",
-      "description": "HammerGhost Editor",
-      "action": {
-        "kind": "call",
-        "fn": "spoon.HammerGhost:openActionEditor"
-      },
-      "noRepeat": true,
-      "migratedFrom": "hotkeys.lua:208",
-      "note": "was spoon.HammerGhost:showActionEditor, which is not a method on the spoon (only a key in its bindHotkeys mapping) -- this binding threw on every press before the migration"
-    },
-    {
-      "id": "hammer+Space",
-      "mods": "hammer",
-      "key": "Space",
-      "description": "Show All Hotkeys",
-      "action": {
-        "kind": "call",
-        "fn": "showCombinedList"
-      },
-      "migratedFrom": "hotkeys.lua:211"
-    },
-    {
-      "id": "hyper+Space",
-      "mods": "hyper",
-      "key": "Space",
-      "description": "Temporary Function",
-      "action": {
-        "kind": "call",
-        "fn": "tempFunction"
-      },
-      "placeholder": true,
-      "migratedFrom": "hotkeys.lua:212"
-    },
-    {
-      "id": "meta+Space",
-      "mods": "meta",
-      "key": "Space",
-      "description": "Toggle Hotkey Display Mode",
-      "action": {
-        "kind": "call",
-        "fn": "toggleHotkeyDisplayMode"
-      },
-      "migratedFrom": "hotkeys.lua:213"
-    },
-    {
-      "id": "hammer+left",
-      "mods": "hammer",
-      "key": "left",
-      "description": "Move Window Left",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveWindow",
-        "args": [
-          "left"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:216"
-    },
-    {
-      "id": "hyper+left",
-      "mods": "hyper",
-      "key": "left",
-      "description": "Move to Previous Screen",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveToScreen",
-        "args": [
-          "previous",
-          "right"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:217"
-    },
-    {
-      "id": "hammer+right",
-      "mods": "hammer",
-      "key": "right",
-      "description": "Move Window Right",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveWindow",
-        "args": [
-          "right"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:218"
-    },
-    {
-      "id": "hyper+right",
-      "mods": "hyper",
-      "key": "right",
-      "description": "Move to Next Screen",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveToScreen",
-        "args": [
-          "next",
-          "right"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:219"
-    },
-    {
-      "id": "hammer+up",
-      "mods": "hammer",
-      "key": "up",
-      "description": "Move Window Up",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveWindow",
-        "args": [
-          "up"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:220"
-    },
-    {
-      "id": "hyper+up",
-      "mods": "hyper",
-      "key": "up",
-      "description": "Center Screen Layout",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "centerScreen"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:221"
-    },
-    {
-      "id": "hammer+down",
-      "mods": "hammer",
-      "key": "down",
-      "description": "Move Window Down",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.moveWindow",
-        "args": [
-          "down"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:222"
-    },
-    {
-      "id": "hyper+down",
-      "mods": "hyper",
-      "key": "down",
-      "description": "Bottom Half Layout",
-      "action": {
-        "kind": "call",
-        "fn": "WindowManager.applyLayout",
-        "args": [
-          "bottomHalf"
-        ]
-      },
-      "migratedFrom": "hotkeys.lua:223"
-    },
-    {
-      "id": "meta+0",
-      "mods": "meta",
-      "key": "0",
-      "description": "Show Top Projects",
-      "action": {
-        "kind": "call",
-        "fn": "showTopProjects"
-      },
-      "migratedFrom": "hotkeys.lua:236"
-    }
-  ]
+  "version" : 1
 }
