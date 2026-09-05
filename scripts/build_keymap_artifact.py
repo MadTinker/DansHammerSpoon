@@ -27,6 +27,9 @@ def read(name):
 shell = read("keymap_page.html")
 transport = read("keymap_transport_artifact.js")
 renderer = read("keymap.js")
+widgets = read("param_widgets.js")
+themes = read("keymap_themes.js")
+theme = read("keymap_theme.js")
 
 # The artifact surface is honest about being unable to reach the machine; the
 # HTTP surface injects its own notice into this same shell (see keymap_server.lua).
@@ -38,7 +41,9 @@ NOTICE = """<p>
                     to apply &mdash; no reload.
                 </p>"""
 
-for token, body in (("__NOTICE__", NOTICE), ("__TRANSPORT__", transport), ("__RENDERER__", renderer)):
+for token, body in (("__NOTICE__", NOTICE), ("__WIDGETS__", widgets),
+                    ("__THEMES__", themes), ("__THEME__", theme),
+                    ("__TRANSPORT__", transport), ("__RENDERER__", renderer)):
     # Exactly once: the shell must not mention a token anywhere but its slot,
     # or the substitution lands in the wrong place (it did, once).
     if shell.count(token) != 1:

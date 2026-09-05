@@ -361,10 +361,13 @@
        board reads as a keyboard. Not bindable, so not interactive. */
     .km-mod {
         cursor: default;
-        opacity: 0.42;
+        background: transparent;
+        border-color: var(--rule);
         box-shadow: none;
         border-bottom-width: 1px;
     }
+
+    .km-mod .km-cap { color: var(--ink-faint); }
 
     .km-mod .km-cap { font-weight: 400; }
 
@@ -411,7 +414,7 @@
     .km-field select,
     .km-field textarea {
         width: 100%;
-        background: var(--ground);
+        background: var(--surface-2);
         border: 1px solid var(--rule);
         border-radius: 3px;
         color: var(--ink);
@@ -452,7 +455,7 @@
     .km-note {
         font-size: 12.5px;
         color: var(--ink-soft);
-        background: var(--ground);
+        background: var(--surface-2);
         border-left: 2px solid var(--teal);
         padding: 9px 12px;
         margin-bottom: 13px;
@@ -506,6 +509,109 @@
         font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
     }
 
+    /* ── editor: hints, argument rows, action-param widgets ─────────────── */
+    .km-hint {
+        font-size: 11.5px;
+        color: var(--ink-faint);
+        margin: -6px 0 11px;
+        line-height: 1.4;
+    }
+
+    .km-hint:empty { display: none; }
+    .km-hint-warn { color: var(--warn); }
+
+    .km-args { display: flex; flex-direction: column; gap: 6px; margin-bottom: 7px; }
+    .km-arg-row { display: flex; gap: 6px; }
+    .km-arg-row .km-arg { flex: 1 1 auto; }
+
+    .km-arg-drop {
+        flex: 0 0 auto;
+        padding: 6px 13px;
+        line-height: 1;
+        font-size: 15px;
+    }
+
+    .km-arg-add { padding: 6px 13px; font-size: 12px; }
+
+    /* param_widgets.js wraps each param in .form-group; it ships no styles of
+       its own, so the host page dresses them to match. */
+    .km-params .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 12px;
+    }
+
+    .km-params .form-group label {
+        font-size: 11px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        font-weight: 600;
+    }
+
+    .km-params input,
+    .km-params select,
+    .km-params textarea {
+        width: 100%;
+        box-sizing: border-box;
+        background: var(--surface-2);
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        color: var(--ink);
+        padding: 8px 10px;
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 12.5px;
+    }
+
+    .km-params textarea { min-height: 64px; resize: vertical; }
+
+    .km-params input:focus,
+    .km-params select:focus,
+    .km-params textarea:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: -1px;
+        border-color: var(--accent);
+    }
+
+    .km-params .browse-btn {
+        align-self: flex-start;
+        width: auto;
+        background: var(--surface-2);
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        color: var(--ink);
+        padding: 6px 13px;
+        font-family: inherit;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .km-params .hotkey-input { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+
+    .km-copy { max-width: 230px; }
+
+    .km-free-count {
+        font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+        font-size: 10px;
+        opacity: 0.62;
+    }
+
+    .km-theme {
+        flex: 0 0 auto;
+        min-width: 170px;
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        color: var(--ink);
+        padding: 7px 10px;
+        font-family: inherit;
+        font-size: 12.5px;
+        max-width: 210px;
+    }
+
+    .km-theme:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
     .km-hide { display: none !important; }
 
     footer {
@@ -549,6 +655,7 @@
             <input type="text" id="km-search" class="km-search"
                    placeholder="Filter by description, key or function…">
             <span class="km-stats" id="km-stats"></span>
+            <select id="km-theme" class="km-theme" aria-label="Colour theme"></select>
             <button type="button" id="km-export" class="km-btn">Export hotkeys.json</button>
         </div>
 
@@ -572,6 +679,9 @@
     </footer>
 </div>
 
+<script>__WIDGETS__</script>
+<script>__THEMES__</script>
+<script>__THEME__</script>
 <script>__TRANSPORT__</script>
 <script>__RENDERER__</script>
 <script>

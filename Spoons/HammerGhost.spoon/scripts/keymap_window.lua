@@ -62,6 +62,10 @@ function M.buildPayload()
         modifierSets = (B.config or {}).modifierSets or {},
         actionTypes = actionTypes,
         problems = problems,
+        -- Autocomplete source for the editor's function-path field. A hint, not
+        -- a whitelist: paths resolve at press time, so one missing from here can
+        -- still be valid later.
+        functions = B.knownFunctions(),
     }
 end
 
@@ -159,7 +163,9 @@ function M.create(spoon)
         title = "⌘ Keymap",
         html = "keymap.html",
         js = "keymap.js",
-        extraJs = { "keymap_transport_hs.js" },
+        -- param_widgets.js is inlined by editor_window itself (it matches that
+        -- tag for every editor); these are this page's own extras.
+        extraJs = { "keymap_themes.js", "keymap_theme.js", "keymap_transport_hs.js" },
         handler = function(url) M.handleURL(spoon, url) end,
     })
 end

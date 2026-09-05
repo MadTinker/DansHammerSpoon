@@ -283,6 +283,93 @@ function HotkeyBinder.find(id)
     return nil
 end
 
+-- Roots that are never useful hotkey targets: the Lua stdlib, the module tables
+-- this file already reaches through other paths, and hs/spoon which are walked
+-- separately below.
+local FN_SKIP = {
+    _G = true, package = true, string = true, table = true, math = true,
+    io = true, os = true, coroutine = true, debug = true, utf8 = true,
+    arg = true, hs = true, spoon = true,
+    -- Not hotkey material: logger methods, and the console-only helpers
+    -- Hammerspoon installs for interactive use.
+    AppLogger = true, help = true, ls = true,
+}
+
+-- Lua's own globals. They are functions, so the scan finds them, but nobody
+-- wants pcall on a hotkey.
+local LUA_GLOBALS = {
+    assert = true, collectgarbage = true, dofile = true, error = true,
+    getmetatable = true, ipairs = true, load = true, loadfile = true,
+    loadstring = true, next = true, pairs = true, pcall = true, print = true,
+    rawequal = true, rawget = true, rawlen = true, rawset = true,
+    rawrequire = true, require = true, select = true, setmetatable = true,
+    tonumber = true, tostring = true, type = true, unpack = true,
+    xpcall = true, warn = true, module = true, newproxy = true,
+}
+
+-- A few hs.* entry points that genuinely make sense on a hotkey. The rest of
+-- hs is enormous and mostly not directly bindable, so it is not enumerated.
+local HS_FUNCTIONS = {
+    "hs.reload", "hs.toggleConsole", "hs.openConsole", "hs.openPreferences",
+    "hs.caffeinate.lockScreen", "hs.caffeinate.startScreensaver",
+}
+
+--- Every dotted path that currently resolves to a function, for the keymap
+--- editor's autocomplete. Discovery, not validation: a path absent from this
+--- list can still be valid later (resolution happens at press time), so callers
+--- must treat a miss as a hint rather than an error.
+function HotkeyBinder.knownFunctions()
+    local out, seen = {}, {}
+    local function add(path)
+        if not seen[path] then
+            seen[path] = true
+            out[#out + 1] = path
+        end
+    end
+
+    local function scanTable(prefix, tbl, sep)
+        pcall(function()
+            for k, v in pairs(tbl) do
+                if type(k) == "string" and type(v) == "function"
+                    and not k:match("^_") then
+                    add(prefix .. sep .. k)
+                end
+            end
+        end)
+    end
+
+    for name, value in pairs(_G) do
+        if type(name) == "string" and not FN_SKIP[name] and not name:match("^_") then
+            if type(value) == "function" then
+                if not LUA_GLOBALS[name] then add(name) end
+            elseif type(value) == "table" then
+                scanTable(name, value, ".")
+            end
+        end
+    end
+
+    -- Spoon methods usually live on the object itself, but a spoon built with a
+    -- metatable keeps them on __index, so check both or half of them vanish.
+    if type(spoon) == "table" then
+        pcall(function()
+            for sname, obj in pairs(spoon) do
+                if type(sname) == "string" and type(obj) == "table" then
+                    scanTable("spoon." .. sname, obj, ":")
+                    local mt = getmetatable(obj)
+                    if mt and type(mt.__index) == "table" then
+                        scanTable("spoon." .. sname, mt.__index, ":")
+                    end
+                end
+            end
+        end)
+    end
+
+    for _, path in ipairs(HS_FUNCTIONS) do add(path) end
+
+    table.sort(out)
+    return out
+end
+
 --- Bind everything in the loaded table. Safe to call repeatedly: every existing
 --- handle is dropped first, so this is the live-apply path (no hs.reload, which
 --- would tear down every open window and lose UI state).

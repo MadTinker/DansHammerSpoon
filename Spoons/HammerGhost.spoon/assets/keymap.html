@@ -178,8 +178,13 @@
         /* State colours. Free keys stay flat so the eye goes to what IS bound —
            the point of the grid is spotting free slots and collisions at once. */
         .km-key.km-free {
-            opacity: 0.4;
+            background: transparent;
+            border-style: dashed;
+            border-bottom-width: 1px;
+            box-shadow: none;
         }
+
+        .km-key.km-free .km-cap { color: var(--muted-color); font-weight: 400; }
 
         .km-key.km-bound .km-desc {
             color: var(--text-color);
@@ -226,8 +231,14 @@
            board reads as a keyboard. Not bindable, so not interactive. */
         .km-mod {
             cursor: default;
-            opacity: 0.4;
+            background: transparent;
+            border-style: solid;
+            border-color: var(--border-color);
+            border-bottom-width: 1px;
+            box-shadow: none;
         }
+
+        .km-mod .km-cap { color: var(--muted-color); }
 
         .km-mod .km-cap {
             font-weight: 400;
@@ -375,6 +386,89 @@
             margin-left: auto;
         }
 
+        /* ── editor: hints, argument rows, action-param widgets ─────────── */
+        .km-hint {
+            font-size: 11px;
+            color: var(--muted-color);
+            margin: -5px 0 9px;
+            line-height: 1.4;
+        }
+
+        .km-hint:empty { display: none; }
+        .km-hint-warn { color: #e5a33a; }
+
+        .km-args { display: flex; flex-direction: column; gap: 5px; margin-bottom: 6px; }
+        .km-arg-row { display: flex; gap: 5px; }
+        .km-arg-row .km-arg { flex: 1 1 auto; }
+        .km-arg-drop { flex: 0 0 auto; padding: 5px 11px; line-height: 1; font-size: 14px; }
+        .km-arg-add { padding: 5px 11px; font-size: 11px; }
+
+        /* param_widgets.js wraps each param in .form-group and ships no styles
+           of its own, so the host page dresses them. */
+        .km-params .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .km-params .form-group label {
+            font-size: 11px;
+            color: var(--muted-color);
+        }
+
+        .km-params input,
+        .km-params select,
+        .km-params textarea {
+            width: 100%;
+            box-sizing: border-box;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            padding: 5px 8px;
+            font-family: Menlo, monospace;
+            font-size: 11px;
+        }
+
+        .km-params textarea { min-height: 52px; resize: vertical; }
+
+        .km-params input:focus,
+        .km-params select:focus,
+        .km-params textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .km-params .browse-btn {
+            align-self: flex-start;
+            width: auto;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            padding: 5px 11px;
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .km-copy { max-width: 200px; }
+        .km-free-count { font-size: 9px; opacity: 0.62; }
+
+        .km-theme {
+            flex: 0 0 auto;
+            min-width: 150px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            padding: 4px 8px;
+            font-family: inherit;
+            font-size: 11px;
+            max-width: 180px;
+        }
+
         .km-hide {
             display: none !important;
         }
@@ -385,6 +479,7 @@
     <div class="km-header">
         <span class="km-title">⌘ Keymap</span>
         <input type="text" id="km-search" class="km-search" placeholder="Filter by description, key or function…">
+        <select id="km-theme" class="km-theme" aria-label="Colour theme"></select>
         <span class="km-stats" id="km-stats"></span>
     </div>
 
@@ -397,6 +492,9 @@
     </div>
 </div>
 
+<script src="param_widgets.js"></script>
+<script src="keymap_themes.js"></script>
+<script src="keymap_theme.js"></script>
 <script src="keymap_transport_hs.js"></script>
 <script src="keymap.js"></script>
 </body>

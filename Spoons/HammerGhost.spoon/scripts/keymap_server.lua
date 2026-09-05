@@ -95,6 +95,10 @@ function M.buildPayload()
         modifierSets = (B.config or {}).modifierSets or {},
         actionTypes = actionTypes,
         problems = problems,
+        -- Autocomplete source for the editor's function-path field. A hint, not
+        -- a whitelist: paths resolve at press time, so one missing from here can
+        -- still be valid later.
+        functions = B.knownFunctions(),
     }
 end
 
@@ -116,7 +120,12 @@ local function buildPage()
     local shell = readAsset("keymap_page.html")
     local transport = readAsset("keymap_transport_http.js")
     local renderer = readAsset("keymap.js")
-    if not (shell and transport and renderer) then return nil end
+    local widgets = readAsset("param_widgets.js")
+    local theme = readAsset("keymap_theme.js")
+    -- Generated from the themes/ submodule by scripts/build_keymap_themes.py.
+    -- Absent just means no palettes to offer, so the picker hides itself.
+    local themes = readAsset("keymap_themes.js") or ""
+    if not (shell and transport and renderer and widgets and theme) then return nil end
 
     local notice = [[<p>
                     <strong>Connected to Hammerspoon.</strong> Changes apply to the live
@@ -130,6 +139,9 @@ local function buildPage()
     shell = shell:gsub("__TRANSPORT__", function()
         return "window.KEYMAP_TOKEN = " .. jsonString(M.token) .. ";\n" .. transport
     end)
+    shell = shell:gsub("__WIDGETS__", function() return widgets end)
+    shell = shell:gsub("__THEMES__", function() return themes end)
+    shell = shell:gsub("__THEME__", function() return theme end)
     shell = shell:gsub("__RENDERER__", function() return renderer end)
     return shell
 end
