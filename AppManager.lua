@@ -25,6 +25,47 @@ local AppManager = {}
 local enableMultiWindowSelector = true
 local enableMenuSeparators = false
 
+--- Find a RUNNING app by name, and never return anything else.
+---
+--- hs.application.find() is loose in a way that bites. When no running app's
+--- name matches, it falls back to searching WINDOW TITLES and returns the
+--- matching hs.window objects AHEAD of their applications. Ask for "Mail" with
+--- Mail closed and a Chrome tab open on Gmail -- "Gmail" contains "mail" -- and
+--- the first thing back is a Chrome window, which has no :allWindows(). The
+--- caller then dies with "attempt to call a nil value (method 'allWindows')".
+--- (Reported from a machine running the slimmed-down copy of this config.)
+---
+--- hs.application.get() is not the fix: it calls find() with exact=false, takes
+--- the same fallback, and only discards the extra results.
+---
+--- Filtering find()'s results is not enough either: it hands back the windows
+--- AND their applications, so "Mail" on this machine resolved to Arc, whose
+--- window happened to be titled "...Email-Templates.txt". Wrong app, no crash,
+--- worse to debug.
+---
+--- So the loose pass is done here instead -- find()'s own name-substring branch,
+--- minus the window fallback, and with plain=true so a hint containing a Lua
+--- pattern character cannot misbehave. GUI apps win over background ones, the
+--- way find() sorts them. Lowercase hints ("cursor", "antigravity") still work;
+--- nil when the app is genuinely not running.
+local function findRunningApp(appName)
+    local exact = hs.application.find(appName, true)
+    if exact then return exact end
+
+    local needle = tostring(appName):lower()
+    local fallback
+    for _, app in ipairs(hs.application.runningApplications()) do
+        local name = app:name()
+        if name and name:lower():find(needle, 1, true) then
+            if app:kind() > 0 then return app end   -- a real GUI app
+            fallback = fallback or app
+        end
+    end
+    return fallback
+end
+
+AppManager.findRunningApp = findRunningApp
+
 -- Application Management Functions
 function AppManager.madFocus(appName)
     if not enableMultiWindowSelector then
@@ -32,7 +73,7 @@ function AppManager.madFocus(appName)
         return
     end
 
-    local app = hs.application.find(appName)
+    local app = findRunningApp(appName)
 
     if not app then
         hs.application.launchOrFocus(appName)
@@ -202,7 +243,7 @@ end
 function AppManager.launchGitHubWithProjectSelection(app)
     local appName = "Madness Desktop"
     if not app then
-        app = hs.application.find(appName)
+        app = findRunningApp(appName)
     end
 
     if not app then
@@ -435,7 +476,7 @@ end
 -- Special function for Cursor that also updates madhub
 function AppManager.launchCursorWithGitHubDesktop()
     local cursorAppName = "cursor"
-    local cursor = hs.application.find(cursorAppName)
+    local cursor = findRunningApp(cursorAppName)
 
     if not cursor then
         -- If Cursor isn't running, launch it with the selection menu
@@ -698,7 +739,7 @@ function AppManager.launchAntigravityWithProjectSelection()
     local antigravityPath = "/Users/d.edens/.antigravity/antigravity/bin/antigravity"
 
     -- Try to find antigravity as a registered application first (fast path)
-    local app = hs.application.find(antigravityAppName)
+    local app = findRunningApp(antigravityAppName)
     local windows = {}
 
     if app then

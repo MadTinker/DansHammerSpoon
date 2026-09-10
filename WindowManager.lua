@@ -873,7 +873,12 @@ function WindowManager.restoreLayout(layoutName)
 
             -- If window not found by ID, try to find by app and title
             if not win and winInfo.appBundleID then
-                local app = hs.application.get(winInfo.appBundleID)
+                -- applicationsForBundleID, not hs.application.get: get() calls
+                -- find() with exact=false, and find()'s last resort is matching
+                -- WINDOW TITLES -- which returns hs.window objects that then
+                -- blow up on :allWindows() below. A bundle ID deserves an exact
+                -- lookup anyway.
+                local app = hs.application.applicationsForBundleID(winInfo.appBundleID)[1]
                 if app then
                     -- Try to find by title
                     for _, appWindow in ipairs(app:allWindows()) do
