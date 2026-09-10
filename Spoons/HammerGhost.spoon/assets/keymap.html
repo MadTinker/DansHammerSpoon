@@ -110,6 +110,8 @@
             padding: 14px;
             /* One keyboard unit. The widest row is 17u (the arrow cluster
                overhangs, as it does on a real board), which fits this window. */
+            /* Starting value only: keymap.js overwrites it on this element
+               to fit the current width. */
             --ku: 58px;
             --kgap: 6px;
         }
@@ -131,7 +133,9 @@
             flex: 0 0 auto;
             /* Fixed, not min-: every cap in a row must be the same height or
                the board stops reading as a keyboard. */
-            height: 70px;
+            /* Derived from --ku so a wider board grows taller caps instead
+               of leaving a dead band under the keyboard. */
+            height: calc(var(--ku) * 1.2);
             box-sizing: border-box;
             background: var(--input-bg);
             border: 1px solid var(--border-color);
@@ -158,12 +162,16 @@
         }
 
         .km-key .km-cap {
+            /* Scales with the cap; clamped so tiny boards stay legible and huge
+               ones do not turn into billboards. */
+            font-size: clamp(10px, calc(var(--ku) * 0.21), 17px);
             font-weight: 600;
             font-size: 12px;
             flex: 0 0 auto;
         }
 
         .km-key .km-desc {
+            font-size: clamp(9px, calc(var(--ku) * 0.17), 14px);
             font-size: 10px;
             line-height: 1.2;
             color: var(--muted-color);

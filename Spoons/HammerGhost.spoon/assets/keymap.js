@@ -674,11 +674,217 @@
 
     // ── top level ───────────────────────────────────────────────────────────
 
+    // ── Zoom ────────────────────────────────────────────────────────────────
+    //
+    // The board used to be a fixed size: --ku (the key unit) was a hard-coded
+    // pixel value in each shell, so widening the window only added empty space
+    // and on a large display the keyboard read as tiny.
+    //
+    // Now --ku is computed. "Fit" (the default) sizes the board to whatever
+    // width it has been given and re-runs on resize; +/- switch to a manual
+    // size. Both surfaces share this, since both share this file.
+
+    var ZOOM_KEY = 'keymap.zoom';
+    var KU_MIN = 22, KU_MAX = 140;
+    var zoom = { mode: 'fit', ku: 58 };
+
+    // localStorage is not guaranteed: a webview loaded from a string has no
+    // real origin, and reading it there can throw rather than return null.
+    function loadZoom() {
+        try {
+            var raw = window.localStorage.getItem(ZOOM_KEY);
+            if (!raw) { return; }
+            var saved = JSON.parse(raw);
+            if (saved && (saved.mode === 'fit' || saved.mode === 'manual')) {
+                zoom.mode = saved.mode;
+                if (typeof saved.ku === 'number') { zoom.ku = clampKu(saved.ku); }
+            }
+        } catch (e) { /* in-memory only, which is fine */ }
+    }
+
+    function saveZoom() {
+        try {
+            window.localStorage.setItem(ZOOM_KEY, JSON.stringify(zoom));
+        } catch (e) { /* as above */ }
+    }
+
+    function clampKu(v) {
+        return Math.max(KU_MIN, Math.min(KU_MAX, Math.round(v)));
+    }
+
+    // The largest key unit at which the whole board still fits.
+    //
+    // Two constraints, and the tighter wins:
+    //   width  - each row needs units*ku plus its fixed gaps, and rows differ in
+    //            both, so every row is asked what it can afford
+    //   height - caps are 1.2 * ku tall now, so a board that fits the width can
+    //            still overflow downwards
+    //
+    // The arithmetic is only a first guess: rows nest their clusters, so a row's
+    // real width is not exactly units*ku + gaps*gap -- the arrow row measured
+    // 36px wider than the model predicted. Apply the guess, then correct by
+    // measurement, downwards only, until it fits.
+    var KEY_ASPECT = 1.2;
+
+    function boardMetrics(host) {
+        var styles = window.getComputedStyle(host);
+        return {
+            gap: parseFloat(styles.getPropertyValue('--kgap')) || 6,
+            padX: (parseFloat(styles.paddingLeft) || 0) + (parseFloat(styles.paddingRight) || 0),
+            padY: (parseFloat(styles.paddingTop) || 0) + (parseFloat(styles.paddingBottom) || 0)
+        };
+    }
+
+    function estimateKu(host) {
+        var m = boardMetrics(host);
+        var rows = host.querySelectorAll('.km-row');
+        if (!rows.length) { return zoom.ku; }
+
+        var byWidth = Infinity;
+        var content = host.clientWidth - m.padX - 2;
+        Array.prototype.forEach.call(rows, function (row) {
+            var units = 0, count = 0;
+            Array.prototype.forEach.call(row.children, function (child) {
+                var w = parseFloat(child.style.getPropertyValue('--w'));
+                units += isNaN(w) ? 1 : w;
+                count += 1;
+            });
+            if (!units) { return; }
+            var allowed = (content - m.gap * (count - 1)) / units;
+            if (allowed < byWidth) { byWidth = allowed; }
+        });
+
+        var vertical = host.clientHeight - m.padY - (m.gap * rows.length);
+        var byHeight = vertical / (rows.length * KEY_ASPECT);
+
+        // Floor: the unit is multiplied by up to 17 across a row, so rounding up
+        // half a pixel per unit overflows the board by ~8px.
+        return clampKu(Math.floor(Math.min(byWidth, byHeight)));
+    }
+
+    function overflowing(host) {
+        return host.scrollWidth > host.clientWidth + 1 ||
+               host.scrollHeight > host.clientHeight + 1;
+    }
+
+    function fitBoard(host) {
+        var ku = estimateKu(host);
+        host.style.setProperty('--ku', ku + 'px');
+
+        for (var pass = 0; pass < 4 && overflowing(host); pass++) {
+            var wRatio = host.clientWidth / Math.max(host.scrollWidth, 1);
+            var hRatio = host.clientHeight / Math.max(host.scrollHeight, 1);
+            var next = clampKu(Math.floor(ku * Math.min(wRatio, hRatio)));
+            if (next >= ku) { next = clampKu(ku - 1); }   // always make progress
+            if (next === ku) { break; }                    // already at the floor
+            ku = next;
+            host.style.setProperty('--ku', ku + 'px');
+        }
+        return ku;
+    }
+
+    var lastFitKu = 58;
+
+    function applyZoom() {
+        var host = document.getElementById('km-board');
+        if (!host) { return; }
+        var ku;
+        if (zoom.mode === 'fit') {
+            ku = fitBoard(host);   // measures as it converges, so it sets --ku itself
+            lastFitKu = ku;
+        } else {
+            ku = zoom.ku;
+            // On the board itself, not :root -- both shells declare --ku on
+            // .km-board, which would outrank anything set further up the tree.
+            host.style.setProperty('--ku', ku + 'px');
+        }
+        var label = document.querySelector('.km-zoom-level');
+        if (label) {
+            label.textContent = zoom.mode === 'fit' ? 'Fit' : Math.round(ku) + 'px';
+            label.title = zoom.mode === 'fit'
+                ? 'Sized to the window. Click to pin this size.'
+                : 'Click to go back to fitting the window.';
+        }
+    }
+
+    function nudgeZoom(step) {
+        // Stepping away from fit starts from whatever fit had chosen, so the
+        // first press changes the size by one step rather than jumping.
+        if (zoom.mode === 'fit') { zoom.ku = lastFitKu; }
+        zoom.mode = 'manual';
+        zoom.ku = clampKu(zoom.ku + step);
+        saveZoom();
+        applyZoom();
+    }
+
+    function toggleFit() {
+        if (zoom.mode === 'fit') {
+            zoom.ku = lastFitKu;
+            zoom.mode = 'manual';
+        } else {
+            zoom.mode = 'fit';
+        }
+        saveZoom();
+        applyZoom();
+    }
+
+    // Built here rather than in either shell's markup, so one implementation
+    // serves the window and the browser. Styling leans on currentColor and
+    // inherited type instead of either shell's palette tokens, which differ.
+    function installZoomControl() {
+        var stats = document.getElementById('km-stats');
+        if (!stats || document.querySelector('.km-zoom')) { return; }
+
+        var style = document.createElement('style');
+        style.textContent =
+            '.km-zoom{display:inline-flex;align-items:center;gap:2px;margin:0 8px;' +
+            'opacity:.85;font-size:11px;-webkit-user-select:none;user-select:none}' +
+            '.km-zoom button{font:inherit;font-size:12px;line-height:1;color:inherit;' +
+            'background:transparent;border:1px solid currentColor;border-radius:4px;' +
+            'padding:3px 7px;cursor:pointer;opacity:.55}' +
+            '.km-zoom button:hover{opacity:1}' +
+            '.km-zoom .km-zoom-level{min-width:34px;text-align:center;padding:3px 4px;' +
+            'border-color:transparent;opacity:.75}';
+        document.head.appendChild(style);
+
+        var wrap = document.createElement('span');
+        wrap.className = 'km-zoom';
+        [
+            { cls: '', text: '\u2212', title: 'Smaller keys (\u2318\u2212)', fn: function () { nudgeZoom(-4); } },
+            { cls: 'km-zoom-level', text: 'Fit', title: '', fn: toggleFit },
+            { cls: '', text: '+', title: 'Bigger keys (\u2318+)', fn: function () { nudgeZoom(4); } }
+        ].forEach(function (spec) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = spec.cls;
+            b.textContent = spec.text;
+            if (spec.title) { b.title = spec.title; }
+            b.addEventListener('click', spec.fn);
+            wrap.appendChild(b);
+        });
+
+        stats.parentNode.insertBefore(wrap, stats);
+
+        // Re-fit on resize. rAF rather than a timer: one recompute per frame,
+        // and none at all while nothing is being painted.
+        var pending = false;
+        window.addEventListener('resize', function () {
+            if (zoom.mode !== 'fit' || pending) { return; }
+            pending = true;
+            window.requestAnimationFrame(function () {
+                pending = false;
+                applyZoom();
+            });
+        });
+    }
+
     function renderAll() {
         renderStats();
         renderLayers();
         renderBoard();
         renderDetail();
+        installZoomControl();
+        applyZoom();   // rows exist now, so "fit" has something to measure
     }
 
     window.Keymap = {
@@ -710,12 +916,22 @@
     });
 
     document.addEventListener('keydown', function (e) {
+        if (e.metaKey || e.ctrlKey) {
+            // The webview surface has no browser zoom to fall back on, and in a
+            // browser tab ours beats page zoom: it reflows the board instead of
+            // scaling the text.
+            if (e.key === '=' || e.key === '+') { e.preventDefault(); nudgeZoom(4); return; }
+            if (e.key === '-' || e.key === '_') { e.preventDefault(); nudgeZoom(-4); return; }
+            if (e.key === '0') { e.preventDefault(); zoom.mode = 'fit'; saveZoom(); applyZoom(); return; }
+        }
         if (e.key === 'Escape') {
             if (document.activeElement === document.getElementById('km-search')) { return; }
             selectedId = null;
             renderAll();
         }
     });
+
+    loadZoom();
 
     // Page-load handshake, mirroring the other HammerGhost editors: the page
     // asks, the host answers by calling window.Keymap.render().

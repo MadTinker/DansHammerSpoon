@@ -898,8 +898,15 @@ function M.show(spoonObj)
         panelWindow:policyCallback(function(action, webView, details)
             if action == "navigationAction" then
                 local request = details and details.request
+                -- Hammerspoon changed this shape between builds: 6933 gives a
+                -- table with .url, 6936 gives a plain string. Reading only the
+                -- table form left every editor window empty on the newer build,
+                -- because the hammerspoon:// match never fired and the page's
+                -- request for its data was never seen.
                 local urlObj = request and request.URL
-                local url = urlObj and urlObj.url or ""
+                local url = urlObj
+                if type(url) == "table" then url = url.url or url.absoluteString end
+                if type(url) ~= "string" then url = "" end
                 if url:match("^hammerspoon://") then
                     handleURL(spoonObj, url)
                     return false
