@@ -1007,6 +1007,73 @@ function WindowManager.toggleAlwaysOnTop()
     hs.alert.show("Window raised to front")
 end
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Named-layout persistence
+-- ─────────────────────────────────────────────────────────────────────────────
+-- savedLayouts lived in memory only, so every named layout died on the next
+-- reload -- and with hotkeys reloading live now, that happens often. Mirror it
+-- to data/layouts.json: written whenever a layout is saved or deleted, read
+-- back once at load.
+
+local layoutsFile = hs.configdir .. "/data/layouts.json"
+
+function WindowManager.persistLayouts()
+    hs.execute("mkdir -p '" .. hs.configdir .. "/data'")
+    local encoded = hs.json.encode(WindowManager.savedLayouts, true)
+    if not encoded then
+        log.e('Could not encode saved layouts')
+        return false
+    end
+    local file = io.open(layoutsFile, "w")
+    if not file then
+        log.e('Could not write ' .. layoutsFile)
+        return false
+    end
+    file:write(encoded)
+    file:close()
+    return true
+end
+
+function WindowManager.loadPersistedLayouts()
+    local file = io.open(layoutsFile, "r")
+    if not file then return 0 end
+    local contents = file:read("*a")
+    file:close()
+
+    local ok, decoded = pcall(hs.json.decode, contents)
+    if not ok or type(decoded) ~= "table" then
+        log.w('Ignoring unreadable ' .. layoutsFile)
+        return 0
+    end
+
+    local count = 0
+    for name, layout in pairs(decoded) do
+        -- hs.geometry objects come back as plain tables; every consumer here
+        -- reads .x/.y/.w/.h off them, so that is good enough.
+        WindowManager.savedLayouts[name] = layout
+        count = count + 1
+    end
+    log.i('Loaded ' .. count .. ' saved layouts')
+    return count
+end
+
+-- Wrap the two mutators so callers do not have to remember to persist.
+local rawSaveCurrentLayout = WindowManager.saveCurrentLayout
+function WindowManager.saveCurrentLayout(layoutName)
+    local n = rawSaveCurrentLayout(layoutName)
+    WindowManager.persistLayouts()
+    return n
+end
+
+local rawDeleteLayout = WindowManager.deleteLayout
+function WindowManager.deleteLayout(layoutName)
+    local ok = rawDeleteLayout(layoutName)
+    if ok then WindowManager.persistLayouts() end
+    return ok
+end
+
+WindowManager.loadPersistedLayouts()
+
 -- Save in global environment for module reuse
 _G.WindowManager = WindowManager
 return WindowManager

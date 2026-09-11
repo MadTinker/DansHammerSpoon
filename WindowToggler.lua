@@ -46,6 +46,12 @@ local WindowToggler = {
     currentConfig = detectMonitorConfiguration()
 }
 
+--- Which monitor arrangement is this? Saved window locations are keyed by it,
+--- so docking and undocking do not scramble each other's positions. Exported
+--- because WindowMenu shows it, and read it through the module table -- where
+--- it was only ever a file-local, so that submenu always said "Unknown".
+WindowToggler.detectMonitorConfiguration = detectMonitorConfiguration
+
 -- Helper function to ensure data directory exists
 local function ensureDataDirectory()
     local dataDir = os.getenv("HOME") .. "/.hammerspoon/data"

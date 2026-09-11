@@ -78,7 +78,7 @@ end
 -- both modifier layers (e.g. hammer+Space vs hyper+Space) stays distinguishable.
 HotkeyManager.MODIFIER_GLYPHS = {
     hammer = "⌘⌃⌥",
-    hyper  = "⌘⇧⌃⌥",
+    hyper  = "⌘⌃⌥⇧",
     other  = "•",
 }
 
@@ -186,8 +186,8 @@ function HotkeyManager.registerBinding(modifiers, key, callback, description)
                         return "Window action"
                     elseif string.match(tostring(callback), "AppManager") then
                         return "App action"
-                    elseif string.match(tostring(callback), "FileManager") then
-                        return "File action"
+                    elseif string.match(tostring(callback), "WindowToggler") then
+                        return "Window action"
                     end
                     return "Unknown action"
                 end)

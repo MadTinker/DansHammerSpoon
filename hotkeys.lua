@@ -134,8 +134,11 @@ function saveLayoutWithDialog()
         return
     end
 
-    local name = hs.dialog.textPrompt("Save Layout", "Enter a name for this layout:", "", "Save", "Cancel")
-    if name and name ~= "" then
+    -- textPrompt returns (button, text), in that order. Reading one value got
+    -- the BUTTON, so every layout was saved under the name "Save".
+    local button, name = hs.dialog.textPrompt("Save Layout",
+        "Enter a name for this layout:", "", "Save", "Cancel")
+    if button == "Save" and name and name ~= "" then
         WindowManager.saveCurrentLayout(name)
     end
 end
