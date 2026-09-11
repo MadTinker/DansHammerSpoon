@@ -7,7 +7,7 @@
 --   luajit test/test_hotkey_binder.lua
 --
 -- To check the real bindings against the real loaded modules instead, use the
--- live instance:  hs -c "hs.inspect(require('HotkeyBinder').verify())"
+-- live instance:  hs -c "hs.inspect(spoon.BindForge.binder.verify())"
 
 
 -- LuaJIT is 5.1; Hammerspoon is 5.4. Only matters once a test invokes a

@@ -10,3 +10,6 @@
 [submodule "themes"]
 	path = themes
 	url = https://github.com/MadnessEngineering/MadnessThemes
+[submodule "Spoons/BindForge.spoon"]
+	path = Spoons/BindForge.spoon
+	url = https://github.com/MadnessEngineering/BindForge.spoon.git

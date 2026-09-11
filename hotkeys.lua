@@ -30,7 +30,19 @@ local WindowToggler = getModule('WindowToggler')
 local ProjectManager = getModule('ProjectManager')
 local WindowMenu = getModule('WindowMenu')
 local WindowTidy = getModule('WindowTidy')
-local HotkeyBinder = getModule('HotkeyBinder')
+-- The hotkey system lives in BindForge.spoon, loaded by init.lua just above.
+-- Without it nothing below can bind, so say so plainly rather than leaving a
+-- keyboard that quietly does nothing. (hs.loadSpoon returns nil rather than
+-- throwing, so a missing spoon reaches here as a detectable condition.)
+if not spoon.BindForge then
+    local msg = "BindForge.spoon is missing -- no hotkeys bound.\n" ..
+                "git submodule update --init Spoons/BindForge.spoon"
+    hs.alert.show(msg, 10)
+    log:e(msg, __FILE__, 36)
+    return
+end
+
+local HotkeyBinder = spoon.BindForge.binder
 -- Read the binding table up front: the modifier sets below come out of it.
 HotkeyBinder.load()
 
@@ -73,7 +85,7 @@ log:d('Keyboard initializing - Beep boop!', __FILE__, 158)
 --   python3 scripts/extract_hotkeys.py hotkeys.lua hotkeys.json
 --
 -- Check every binding still resolves to a real function:
---   hs.inspect(require('HotkeyBinder').verify())
+--   hs.inspect(spoon.BindForge.binder.verify())
 HotkeyBinder.applyAll()
 
 -- ─────────────────────────────────────────────────────────────────────────────

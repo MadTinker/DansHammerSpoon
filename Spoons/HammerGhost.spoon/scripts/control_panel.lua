@@ -683,8 +683,11 @@ local function buildCards()
     -- real bound total rather than a hardcoded guess.
     do
         local bound, problems = 0, 0
-        local okBinder, B = pcall(require, 'HotkeyBinder')
-        if okBinder and B then
+        -- The binder moved into BindForge.spoon; require() would no longer find
+        -- it, and a stale copy on package.path would report someone else's
+        -- numbers.
+        local B = spoon.BindForge and spoon.BindForge.binder
+        if B then
             for _ in pairs(B.handles or {}) do bound = bound + 1 end
             problems = #(B.errors or {}) + #B.verify()
         end
@@ -827,7 +830,7 @@ local function handleURL(spoonObj, url)
         hs.reload()
 
     elseif action == "openKeymap" then
-        if spoon.HammerGhost then spoon.HammerGhost:openKeymapEditor() end
+        if spoon.HammerGhost then spoon.HammerGhost:toggleKeymapEditor() end
 
     elseif action == "keymapServer" then
         if spoon.HammerGhost then spoon.HammerGhost:toggleKeymapServer() end

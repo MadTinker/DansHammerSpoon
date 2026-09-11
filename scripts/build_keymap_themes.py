@@ -19,7 +19,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 THEMES = ROOT / "themes"
-OUT = ROOT / "Spoons/HammerGhost.spoon/assets/keymap_themes.js"
+OUT = ROOT / "Spoons/BindForge.spoon/assets/keymap_themes.js"
 
 
 def parse_color(value):

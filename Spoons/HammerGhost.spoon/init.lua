@@ -51,8 +51,6 @@ local xmlparser = dofile(hs.spoons.resourcePath("scripts/xmlparser.lua"))
 local control_panel = dofile(hs.spoons.resourcePath("scripts/control_panel.lua"))
 local event_bus = dofile(hs.spoons.resourcePath("scripts/event_bus.lua"))
 local event_sources = dofile(hs.spoons.resourcePath("scripts/event_sources.lua"))
-local keymap_window = dofile(hs.spoons.resourcePath("scripts/keymap_window.lua"))
-local keymap_server = dofile(hs.spoons.resourcePath("scripts/keymap_server.lua"))
 
 -- Percent-decode a URL component. hs.urlevent has no unquote(); the JS side uses
 -- encodeURIComponent (no form-style '+' for spaces), so we only decode %xx bytes.
@@ -120,7 +118,6 @@ obj.actionEditor = nil
 obj.sequenceEditor = nil
 obj.actionChooser = nil
 obj.conditionEditor = nil
-obj.keymapEditor = nil
 obj.configPath = hs.configdir .. "/hammerghost_config.json"
 obj.macroTree = {}
 obj.currentSelection = nil
@@ -475,40 +472,33 @@ end
 
 --- HammerGhost:toggleKeymapServer()
 --- Method
---- Starts (or stops) the loopback HTTP server that serves the keymap editor to
---- a browser tab, and opens it. Bound to localhost with a per-start token; see
---- scripts/keymap_server.lua for why both are needed.
+--- Opens the keymap editor in a browser tab. The editor now lives in
+--- BindForge.spoon, shared with the slimmed-down config -- this is a shim so
+--- the control panel's keymap card keeps working.
 function obj:toggleKeymapServer()
-    return keymap_server.toggle(self)
+    if not spoon.BindForge then
+        hs.alert.show("BindForge.spoon is not loaded")
+        return nil
+    end
+    return spoon.BindForge:toggleServer()
 end
 
 --- HammerGhost:keymapServerURL()
 --- Method
---- The editor's URL while the server is running, otherwise nil.
+--- The running keymap server's URL, or nil.
 function obj:keymapServerURL()
-    return keymap_server.isRunning() and keymap_server.url() or nil
-end
-
---- HammerGhost:openKeymapEditor()
---- Method
---- Opens the keyboard-grid editor for hotkeys.json. Changes made there are
---- applied to the live keyboard immediately -- no hs.reload(), which would
---- destroy every open window's state.
-function obj:openKeymapEditor()
-    discard(self.keymapEditor)
-    self.keymapEditor = keymap_window.create(self)
-    if self.keymapEditor then self.keymapEditor:show() end
+    return spoon.BindForge and spoon.BindForge:serverURL() or nil
 end
 
 --- HammerGhost:toggleKeymapEditor()
 --- Method
---- Shows the keymap editor, or hides it if it is already up.
+--- Opens the keymap editor in a window, or closes it if it is already up.
 function obj:toggleKeymapEditor()
-    if self.keymapEditor and self.keymapEditor:isVisible() then
-        self.keymapEditor:hide()
-        return
+    if not spoon.BindForge then
+        hs.alert.show("BindForge.spoon is not loaded")
+        return nil
     end
-    self:openKeymapEditor()
+    return spoon.BindForge:toggleWindow()
 end
 
 function obj:openConditionEditor(condition)

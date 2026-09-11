@@ -49,6 +49,14 @@ else
     log:w('OmniLadle spoon not available - falling back to local project management', __FILE__, 28)
 end
 
+-- BindForge owns the hotkey system: it reads and writes hotkeys.json, applies
+-- bindings to the live keyboard, and provides both keymap editors. It must load
+-- BEFORE hotkeys.lua, which asks it for the binder.
+--
+-- Shared verbatim with the slimmed-down config at ~/lab/kevins-hammerspoon --
+-- fix it in its own repo, not by editing a copy, or the two drift again.
+hs.loadSpoon("BindForge")
+
 dofile(hs.configdir .. "/hotkeys.lua")
 
 -- Load the HammerGhost spoon

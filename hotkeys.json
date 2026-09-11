@@ -1,4 +1,23 @@
 {
+  "modifierSets" : {
+    "hyper" : [
+      "cmd",
+      "shift",
+      "ctrl",
+      "alt"
+    ],
+    "meta" : [
+      "cmd",
+      "shift",
+      "alt"
+    ],
+    "hammer" : [
+      "cmd",
+      "ctrl",
+      "alt"
+    ]
+  },
+  "_comment" : "Declarative hotkey table. Edited by hand, by the HammerGhost keymap tab, or by the artifact editor -- all three write this same schema. HotkeyBinder.lua applies it; HotkeyBinder.reload() re-applies without hs.reload(). 'migratedFrom' cites the pre-migration hotkeys.lua line for provenance (see git history).",
   "bindings" : [
     {
       "migratedFrom" : "hotkeys.lua:55",
@@ -36,11 +55,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hammer+F2",
       "mods" : "hammer",
       "key" : "F2",
@@ -83,11 +102,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+F3",
       "mods" : "hyper",
       "key" : "F3",
@@ -130,11 +149,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "cmd+F4",
       "mods" : [
         "cmd"
@@ -166,11 +185,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "cmd+F5",
       "mods" : [
         "cmd"
@@ -202,11 +221,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "cmd+F6",
       "mods" : [
         "cmd"
@@ -238,11 +257,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "cmd+F8",
       "mods" : [
         "cmd"
@@ -274,11 +293,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "cmd+F9",
       "mods" : [
         "cmd"
@@ -310,11 +329,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "cmd+F10",
       "mods" : [
         "cmd"
@@ -324,11 +343,11 @@
       "migratedFrom" : "hotkeys.lua:81"
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hammer+F10",
       "mods" : "hammer",
       "key" : "F10",
@@ -336,11 +355,11 @@
       "migratedFrom" : "hotkeys.lua:82"
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+F10",
       "mods" : "hyper",
       "key" : "F10",
@@ -348,11 +367,11 @@
       "migratedFrom" : "hotkeys.lua:83"
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "cmd+F11",
       "mods" : [
         "cmd"
@@ -367,20 +386,20 @@
         "fn" : "tempFunction"
       },
       "placeholder" : true,
+      "note" : "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it.",
       "enabled" : false,
       "id" : "hammer+F11",
-      "note" : "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it.",
       "mods" : "hammer",
       "key" : "F11",
       "description" : "Temporary Function",
       "migratedFrom" : "hotkeys.lua:85"
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+F11",
       "mods" : "hyper",
       "key" : "F11",
@@ -388,11 +407,11 @@
       "migratedFrom" : "hotkeys.lua:86"
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "cmd+F12",
       "mods" : [
         "cmd"
@@ -407,20 +426,20 @@
         "fn" : "tempFunction"
       },
       "placeholder" : true,
+      "note" : "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it.",
       "enabled" : false,
       "id" : "hammer+F12",
-      "note" : "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it.",
       "mods" : "hammer",
       "key" : "F12",
       "description" : "Temporary Function",
       "migratedFrom" : "hotkeys.lua:88"
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+F12",
       "mods" : "hyper",
       "key" : "F12",
@@ -634,11 +653,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hammer+8",
       "mods" : "hammer",
       "key" : "8",
@@ -890,11 +909,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+t",
       "mods" : "hyper",
       "key" : "t",
@@ -1052,11 +1071,11 @@
       "migratedFrom" : "hotkeys.lua:155"
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+]",
       "mods" : "hyper",
       "key" : "]",
@@ -1064,11 +1083,11 @@
       "migratedFrom" : "hotkeys.lua:156"
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hammer+\\",
       "mods" : "hammer",
       "key" : "\\",
@@ -1134,11 +1153,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+s",
       "mods" : "hyper",
       "key" : "s",
@@ -1179,11 +1198,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+f",
       "mods" : "hyper",
       "key" : "f",
@@ -1227,14 +1246,18 @@
     },
     {
       "action" : {
-        "kind" : "call",
-        "fn" : "spoon.HammerGhost:toggleKeymapEditor"
+        "kind" : "action",
+        "actionType" : "runShell",
+        "params" : {
+          "command" : "tc on"
+        }
       },
-      "note" : "Keyboard-grid editor for this file. Sits beside hammer+h (HammerGhost) on purpose.",
+      "enabled" : true,
       "id" : "hyper+h",
+      "note" : "Keyboard-grid editor for this file. Sits beside hammer+h (HammerGhost) on purpose.",
       "mods" : "hyper",
       "key" : "h",
-      "description" : "Toggle Keymap Editor",
+      "description" : "Run tc on",
       "migratedFrom" : "hotkeys.lua:173"
     },
     {
@@ -1311,38 +1334,39 @@
       "mods" : "hammer",
       "action" : {
         "kind" : "call",
-        "fn" : "spoon.HammerGhost:toggleKeymapServer"
+        "fn" : "spoon.BindForge:toggleServer"
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
-        "fn" : "tempFunction"
+        "fn" : "spoon.BindForge:toggleWindow"
       },
+      "enabled" : true,
       "id" : "hyper+;",
+      "note" : "Keyboard-grid editor for this file. Sits beside hammer+h (HammerGhost) on purpose.",
       "mods" : "hyper",
       "key" : ";",
-      "description" : "Temporary Function",
+      "description" : "Toggle Keymap Editor",
       "migratedFrom" : "hotkeys.lua:181"
     },
     {
       "id" : "hammer+'",
-      "key" : "'",
       "enabled" : true,
+      "key" : "'",
       "description" : "Reload Hotkeys From Disk",
       "mods" : "hammer",
       "action" : {
         "kind" : "call",
-        "fn" : "HotkeyBinder.reload"
+        "fn" : "spoon.BindForge:reloadBindings"
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+'",
       "mods" : "hyper",
       "key" : "'",
@@ -1372,11 +1396,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+z",
       "mods" : "hyper",
       "key" : "z",
@@ -1417,11 +1441,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+c",
       "mods" : "hyper",
       "key" : "c",
@@ -1429,11 +1453,11 @@
       "migratedFrom" : "hotkeys.lua:192"
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hammer+v",
       "mods" : "hammer",
       "key" : "v",
@@ -1441,11 +1465,11 @@
       "migratedFrom" : "hotkeys.lua:193"
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+v",
       "mods" : "hyper",
       "key" : "v",
@@ -1533,11 +1557,11 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
+      "placeholder" : true,
       "id" : "hyper+Space",
       "mods" : "hyper",
       "key" : "Space",
@@ -1679,26 +1703,18 @@
         "kind" : "call",
         "fn" : "showTopProjects"
       }
+    },
+    {
+      "id" : "meta+6",
+      "enabled" : true,
+      "key" : "6",
+      "description" : "showfilemenu",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "FileManager.showFileMenu"
+      }
     }
   ],
-  "modifierSets" : {
-    "hyper" : [
-      "cmd",
-      "shift",
-      "ctrl",
-      "alt"
-    ],
-    "hammer" : [
-      "cmd",
-      "ctrl",
-      "alt"
-    ],
-    "meta" : [
-      "cmd",
-      "shift",
-      "alt"
-    ]
-  },
-  "_comment" : "Declarative hotkey table. Edited by hand, by the HammerGhost keymap tab, or by the artifact editor -- all three write this same schema. HotkeyBinder.lua applies it; HotkeyBinder.reload() re-applies without hs.reload(). 'migratedFrom' cites the pre-migration hotkeys.lua line for provenance (see git history).",
   "version" : 1
 }

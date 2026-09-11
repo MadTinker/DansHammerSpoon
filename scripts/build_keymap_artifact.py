@@ -13,7 +13,7 @@ import sys
 import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-ASSETS = ROOT / "Spoons/HammerGhost.spoon/assets"
+ASSETS = ROOT / "Spoons/BindForge.spoon/assets"
 OUT = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "build/keymap_artifact.html"
 
 
