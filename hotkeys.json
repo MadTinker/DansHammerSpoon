@@ -1718,39 +1718,39 @@
     {
       "id" : "meta+i",
       "key" : "i",
-      "description" : "Warp window: Inventorium",
+      "description" : "Open Inventorium in Warp",
       "mods" : "meta",
       "action" : {
         "kind" : "call",
-        "fn" : "hs.execute",
+        "fn" : "AppManager.openWarpWindowAt",
         "args" : [
-          "open 'warp://action/new_window?path=/Users/d.edens/lab/madness_interactive/projects/common/Inventorium'"
+          "/Users/d.edens/lab/madness_interactive/projects/common/Inventorium"
         ]
       }
     },
     {
       "id" : "meta+l",
       "key" : "l",
-      "description" : "Warp window: Alloy",
+      "description" : "Open Alloy in Warp",
       "mods" : "meta",
       "action" : {
         "kind" : "call",
-        "fn" : "hs.execute",
+        "fn" : "AppManager.openWarpWindowAt",
         "args" : [
-          "open 'warp://action/new_window?path=/Users/d.edens/lab/alloy'"
+          "/Users/d.edens/lab/alloy"
         ]
       }
     },
     {
       "id" : "meta+m",
       "key" : "m",
-      "description" : "Warp window: Madness Interactive",
+      "description" : "Open Madness Interactive in Warp",
       "mods" : "meta",
       "action" : {
         "kind" : "call",
-        "fn" : "hs.execute",
+        "fn" : "AppManager.openWarpWindowAt",
         "args" : [
-          "open 'warp://action/new_window?path=/Users/d.edens/lab/madness_interactive'"
+          "/Users/d.edens/lab/madness_interactive"
         ]
       }
     }

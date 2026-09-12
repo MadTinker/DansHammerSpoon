@@ -1124,6 +1124,82 @@ function AppManager.openProjectByIndex(index)
     end
 end
 
+-- Open a Warp window at `path`, then park it under the mouse.
+--
+-- Warp's URI scheme is the only entrypoint that reliably says "new window, cd
+-- here", but `open` returns the moment the URL is dispatched -- the window
+-- shows up a beat later. So the placement half polls for a window id that did
+-- not exist before the open, rather than grabbing whatever is frontmost (which
+-- is still the OLD Warp window for the first few hundred ms).
+local WARP_APP = "Warp"
+-- Fraction of the SCREEN AREA the new window covers. Each edge scales by the
+-- square root, so 1/3 here means the window really covers a third of the
+-- screen (~0.577 per edge), not a ninth of it.
+local WARP_WINDOW_AREA = 1 / 3
+local WARP_POLL_INTERVAL = 0.15  -- seconds between checks
+local WARP_POLL_TRIES = 20       -- ~3s before giving up on placement
+
+-- Ids of every Warp window right now, as a set.
+local function warpWindowIds()
+    local ids = {}
+    local app = findRunningApp(WARP_APP)
+    if not app then return ids end
+    for _, win in ipairs(app:allWindows()) do
+        if win:isStandard() then ids[win:id()] = true end
+    end
+    return ids
+end
+
+-- Center `win` on the mouse at WARP_WINDOW_AREA of the mouse's screen, kept
+-- fully inside that screen's usable frame (a cursor near an edge would
+-- otherwise push half the window off-screen).
+local function placeOnMouse(win)
+    local screen = hs.mouse.getCurrentScreen() or hs.screen.mainScreen()
+    local sf = screen:frame()
+    local edge = math.sqrt(WARP_WINDOW_AREA)
+    local w, h = sf.w * edge, sf.h * edge
+    local mouse = hs.mouse.absolutePosition()
+
+    local x = math.max(sf.x, math.min(mouse.x - w / 2, sf.x + sf.w - w))
+    local y = math.max(sf.y, math.min(mouse.y - h / 2, sf.y + sf.h - h))
+
+    hs.window.animationDuration = 0
+    win:setFrame({ x = x, y = y, w = w, h = h }, 0)
+end
+
+function AppManager.openWarpWindowAt(path)
+    if not path or path == "" then
+        log:w("openWarpWindowAt called with no path", __FILE__)
+        return
+    end
+    local expanded = path:gsub("^~", os.getenv("HOME") or "~")
+    local before = warpWindowIds()
+
+    -- hs.urlevent.openURL would hand the URL to Hammerspoon's own handler set;
+    -- `open` goes straight to LaunchServices, which is what registers warp://.
+    local uri = "warp://action/new_window?path=" .. expanded
+    hs.execute("open '" .. uri:gsub("'", "'\\''") .. "'")
+
+    local tries = 0
+    hs.timer.doUntil(
+        function() return tries >= WARP_POLL_TRIES end,
+        function()
+            tries = tries + 1
+            local app = findRunningApp(WARP_APP)
+            if not app then return end
+            for _, win in ipairs(app:allWindows()) do
+                if win:isStandard() and not before[win:id()] then
+                    placeOnMouse(win)
+                    win:focus()
+                    tries = WARP_POLL_TRIES
+                    return
+                end
+            end
+        end,
+        WARP_POLL_INTERVAL
+    )
+end
+
 -- Save in global environment for module reuse
 _G.AppManager = AppManager
 return AppManager

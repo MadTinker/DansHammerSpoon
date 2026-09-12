@@ -11,6 +11,7 @@ local HotkeyManager = {}
 HotkeyManager.bindings = {
     hammer = {},
     hyper = {},
+    meta = {},
     other = {}
 }
 
@@ -18,6 +19,7 @@ HotkeyManager.bindings = {
 HotkeyManager.MODIFIERS = {
     HAMMER = "hammer",
     HYPER = "hyper",
+    META = "meta",
     OTHER = "other"
 }
 
@@ -25,6 +27,7 @@ HotkeyManager.MODIFIERS = {
 HotkeyManager.displayWindows = {
     hammer = nil,
     hyper = nil,
+    meta = nil,
     other = nil
 }
 
@@ -79,6 +82,7 @@ end
 HotkeyManager.MODIFIER_GLYPHS = {
     hammer = "⌘⌃⌥",
     hyper  = "⌘⌃⌥⇧",
+    meta   = "⌘⌥⇧",
     other  = "•",
 }
 
@@ -129,6 +133,11 @@ function HotkeyManager.classifyModifiers(modifiers)
         tableContains(modifiers, "ctrl") and
         tableContains(modifiers, "alt") then
         return HotkeyManager.MODIFIERS.HAMMER
+    elseif #modifiers == 3 and
+        tableContains(modifiers, "cmd") and
+        tableContains(modifiers, "shift") and
+        tableContains(modifiers, "alt") then
+        return HotkeyManager.MODIFIERS.META
     elseif #modifiers == 4 and
         tableContains(modifiers, "cmd") and
         tableContains(modifiers, "shift") and
@@ -512,9 +521,15 @@ function HotkeyManager.showHyperList()
     HotkeyManager.showHotkeyList(HotkeyManager.MODIFIERS.HYPER)
 end
 
--- Show hammer and hyper hotkeys together in a single searchable list.
+-- Show hammer, hyper and meta hotkeys together in a single searchable list.
+-- Meta is in here because it carries real bindings (the per-project Warp
+-- windows among them); leaving it out made them unsearchable.
 function HotkeyManager.showCombinedList()
-    HotkeyManager.showHotkeyList({ HotkeyManager.MODIFIERS.HAMMER, HotkeyManager.MODIFIERS.HYPER })
+    HotkeyManager.showHotkeyList({
+        HotkeyManager.MODIFIERS.HAMMER,
+        HotkeyManager.MODIFIERS.HYPER,
+        HotkeyManager.MODIFIERS.META,
+    })
 end
 
 -- Show other hotkey list or toggle it off if already showing
