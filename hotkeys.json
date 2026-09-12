@@ -735,7 +735,7 @@
         ],
         "fn" : "WindowManager.moveMouseToScreen"
       },
-      "note" : "add - and = and backspace 1\/2 swapped: screen index 1 (PHL 278E1 #1) sits lower on desk than index 2, felt flipped",
+      "note" : "add - and = and backspace 1/2 swapped: screen index 1 (PHL 278E1 #1) sits lower on desk than index 2, felt flipped",
       "id" : "hammer+-",
       "mods" : "hammer",
       "key" : "-",
@@ -1063,7 +1063,7 @@
         "fn" : "tempFunction"
       },
       "placeholder" : true,
-      "note" : "] freed: was Mouse Monitor 1, collided with system\/app screenshot tool on cmd+ctrl+alt+]. Monitor jumps now live on -\/= (see Number Row above).",
+      "note" : "] freed: was Mouse Monitor 1, collided with system/app screenshot tool on cmd+ctrl+alt+]. Monitor jumps now live on -/= (see Number Row above).",
       "id" : "hammer+]",
       "mods" : "hammer",
       "key" : "]",
@@ -1713,6 +1713,45 @@
       "action" : {
         "kind" : "call",
         "fn" : "FileManager.showFileMenu"
+      }
+    },
+    {
+      "id" : "meta+i",
+      "key" : "i",
+      "description" : "Warp window: Inventorium",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "hs.execute",
+        "args" : [
+          "open 'warp://action/new_window?path=/Users/d.edens/lab/madness_interactive/projects/common/Inventorium'"
+        ]
+      }
+    },
+    {
+      "id" : "meta+l",
+      "key" : "l",
+      "description" : "Warp window: Alloy",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "hs.execute",
+        "args" : [
+          "open 'warp://action/new_window?path=/Users/d.edens/lab/alloy'"
+        ]
+      }
+    },
+    {
+      "id" : "meta+m",
+      "key" : "m",
+      "description" : "Warp window: Madness Interactive",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "hs.execute",
+        "args" : [
+          "open 'warp://action/new_window?path=/Users/d.edens/lab/madness_interactive'"
+        ]
       }
     }
   ],
