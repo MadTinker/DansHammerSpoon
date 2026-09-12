@@ -1753,6 +1753,175 @@
           "/Users/d.edens/lab/madness_interactive"
         ]
       }
+    },
+    {
+      "id" : "meta+c",
+      "key" : "c",
+      "description" : "Open cartogomancy in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/madness_interactive/projects/common/cartogomancy"
+        ]
+      }
+    },
+    {
+      "id" : "meta+q",
+      "key" : "q",
+      "description" : "Open MadQTT in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/madness_interactive/projects/common/MadQTT"
+        ]
+      }
+    },
+    {
+      "id" : "meta+d",
+      "key" : "d",
+      "description" : "Open madnessDesktop in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/madness_interactive/projects/common/madnessDesktop"
+        ]
+      }
+    },
+    {
+      "id" : "meta+o",
+      "key" : "o",
+      "description" : "Open Omnispindle in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/madness_interactive/projects/common/Omnispindle"
+        ]
+      }
+    },
+    {
+      "id" : "meta+t",
+      "key" : "t",
+      "description" : "Open titancall in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/madness_interactive/projects/common/titancall"
+        ]
+      }
+    },
+    {
+      "id" : "meta+j",
+      "key" : "j",
+      "description" : "Open Chat History in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/madness_interactive/docs/cursor_chathistory"
+        ]
+      }
+    },
+    {
+      "id" : "meta+g",
+      "key" : "g",
+      "description" : "Open guardian in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/alloy/AlloyMonorepo/guardian"
+        ]
+      }
+    },
+    {
+      "id" : "meta+s",
+      "key" : "s",
+      "description" : "Open elementalsentinel in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/alloy/AlloyMonorepo/elementalsentinel"
+        ]
+      }
+    },
+    {
+      "id" : "meta+k",
+      "key" : "k",
+      "description" : "Open AlloyMonorepo in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/alloy/AlloyMonorepo"
+        ]
+      }
+    },
+    {
+      "id" : "meta+r",
+      "key" : "r",
+      "description" : "Open regressiontestkit in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/regressiontestkit"
+        ]
+      }
+    },
+    {
+      "id" : "meta+f",
+      "key" : "f",
+      "description" : "Open Cloudflare app (devops-gcp) in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/elemental-machines/devops/devops-gcp/elementalmachines_app_cloudflare"
+        ]
+      }
+    },
+    {
+      "id" : "meta+z",
+      "key" : "z",
+      "description" : "Open Asolaria in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/lab/Asolaria"
+        ]
+      }
+    },
+    {
+      "id" : "meta+h",
+      "key" : "h",
+      "description" : "Open Hammerspoon config in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.openWarpWindowAt",
+        "args" : [
+          "/Users/d.edens/.hammerspoon"
+        ]
+      }
     }
   ],
   "version" : 1
