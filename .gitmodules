@@ -13,3 +13,6 @@
 [submodule "Spoons/BindForge.spoon"]
 	path = Spoons/BindForge.spoon
 	url = https://github.com/MadnessEngineering/BindForge.spoon.git
+[submodule "Spoons/Cubby.spoon"]
+	path = Spoons/Cubby.spoon
+	url = https://github.com/MadnessEngineering/Cubby.spoon.git
