@@ -776,7 +776,7 @@ local function handleURL(spoonObj, url)
         elseif spoonId == "AClock" and spoon.AClock then
             spoon.AClock:show()
         elseif spoonId == "ClipShow" and spoon.ClipShow then
-            spoon.ClipShow:show()
+            spoon.ClipShow:toggleShow()
         end
 
     elseif action == "showWindow" then
