@@ -478,9 +478,9 @@ function FileManager.showEditorMenuSafe()
     end
 end
 -- The "newest file in a folder" cluster (open/copy/reveal the most recent
--- screenshot, capture-then-copy) moved to Cubby.spoon -- it never depended on
+-- screenshot, capture-then-copy) moved to Hopper.spoon -- it never depended on
 -- anything else in this file, and the same idea is useful for any folder, not
--- just Desktop images. See spoon.Cubby.
+-- just Desktop images. See spoon.Hopper.
 -- Save in global environment for module reuse
 _G.FileManager = FileManager
 return FileManager

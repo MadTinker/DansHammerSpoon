@@ -950,7 +950,7 @@
       "mods": "hammer",
       "action": {
         "kind": "call",
-        "fn": "spoon.Cubby:reveal",
+        "fn": "spoon.Hopper:reveal",
         "args": [
           "screenshot"
         ]
@@ -970,7 +970,7 @@
     {
       "action": {
         "kind": "call",
-        "fn": "spoon.Cubby:copy",
+        "fn": "spoon.Hopper:copy",
         "args": [
           "screenshot"
         ]
@@ -990,7 +990,7 @@
       "mods": "hyper",
       "action": {
         "kind": "call",
-        "fn": "spoon.Cubby:open",
+        "fn": "spoon.Hopper:open",
         "args": [
           "screenshot"
         ]
@@ -1043,7 +1043,7 @@
     {
       "action": {
         "kind": "call",
-        "fn": "spoon.Cubby:captureNew"
+        "fn": "spoon.Hopper:captureNew"
       },
       "note": "New: dedicated screenshot-to-clipboard hotkey",
       "id": "hammer+[",
@@ -1939,7 +1939,7 @@
       "description": "Open Latest Download",
       "action": {
         "kind": "call",
-        "fn": "spoon.Cubby:open",
+        "fn": "spoon.Hopper:open",
         "args": [
           "download"
         ]

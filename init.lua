@@ -56,7 +56,7 @@ end
 -- Shared verbatim with the slimmed-down config at ~/lab/kevins-hammerspoon --
 -- fix it in its own repo, not by editing a copy, or the two drift again.
 hs.loadSpoon("BindForge")
-hs.loadSpoon("Cubby")
+hs.loadSpoon("Hopper")
 
 dofile(hs.configdir .. "/hotkeys.lua")
 
