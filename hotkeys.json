@@ -362,14 +362,14 @@
       "migratedFrom" : "hotkeys.lua:84"
     },
     {
+      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
-      "placeholder" : true,
       "note" : "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it.",
-      "id" : "hammer+F11",
       "enabled" : false,
+      "id" : "hammer+F11",
       "mods" : "hammer",
       "key" : "F11",
       "description" : "Temporary Function",
@@ -402,14 +402,14 @@
       "migratedFrom" : "hotkeys.lua:87"
     },
     {
+      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
-      "placeholder" : true,
       "note" : "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it.",
-      "id" : "hammer+F12",
       "enabled" : false,
+      "id" : "hammer+F12",
       "mods" : "hammer",
       "key" : "F12",
       "description" : "Temporary Function",
@@ -1048,11 +1048,11 @@
       }
     },
     {
+      "placeholder" : true,
       "action" : {
         "kind" : "call",
         "fn" : "tempFunction"
       },
-      "placeholder" : true,
       "note" : "] freed: was Mouse Monitor 1, collided with system\/app screenshot tool on cmd+ctrl+alt+]. Monitor jumps now live on -\/= (see Number Row above).",
       "id" : "hammer+]",
       "mods" : "hammer",
@@ -1243,8 +1243,8 @@
         }
       },
       "enabled" : true,
-      "note" : "Keyboard-grid editor for this file. Sits beside hammer+h (HammerGhost) on purpose.",
       "id" : "hyper+h",
+      "note" : "Keyboard-grid editor for this file. Sits beside hammer+h (HammerGhost) on purpose.",
       "mods" : "hyper",
       "key" : "h",
       "description" : "Run tc on",
@@ -1318,8 +1318,8 @@
     },
     {
       "id" : "hammer+;",
-      "key" : ";",
       "enabled" : true,
+      "key" : ";",
       "description" : "Keymap In Browser",
       "mods" : "hammer",
       "action" : {
@@ -1333,8 +1333,8 @@
         "fn" : "spoon.BindForge:toggleWindow"
       },
       "enabled" : true,
-      "note" : "Keyboard-grid editor for this file. Sits beside hammer+h (HammerGhost) on purpose.",
       "id" : "hyper+;",
+      "note" : "Keyboard-grid editor for this file. Sits beside hammer+h (HammerGhost) on purpose.",
       "mods" : "hyper",
       "key" : ";",
       "description" : "Toggle Keymap Editor",
@@ -1342,8 +1342,8 @@
     },
     {
       "id" : "hammer+'",
-      "key" : "'",
       "enabled" : true,
+      "key" : "'",
       "description" : "Reload Hotkeys From Disk",
       "mods" : "hammer",
       "action" : {
@@ -1352,15 +1352,15 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
-        "fn" : "tempFunction"
+        "fn" : "spoon.PadForge:toggleWindow"
       },
+      "enabled" : true,
       "id" : "hyper+'",
       "mods" : "hyper",
       "key" : "'",
-      "description" : "Temporary Function",
+      "description" : "Toggle PadForge",
       "migratedFrom" : "hotkeys.lua:183"
     },
     {
@@ -1696,8 +1696,8 @@
     },
     {
       "id" : "meta+6",
-      "key" : "6",
       "enabled" : true,
+      "key" : "6",
       "description" : "showfilemenu",
       "mods" : "meta",
       "action" : {
@@ -1925,20 +1925,14 @@
         ],
         "fn" : "spoon.Hopper:open"
       }
-    },
-    {
-      "id" : "hyper+.",
-      "key" : ".",
-      "description" : "Toggle PadForge",
-      "mods" : "hyper",
-      "action" : {
-        "kind" : "call",
-        "fn" : "spoon.PadForge:toggleWindow"
-      }
     }
   ],
-  "_comment" : "Declarative hotkey table. Edited by hand, by the HammerGhost keymap tab, or by the artifact editor -- all three write this same schema. HotkeyBinder.lua applies it; HotkeyBinder.reload() re-applies without hs.reload(). 'migratedFrom' cites the pre-migration hotkeys.lua line for provenance (see git history).",
   "modifierSets" : {
+    "meta" : [
+      "cmd",
+      "shift",
+      "alt"
+    ],
     "hyper" : [
       "cmd",
       "shift",
@@ -1949,12 +1943,8 @@
       "cmd",
       "ctrl",
       "alt"
-    ],
-    "meta" : [
-      "cmd",
-      "shift",
-      "alt"
     ]
   },
+  "_comment" : "Declarative hotkey table. Edited by hand, by the HammerGhost keymap tab, or by the artifact editor -- all three write this same schema. HotkeyBinder.lua applies it; HotkeyBinder.reload() re-applies without hs.reload(). 'migratedFrom' cites the pre-migration hotkeys.lua line for provenance (see git history).",
   "version" : 1
 }
