@@ -1,0 +1,130 @@
+/* PadForge styles -- Lab Neon palette, matching BindForge's default theme. */
+
+:root {
+    --ground: #0a0a0f;
+    --surface: rgba(255, 255, 255, 0.02);
+    --surface-2: rgba(255, 255, 255, 0.04);
+    --ink: #e0e0e0;
+    --ink-soft: #a0a0b0;
+    --ink-faint: #707080;
+    --rule: rgba(255, 255, 255, 0.06);
+    --accent: #00ff88;
+    --accent-ink: #0b0b0b;
+    --accent-soft: rgba(0, 255, 136, 0.18);
+    --teal: #00ccff;
+    --bad: #ff5252;
+    --bad-soft: rgba(255, 82, 82, 0.16);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+}
+
+button {
+    font: inherit;
+    background: var(--surface-2);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+button:disabled { opacity: 0.4; cursor: default; }
+button.pf-primary { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+input[type="text"] {
+    font: inherit;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 6px 8px;
+}
+input[type="text"]:focus { outline: none; border-color: var(--accent); }
+
+.pf-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+}
+.pf-path { color: var(--ink-soft); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf-spacer { flex: 1; }
+
+.pf-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 10px 14px 0;
+}
+.pf-tab {
+    padding: 6px 16px;
+    border-radius: 6px 6px 0 0;
+    border: 1px solid var(--rule);
+    border-bottom: none;
+    background: var(--surface);
+    color: var(--ink-faint);
+    cursor: pointer;
+}
+.pf-tab.active { background: var(--surface-2); color: var(--accent); border-color: var(--accent); }
+
+.pf-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 14px;
+}
+.pf-key {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: 10px 12px;
+    min-height: 64px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.pf-key:hover { border-color: var(--accent); }
+.pf-key.selected { border-color: var(--accent); background: var(--accent-soft); }
+.pf-key.fixed { cursor: default; opacity: 0.55; }
+.pf-key.fixed:hover { border-color: var(--rule); }
+.pf-key-name { font-weight: 600; color: var(--teal); font-size: 12px; }
+.pf-key-combo { font-size: 13px; margin-top: 4px; }
+.pf-key-combo.empty { color: var(--ink-faint); font-style: italic; }
+.pf-key-unrecognized { color: var(--bad); font-size: 11px; margin-top: 4px; }
+
+.pf-editor {
+    margin: 0 14px 14px;
+    padding: 14px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    background: var(--surface-2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.pf-editor-title { color: var(--accent); font-weight: 600; }
+.pf-mods { display: flex; gap: 14px; }
+.pf-mods label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+.pf-row { display: flex; align-items: center; gap: 10px; }
+.pf-row label.pf-field-label { width: 90px; color: var(--ink-soft); flex-shrink: 0; }
+.pf-row input[type="text"] { flex: 1; }
+.pf-row select { flex: 1; font: inherit; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 6px; padding: 6px 8px; }
+.pf-editor-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.pf-hint { color: var(--ink-faint); font-size: 11px; }
+
+.pf-status {
+    padding: 8px 14px;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--rule);
+    font-size: 12px;
+}

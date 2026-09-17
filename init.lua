@@ -58,6 +58,13 @@ end
 hs.loadSpoon("BindForge")
 hs.loadSpoon("Hopper")
 
+-- PadForge: editor for the XPPen shortcut-remote's exported .pcfg config
+-- (BindForge for the pad, not the keyboard -- see PadForge.spoon's README).
+-- No hotkey bound yet; drive it from the console until one is picked:
+--   spoon.PadForge:toggleWindow()
+hs.loadSpoon("PadForge")
+spoon.PadForge:init()
+
 dofile(hs.configdir .. "/hotkeys.lua")
 
 -- Load the HammerGhost spoon
