@@ -127,6 +127,26 @@ function Window.decode(args)
     return value
 end
 
+--- Newest .pcfg in ~/Downloads, or the folder itself if there isn't one --
+--- XPPen's export dialog drops there by default, so that is the likely home
+--- of whatever the user just exported, not ~/Desktop.
+local function newestDownload()
+    local dir = os.getenv("HOME") .. "/Downloads"
+    local newestPath, newestTime = nil, -1
+    if hs.fs.attributes(dir) then
+        for name in hs.fs.dir(dir) do
+            if name:match("%.pcfg$") then
+                local full = dir .. "/" .. name
+                local attrs = hs.fs.attributes(full)
+                if attrs and attrs.modification > newestTime then
+                    newestPath, newestTime = full, attrs.modification
+                end
+            end
+        end
+    end
+    return newestPath or dir
+end
+
 function Window.handleURL(url)
     local cmd, args = url:match("hammerspoon://([^?]+)%??(.*)")
     if not cmd then return end
@@ -136,7 +156,7 @@ function Window.handleURL(url)
 
     elseif cmd == "pickFile" then
         local chosen = hs.dialog.chooseFileOrFolder(
-            "Choose an exported .pcfg", os.getenv("HOME") .. "/Desktop", true, false, false, { "pcfg" })
+            "Choose an exported .pcfg", newestDownload(), true, false, false, { "pcfg" })
         local path = chosen and chosen[1]
         if not path then return end -- user cancelled
         local ok, err = Window.loadPath(path)
