@@ -1914,6 +1914,55 @@
       }
     },
     {
+      "id" : "meta+e",
+      "key" : "e",
+      "description" : "SSH host menu (open in Warp)",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "fn" : "AppManager.showSSHMenu"
+      }
+    },
+    {
+      "id" : "meta+v",
+      "key" : "v",
+      "description" : "SSH eaws in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "eaws"
+        ],
+        "fn" : "AppManager.openWarpSSH"
+      }
+    },
+    {
+      "id" : "meta+b",
+      "key" : "b",
+      "description" : "SSH replit conception-alloy in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "ssh:\/\/replit-conception-alloy\/home\/runner\/workspace"
+        ],
+        "fn" : "AppManager.openWarpSSH"
+      }
+    },
+    {
+      "id" : "meta+n",
+      "key" : "n",
+      "description" : "SSH replit conception-guardian in Warp",
+      "mods" : "meta",
+      "action" : {
+        "kind" : "call",
+        "args" : [
+          "ssh:\/\/replit-conception-guardian\/home\/runner\/workspace"
+        ],
+        "fn" : "AppManager.openWarpSSH"
+      }
+    },
+    {
       "id" : "meta+9",
       "key" : "9",
       "description" : "Open Latest Download",

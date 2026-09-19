@@ -1167,19 +1167,10 @@ local function placeOnMouse(win)
     win:setFrame({ x = x, y = y, w = w, h = h }, 0)
 end
 
-function AppManager.openWarpWindowAt(path)
-    if not path or path == "" then
-        log:w("openWarpWindowAt called with no path", __FILE__)
-        return
-    end
-    local expanded = path:gsub("^~", os.getenv("HOME") or "~")
-    local before = warpWindowIds()
-
-    -- hs.urlevent.openURL would hand the URL to Hammerspoon's own handler set;
-    -- `open` goes straight to LaunchServices, which is what registers warp://.
-    local uri = "warp://action/new_window?path=" .. expanded
-    hs.execute("open '" .. uri:gsub("'", "'\\''") .. "'")
-
+-- Wait for a Warp window that did not exist in `before`, then park it under
+-- the mouse. Shared by the folder and the SSH openers: both dispatch a URI and
+-- return immediately, so the window is not there yet at call time.
+local function placeNewWarpWindow(before)
     local tries = 0
     hs.timer.doUntil(
         function() return tries >= WARP_POLL_TRIES end,
@@ -1198,6 +1189,176 @@ function AppManager.openWarpWindowAt(path)
         end,
         WARP_POLL_INTERVAL
     )
+end
+
+function AppManager.openWarpWindowAt(path)
+    if not path or path == "" then
+        log:w("openWarpWindowAt called with no path", __FILE__)
+        return
+    end
+    local expanded = path:gsub("^~", os.getenv("HOME") or "~")
+    local before = warpWindowIds()
+
+    -- hs.urlevent.openURL would hand the URL to Hammerspoon's own handler set;
+    -- `open` goes straight to LaunchServices, which is what registers warp://.
+    local uri = "warp://action/new_window?path=" .. expanded
+    hs.execute("open '" .. uri:gsub("'", "'\\''") .. "'")
+
+    placeNewWarpWindow(before)
+end
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- SSH targets in Warp
+-- ─────────────────────────────────────────────────────────────────────────────
+--
+-- The local-folder opener above uses warp://action/new_window?path=..., which
+-- only knows how to cd. A remote target needs a COMMAND run in the new window,
+-- and Warp's one supported entrypoint for that is a launch configuration: a
+-- YAML file under ~/.warp/launch_configurations opened as warp://launch/<name>.
+-- So each host gets a tiny generated config (rewritten every press -- cheap,
+-- and it keeps the file honest if ~/.ssh/config changes).
+--
+-- macOS's ssh:// handler is NOT used: LaunchServices binds ssh: to Terminal.app
+-- on this machine, so `open ssh://host/path` would land in the wrong terminal.
+
+local WARP_LAUNCH_DIR = (os.getenv("HOME") or "~") .. "/.warp/launch_configurations"
+local SSH_CONFIG_PATH = (os.getenv("HOME") or "~") .. "/.ssh/config"
+
+-- Hosts whose useful working directory is not the login directory. A host
+-- listed here gets that path unless the caller names one explicitly.
+AppManager.sshDefaultPaths = {
+    ["replit-conception-alloy"]    = "/home/runner/workspace",
+    ["replit-conception-guardian"] = "/home/runner/workspace",
+    ["replit-parser-agent"]        = "/home/runner/workspace",
+    ["replit-ellie"]               = "/home/runner/workspace",
+    ["replit-alloy"]               = "/home/runner/workspace",
+    ["replit-knowledge-farm"]      = "/home/runner/workspace",
+    ["replit-lilly"]               = "/home/runner/workspace",
+}
+
+-- Accept any of: "host", "host:/path", "ssh://host/path", "ssh://host".
+-- Returns host, path (path may be nil).
+local function parseSSHTarget(target)
+    if type(target) ~= "string" or target == "" then return nil, nil end
+    local spec = target:gsub("^ssh://", "")
+    local host, path = spec:match("^([^:/]+)[:/](.*)$")
+    if not host then return spec, nil end
+    if path == "" then path = nil
+    elseif not path:match("^[~/]") then path = "/" .. path end
+    return host, path
+end
+
+-- Host names from ~/.ssh/config, in file order, skipping patterns (* and ?)
+-- and the catch-all. Returns a list of strings.
+function AppManager.sshHosts()
+    local hosts, seen = {}, {}
+    local f = io.open(SSH_CONFIG_PATH, "r")
+    if not f then
+        log:w("No ssh config at " .. SSH_CONFIG_PATH, __FILE__)
+        return hosts
+    end
+    for line in f:lines() do
+        local names = line:match("^%s*[Hh][Oo][Ss][Tt]%s+(.+)$")
+        if names then
+            for name in names:gmatch("%S+") do
+                if not name:find("[*?]") and not seen[name] then
+                    seen[name] = true
+                    hosts[#hosts + 1] = name
+                end
+            end
+        end
+    end
+    f:close()
+    return hosts
+end
+
+-- Single-quote for YAML (a literal ' doubles).
+local function yamlQuote(str)
+    return "'" .. tostring(str):gsub("'", "''") .. "'"
+end
+
+-- Write (or rewrite) the launch config for one host+path, returning its name.
+local function writeSSHLaunchConfig(host, path)
+    local name = "hs-ssh-" .. host:gsub("[^%w%-_]", "-")
+    -- -t forces a TTY so the remote `cd` + login shell behave interactively.
+    local remote = "ssh -t " .. host
+    if path then
+        local quoted = "'" .. path:gsub("'", "'\\''") .. "'"
+        remote = remote .. " \"cd " .. quoted .. " 2>/dev/null; exec \\$SHELL -l\""
+    end
+
+    hs.fs.mkdir(WARP_LAUNCH_DIR)  -- no-op when it already exists
+    local file = WARP_LAUNCH_DIR .. "/" .. name .. ".yaml"
+    local f, err = io.open(file, "w")
+    if not f then
+        log:e("Cannot write Warp launch config " .. file .. ": " .. tostring(err), __FILE__)
+        return nil
+    end
+    f:write(table.concat({
+        "# Generated by Hammerspoon (AppManager.openWarpSSH). Edits are overwritten.",
+        "---",
+        "name: " .. yamlQuote(name),
+        "windows:",
+        "  - tabs:",
+        "      - layout:",
+        -- A layout with only `commands` is rejected silently (the URI opens
+        -- nothing); Warp wants a cwd for the local shell the command runs in.
+        "          cwd: " .. yamlQuote(os.getenv("HOME") or "/"),
+        "          commands:",
+        "            - exec: " .. yamlQuote(remote),
+        "",
+    }, "\n"))
+    f:close()
+    return name
+end
+
+--- Open an SSH session in a new Warp window, parked under the mouse.
+---
+--- `target` is "host", "host:/path" or "ssh://host/path"; with no path, a
+--- host in AppManager.sshDefaultPaths gets its default, otherwise the login
+--- directory is used.
+function AppManager.openWarpSSH(target)
+    local host, path = parseSSHTarget(target)
+    if not host then
+        log:w("openWarpSSH called with no target", __FILE__)
+        return
+    end
+    path = path or AppManager.sshDefaultPaths[host]
+
+    local name = writeSSHLaunchConfig(host, path)
+    if not name then
+        hs.alert.show("Could not prepare SSH window for " .. host)
+        return
+    end
+
+    local before = warpWindowIds()
+    hs.execute("open '" .. ("warp://launch/" .. name):gsub("'", "'\\''") .. "'")
+    placeNewWarpWindow(before)
+end
+
+--- Chooser over every host in ~/.ssh/config. Bind this to one key instead of
+--- burning a key per host -- there are more hosts than free meta letters.
+function AppManager.showSSHMenu()
+    local choices = {}
+    for _, host in ipairs(AppManager.sshHosts()) do
+        local path = AppManager.sshDefaultPaths[host]
+        choices[#choices + 1] = {
+            text = host,
+            subText = path and ("ssh " .. host .. "  →  " .. path) or ("ssh " .. host),
+            host = host,
+        }
+    end
+    if #choices == 0 then
+        hs.alert.show("No SSH hosts found in ~/.ssh/config")
+        return
+    end
+
+    local chooser = hs.chooser.new(function(choice)
+        if choice and choice.host then AppManager.openWarpSSH(choice.host) end
+    end)
+    chooser:placeholderText("SSH host → new Warp window")
+    chooser:choices(choices)
+    chooser:show()
 end
 
 -- Save in global environment for module reuse
