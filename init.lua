@@ -466,7 +466,12 @@ end)
 
 
 
--- hs.loadSpoon('ExtendedClipboard')
+-- Ten numbered clipboard registers (0-9). Entry points take the slot number,
+-- so hotkeys.json binds one function ten times:
+--   spoon.ExtendedClipboard:copyTo / :pasteFrom / :loadFrom  args [N]
+--   spoon.ExtendedClipboard:showSlots                        (chooser)
+hs.loadSpoon('ExtendedClipboard')
+spoon.ExtendedClipboard:init()
 
 -- Disable window animations for instant, reliable window positioning
 hs.window.animationDuration = 0

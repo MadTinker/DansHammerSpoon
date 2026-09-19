@@ -1,228 +1,244 @@
 --- === ExtendedClipboard ===
 ---
---- This adds additional Clipboard capablities like 1-10 register, history, and mqtt based device sharing
+--- Ten numbered clipboard registers (0-9), in the vim sense: copy into a slot,
+--- paste out of a slot, and the slots survive a Hammerspoon reload.
 ---
---- Download:
+--- Everything here is meant to be driven from hotkeys.json through BindForge,
+--- so every entry point is a METHOD TAKING THE SLOT NUMBER -- one function,
+--- ten bindings, instead of ten near-identical closures (which is what the
+--- first version of this file was, all of it commented out):
+---
+---   spoon.ExtendedClipboard:copyTo   with args [1]  -- clipboard  -> slot 1
+---   spoon.ExtendedClipboard:pasteFrom with args [1] -- slot 1 -> clipboard + ⌘V
+---   spoon.ExtendedClipboard:loadFrom with args [1]  -- slot 1 -> clipboard only
+---   spoon.ExtendedClipboard:showSlots               -- chooser over all slots
+---
+--- Slots are stored in hs.settings, NOT a file under data/: that directory is a
+--- submodule which auto-commits, and a clipboard register churning every few
+--- seconds would bury real layout changes in noise.
+
 local obj = {}
 obj.__index = obj
 
 -- Metadata
 obj.name = "ExtendedClipboard"
-obj.version = "0.1.1"
+obj.version = "0.2.0"
 obj.author = "<d.edens@email>"
 obj.homepage = ""
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
---- ExtendedClipboard:helloWorld()
+local log = hs.logger.new("ExtClip")
 
--- hs.hotkey.bind({"alt"}, "1", function()
---     --  Get Clipboard contents.
---     local clipboardContent = hs.pasteboard.getContents()
+--- ExtendedClipboard.settingsKey
+--- Variable
+--- hs.settings key the register table is persisted under.
+obj.settingsKey = "ExtendedClipboard.slots"
 
---     --Store the clipboard content in a global variable
---     _G.clip1 = clipboardContent
+--- ExtendedClipboard.autoPaste
+--- Variable
+--- When true (the default), `pasteFrom` sends ⌘V after loading the slot, so one
+--- key both recalls and pastes. Set false to only load the clipboard.
+obj.autoPaste = true
 
---     --Display OSD (On-Screen Display).
---     hs.alert.show("1 - " .. clipboardContent)
+--- ExtendedClipboard.alertLength
+--- Variable
+--- How much of the slot's text an on-screen alert shows before eliding.
+obj.alertLength = 60
 
---     -- Set topic var with rost
---     hs.execute("rost vars/clip1 " .. clipboardContent)
--- end)
+--- ExtendedClipboard.publishToMqtt
+--- Variable
+--- When true, every copy also runs `rost vars/clip<N> <text>` so the register
+--- is readable from the other machines. Off by default: it shells out on every
+--- copy, and clipboard content is exactly the kind of thing not to spray onto a
+--- broker without meaning to.
+obj.publishToMqtt = false
 
--- hs.hotkey.bind({"alt"}, "2", function()
---     local clipboardContent = hs.pasteboard.getContents()
---     _G.clip2 = clipboardContent
---     hs.alert.show("2 - " .. clipboardContent)
---     hs.execute("rost vars/clip2 " .. clipboardContent)
--- end)
+--- ExtendedClipboard.publishCommand
+--- Variable
+--- The command used when publishToMqtt is on. Gets ` vars/clip<N> <text>`.
+obj.publishCommand = "rost"
 
--- hs.hotkey.bind({"alt"}, "3", function()
---     local clipboardContent = hs.pasteboard.getContents()
---     _G.clip3 = clipboardContent
---     hs.alert.show("3 - " .. clipboardContent)
---     hs.execute("rost vars/clip3 " .. clipboardContent)
--- end)
+-- Slot 0 is a real slot, so the valid range is 0..9 -- ten registers.
+local SLOT_MIN, SLOT_MAX = 0, 9
 
--- hs.hotkey.bind({"alt"}, "4", function()
---     local clipboardContent = hs.pasteboard.getContents()
---     _G.clip4 = clipboardContent
---     hs.alert.show("4 - " .. clipboardContent)
---     hs.execute("rost vars/clip4 " .. clipboardContent)
--- end)
+-- In-memory mirror of the persisted table, keyed by slot STRING ("0".."9"):
+-- hs.settings round-trips through a plist, which has no integer keys.
+local slots = nil
 
--- hs.hotkey.bind({"alt"}, "5", function()
---     local clipboardContent = hs.pasteboard.getContents()
---     _G.clip5 = clipboardContent
---     hs.alert.show("5 - " .. clipboardContent)
---     hs.execute("rost vars/clip5 " .. clipboardContent)
--- end)
+local function load()
+    if slots then return slots end
+    local stored = hs.settings.get(obj.settingsKey)
+    slots = (type(stored) == "table") and stored or {}
+    return slots
+end
 
--- hs.hotkey.bind({"alt"}, "6", function()
---     local clipboardContent = hs.pasteboard.getContents()
---     _G.clip6 = clipboardContent
---     hs.alert.show("6 - " .. clipboardContent)
---     hs.execute("rost vars/clip6 " .. clipboardContent)
--- end)
+local function save()
+    hs.settings.set(obj.settingsKey, slots or {})
+end
 
--- hs.hotkey.bind({"alt"}, "7", function()
---     local clipboardContent = hs.pasteboard.getContents()
---     _G.clip7 = clipboardContent
---     hs.alert.show("7 - " .. clipboardContent)
---     hs.execute("rost vars/clip7 " .. clipboardContent)
--- end)
+-- Accept 3, "3", or "clip3"; reject anything outside 0-9. Returns the string
+-- key, or nil plus a message.
+local function slotKey(slot)
+    local n = tonumber(tostring(slot):match("%-?%d+") or "")
+    if not n or n < SLOT_MIN or n > SLOT_MAX or n % 1 ~= 0 then
+        return nil, "slot must be " .. SLOT_MIN .. "-" .. SLOT_MAX ..
+            " (got " .. tostring(slot) .. ")"
+    end
+    return tostring(n)
+end
 
--- hs.hotkey.bind({"alt"}, "8", function()
---     local clipboardContent = hs.pasteboard.getContents()
---     _G.clip8 = clipboardContent
---     hs.alert.show("8 - " .. clipboardContent)
---     hs.execute("rost vars/clip8 " .. clipboardContent)
--- end)
+-- One-line preview for alerts and the chooser: newlines become ⏎, long text is
+-- cut at alertLength.
+local function preview(text, limit)
+    if type(text) ~= "string" then return "" end
+    local flat = text:gsub("%s*\n%s*", " ⏎ "):gsub("^%s+", ""):gsub("%s+$", "")
+    limit = limit or obj.alertLength
+    if #flat > limit then flat = flat:sub(1, limit - 1) .. "…" end
+    return flat
+end
 
+local function publish(key, text)
+    if not obj.publishToMqtt then return end
+    local quoted = "'" .. tostring(text):gsub("'", "'\\''") .. "'"
+    hs.execute(obj.publishCommand .. " vars/clip" .. key .. " " .. quoted)
+end
 
--- hs.hotkey.bind({"alt"}, "9", function()
---     local clipboardContent = hs.pasteboard.getContents()
---     _G.clip9 = clipboardContent
---     hs.alert.show("9 - " .. clipboardContent)
---     hs.execute("rost vars/clip9 " .. clipboardContent)
--- end)
+--- ExtendedClipboard:copyTo(slot)
+--- Method
+--- Store the current clipboard in `slot` (0-9). Returns the stored text or nil.
+function obj:copyTo(slot)
+    local key, err = slotKey(slot)
+    if not key then
+        log.w(err)
+        hs.alert.show("Clip: " .. err)
+        return nil
+    end
 
--- hs.hotkey.bind({"alt"}, "0", function()
---     local clipboardContent = hs.pasteboard.getContents()
---     _G.clip0 = clipboardContent
---     hs.alert.show("0 - " .. clipboardContent)
---     hs.execute("rost vars/clip0 " .. clipboardContent)
--- end)
+    local text = hs.pasteboard.getContents()
+    if not text or text == "" then
+        hs.alert.show("Clip " .. key .. ": clipboard is empty (or not text)")
+        return nil
+    end
 
--- -- Paste Hotkeys
--- hs.hotkey.bind({"alt", "ctrl"}, "1", function()
---     -- Flash clip1 contents on screen
---     hs.alert.show("1 - " .. _G.clip1)
---     -- Set clip1 contents to clipboard
---     hs.pasteboard.setContents(_G.clip1)
--- end)
+    load()[key] = { text = text, at = os.time() }
+    save()
+    publish(key, text)
+    hs.alert.show("Clip " .. key .. " ← " .. preview(text))
+    return text
+end
 
--- hs.hotkey.bind({"alt", "ctrl"}, "2", function()
---     hs.alert.show("2 - " .. _G.clip2)
---     hs.pasteboard.setContents(_G.clip2)
--- end)
+--- ExtendedClipboard:loadFrom(slot)
+--- Method
+--- Put `slot`'s text on the clipboard WITHOUT pasting. Returns the text or nil.
+function obj:loadFrom(slot)
+    local key, err = slotKey(slot)
+    if not key then
+        log.w(err)
+        hs.alert.show("Clip: " .. err)
+        return nil
+    end
 
--- hs.hotkey.bind({"alt", "ctrl"}, "3", function()
---     hs.alert.show("3 - " .. _G.clip3)
---     hs.pasteboard.setContents(_G.clip3)
--- end)
+    local entry = load()[key]
+    local text = entry and entry.text
+    if not text then
+        hs.alert.show("Clip " .. key .. " is empty")
+        return nil
+    end
 
--- hs.hotkey.bind({"alt", "ctrl"}, "4", function()
---     hs.alert.show("4 - " .. _G.clip4)
---     hs.pasteboard.setContents(_G.clip4)
--- end)
+    hs.pasteboard.setContents(text)
+    return text
+end
 
--- hs.hotkey.bind({"alt", "ctrl"}, "5", function()
---     hs.alert.show("5 - " .. _G.clip5)
---     hs.pasteboard.setContents(_G.clip5)
--- end)
+--- ExtendedClipboard:pasteFrom(slot)
+--- Method
+--- Load `slot` onto the clipboard and paste it into the focused app (unless
+--- ExtendedClipboard.autoPaste is false).
+---
+--- The paste is a real ⌘V keystroke rather than typing the text out: typing is
+--- slow for anything long, and mangles apps that autocomplete or auto-indent.
+--- The clipboard is deliberately LEFT holding the slot -- restoring the
+--- previous contents afterwards races the app that is still reading the
+--- pasteboard, and the whole point of a register is to keep it handy.
+function obj:pasteFrom(slot)
+    local text = self:loadFrom(slot)
+    if not text then return nil end
 
--- hs.hotkey.bind({"alt", "ctrl"}, "6", function()
---     hs.alert.show("6 - " .. _G.clip6)
---     hs.pasteboard.setContents(_G.clip6)
--- end)
+    local key = slotKey(slot)
+    if self.autoPaste then
+        -- A beat for the pasteboard change to land before the keystroke; some
+        -- apps read the pasteboard on the keydown itself.
+        hs.timer.doAfter(0.05, function()
+            hs.eventtap.keyStroke({ "cmd" }, "v", 0)
+        end)
+    end
+    hs.alert.show("Clip " .. key .. " → " .. preview(text))
+    return text
+end
 
--- hs.hotkey.bind({"alt", "ctrl"}, "7", function()
---     hs.alert.show("7 - " .. _G.clip7)
---     hs.pasteboard.setContents(_G.clip7)
--- end)
+--- ExtendedClipboard:clearSlot(slot)
+--- Method
+--- Empty one register.
+function obj:clearSlot(slot)
+    local key, err = slotKey(slot)
+    if not key then
+        hs.alert.show("Clip: " .. err)
+        return
+    end
+    load()[key] = nil
+    save()
+    hs.alert.show("Clip " .. key .. " cleared")
+end
 
--- hs.hotkey.bind({"alt", "ctrl"}, "8", function()
---     hs.alert.show("8 - " .. _G.clip8)
---     hs.pasteboard.setContents(_G.clip8)
--- end)
+--- ExtendedClipboard:clearAll()
+--- Method
+--- Empty every register.
+function obj:clearAll()
+    slots = {}
+    save()
+    hs.alert.show("All clip slots cleared")
+end
 
--- hs.hotkey.bind({"alt", "ctrl"}, "9", function()
---     hs.alert.show("9 - " .. _G.clip9)
---     hs.pasteboard.setContents(_G.clip9)
--- end)
+--- ExtendedClipboard:slots()
+--- Method
+--- The register table as { [0-9] = {text=, at=} }, for scripts and menus.
+function obj:getSlots()
+    local out = {}
+    for key, entry in pairs(load()) do
+        local n = tonumber(key)
+        if n then out[n] = entry end
+    end
+    return out
+end
 
--- hs.hotkey.bind({"alt", "ctrl"}, "0", function()
---     hs.alert.show("0 - " .. _G.clip0)
---     hs.pasteboard.setContents(_G.clip0)
--- end)
+--- ExtendedClipboard:showSlots()
+--- Method
+--- Chooser over all ten registers; picking one pastes it. Bind this to a single
+--- key when you would rather not spend ten of them.
+function obj:showSlots()
+    local choices = {}
+    local stored = load()
+    for n = SLOT_MIN, SLOT_MAX do
+        local entry = stored[tostring(n)]
+        choices[#choices + 1] = {
+            text = tostring(n) .. "  " .. (entry and preview(entry.text, 90) or "(empty)"),
+            subText = entry and ("saved " .. os.date("%Y-%m-%d %H:%M", entry.at))
+                or "no contents",
+            slot = n,
+            valid = entry ~= nil,
+        }
+    end
 
--- function saveClipboard()
---     -- Write Clipboard to cliplog file
---     local clipboardContent = hs.pasteboard.getContents()
---     local cliplog = io.open(os.getenv("HOME") .. "/cliplog.txt", "a")
---     -- add log entry
---     cliplog:write(os.date("%Y-%m-%d %H:%M:%S") .. " - " .. clipboardContent .. "\n")
---     cliplog:write(clipboardContent .. "\n")
---     cliplog:close()
--- end
+    local chooser = hs.chooser.new(function(choice)
+        if choice and choice.valid then obj:pasteFrom(choice.slot) end
+    end)
+    chooser:placeholderText("Clipboard register → paste")
+    chooser:choices(choices)
+    chooser:show()
+end
 
--- function cleanCliplog()
---     -- Clean cliplog file
---     local cliplog = io.open(os.getenv("HOME") .. "/cliplog.txt", "r")
---     local lines = {}
+function obj:init()
+    load()
+    return self
+end
 
---     -- Read each line and remove duplicates
---     for line in cliplog:lines() do
---         if not lines[line] then
---             lines[line] = true
---         end
---     end
-
---     cliplog:close()
-
---     -- Write cleaned contents back to the file
---     cliplog = io.open(os.getenv("HOME") .. "/cliplog.txt", "w")
---     for line, _ in pairs(lines) do
---         cliplog:write(line .. "\n")
---     end
-
---     cliplog:close()
--- end
-
--- hs.hotkey.bind({"alt"}, "V", function()
---     spoon.ClipboardTool:toggleClipboard()
--- end)
-
--- hs.hotkey.bind({"alt"}, "C", function()
---     saveClipboard()
--- end)
-
--- hs.hotkey.bind({"ctrl","alt"}, "C", function()
---     hs.execute("open -a 'Visual Studio Code' " .. os.getenv("HOME") .. "/cliplog.txt")
--- end)
-
--- hs.hotkey.bind({"ctrl","alt","cmd"}, "C", function()
---     cleanCliplog()
--- end)
-
--- hs.hotkey.bind({"ctrl","alt","cmd","shift"}, "C", function()
---     hs.execute("open -a 'Visual Studio Code' " .. os.getenv("HOME") .. "/cliplog.txt")
---     cleanCliplog()
--- end)
--- function obj:helloWorld(name)
---   print(string.format('Hello %s from %s', name, self.name))
--- end
-
--- return obj
-
-
-
---local clipLogger
---
---function toggleClipLogger()
---    if clipLogger then
---        clipLogger:stop()
---        clipLogger = nil
---    else
---        clipLogger = hs.eventtap.new({ hs.eventtap.event.types.typesChanged }, function(event)
---            local clipboard = hs.pasteboard.getContents()
---            if clipboard then
---                local file = io.open(os.getenv("HOME") .. "/cliplog.txt", "a")
---                file:write(os.date("%Y-%m-%d %H:%M:%S") .. " - " .. clipboard .. "\n")
---                file:close()
---            end
---        end)
---        clipLogger:start()
---    end
---end
---
+return obj
