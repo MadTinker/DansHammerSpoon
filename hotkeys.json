@@ -1,4 +1,22 @@
 {
+  "modifierSets" : {
+    "meta" : [
+      "cmd",
+      "shift",
+      "alt"
+    ],
+    "hammer" : [
+      "cmd",
+      "ctrl",
+      "alt"
+    ],
+    "hyper" : [
+      "cmd",
+      "shift",
+      "ctrl",
+      "alt"
+    ]
+  },
   "bindings" : [
     {
       "migratedFrom" : "hotkeys.lua:55",
@@ -48,28 +66,18 @@
       "migratedFrom" : "hotkeys.lua:58"
     },
     {
-      "migratedFrom" : "hotkeys.lua:59",
-      "id" : "hyper+F2",
-      "key" : "F2",
-      "description" : "Windsurf",
-      "mods" : "hyper",
       "action" : {
         "kind" : "call",
-        "fn" : "AppManager.open_windsurf"
-      }
-    },
-    {
-      "migratedFrom" : "hotkeys.lua:60",
+        "fn" : "AppManager.open_finder"
+      },
+      "enabled" : true,
       "id" : "cmd+F2",
-      "key" : "F2",
-      "description" : "Open Zen",
       "mods" : [
         "cmd"
       ],
-      "action" : {
-        "kind" : "call",
-        "fn" : "AppManager.open_zen"
-      }
+      "key" : "F2",
+      "description" : "Open Finder",
+      "migratedFrom" : "hotkeys.lua:60"
     },
     {
       "migratedFrom" : "hotkeys.lua:61",
@@ -130,17 +138,17 @@
       }
     },
     {
-      "placeholder" : true,
       "action" : {
         "kind" : "call",
-        "fn" : "tempFunction"
+        "fn" : "AppManager.launchGitHubWithProjectSelection"
       },
+      "enabled" : true,
       "id" : "cmd+F4",
       "mods" : [
         "cmd"
       ],
       "key" : "F4",
-      "description" : "Temporary Function",
+      "description" : "Madhub-selector",
       "migratedFrom" : "hotkeys.lua:66"
     },
     {
@@ -368,8 +376,8 @@
         "fn" : "tempFunction"
       },
       "note" : "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it.",
-      "enabled" : false,
       "id" : "hammer+F11",
+      "enabled" : false,
       "mods" : "hammer",
       "key" : "F11",
       "description" : "Temporary Function",
@@ -408,8 +416,8 @@
         "fn" : "tempFunction"
       },
       "note" : "macOS owns this combo -- RegisterEventHotKey fails with -9878 (\"already registered\"). It never bound, before or after the migration; it was a no-op placeholder so the error went unnoticed. Free it in System Settings > Keyboard > Shortcuts to use it.",
-      "enabled" : false,
       "id" : "hammer+F12",
+      "enabled" : false,
       "mods" : "hammer",
       "key" : "F12",
       "description" : "Temporary Function",
@@ -716,7 +724,7 @@
         ],
         "fn" : "WindowManager.moveMouseToScreen"
       },
-      "note" : "add - and = and backspace 1\/2 swapped: screen index 1 (PHL 278E1 #1) sits lower on desk than index 2, felt flipped",
+      "note" : "add - and = and backspace 1/2 swapped: screen index 1 (PHL 278E1 #1) sits lower on desk than index 2, felt flipped",
       "id" : "hammer+-",
       "mods" : "hammer",
       "key" : "-",
@@ -846,15 +854,16 @@
       }
     },
     {
-      "migratedFrom" : "hotkeys.lua:134",
-      "id" : "hyper+e",
-      "key" : "e",
-      "description" : "Show Editor Menu",
-      "mods" : "hyper",
       "action" : {
         "kind" : "call",
-        "fn" : "FileManager.showEditorMenuSafe"
-      }
+        "fn" : "AppManager.showSSHMenu"
+      },
+      "enabled" : true,
+      "id" : "hyper+e",
+      "mods" : "hyper",
+      "key" : "e",
+      "description" : "Show SSH Menu",
+      "migratedFrom" : "hotkeys.lua:134"
     },
     {
       "migratedFrom" : "hotkeys.lua:135",
@@ -1053,7 +1062,7 @@
         "kind" : "call",
         "fn" : "tempFunction"
       },
-      "note" : "] freed: was Mouse Monitor 1, collided with system\/app screenshot tool on cmd+ctrl+alt+]. Monitor jumps now live on -\/= (see Number Row above).",
+      "note" : "] freed: was Mouse Monitor 1, collided with system/app screenshot tool on cmd+ctrl+alt+]. Monitor jumps now live on -/= (see Number Row above).",
       "id" : "hammer+]",
       "mods" : "hammer",
       "key" : "]",
@@ -1242,9 +1251,9 @@
           "command" : "tc on"
         }
       },
-      "enabled" : true,
-      "id" : "hyper+h",
       "note" : "Keyboard-grid editor for this file. Sits beside hammer+h (HammerGhost) on purpose.",
+      "id" : "hyper+h",
+      "enabled" : true,
       "mods" : "hyper",
       "key" : "h",
       "description" : "Run tc on",
@@ -1318,8 +1327,8 @@
     },
     {
       "id" : "hammer+;",
-      "enabled" : true,
       "key" : ";",
+      "enabled" : true,
       "description" : "Keymap In Browser",
       "mods" : "hammer",
       "action" : {
@@ -1332,9 +1341,9 @@
         "kind" : "call",
         "fn" : "spoon.BindForge:toggleWindow"
       },
-      "enabled" : true,
-      "id" : "hyper+;",
       "note" : "Keyboard-grid editor for this file. Sits beside hammer+h (HammerGhost) on purpose.",
+      "id" : "hyper+;",
+      "enabled" : true,
       "mods" : "hyper",
       "key" : ";",
       "description" : "Toggle Keymap Editor",
@@ -1342,8 +1351,8 @@
     },
     {
       "id" : "hammer+'",
-      "enabled" : true,
       "key" : "'",
+      "enabled" : true,
       "description" : "Reload Hotkeys From Disk",
       "mods" : "hammer",
       "action" : {
@@ -1696,8 +1705,8 @@
     },
     {
       "id" : "meta+6",
-      "enabled" : true,
       "key" : "6",
+      "enabled" : true,
       "description" : "showfilemenu",
       "mods" : "meta",
       "action" : {
@@ -1713,7 +1722,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/madness_interactive\/projects\/common\/Inventorium"
+          "/Users/d.edens/lab/madness_interactive/projects/common/Inventorium"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1726,7 +1735,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/alloy"
+          "/Users/d.edens/lab/alloy"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1739,7 +1748,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/madness_interactive"
+          "/Users/d.edens/lab/madness_interactive"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1752,7 +1761,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/madness_interactive\/projects\/common\/cartogomancy"
+          "/Users/d.edens/lab/madness_interactive/projects/common/cartogomancy"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1765,7 +1774,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/madness_interactive\/projects\/common\/MadQTT"
+          "/Users/d.edens/lab/madness_interactive/projects/common/MadQTT"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1778,7 +1787,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/madness_interactive\/projects\/common\/madnessDesktop"
+          "/Users/d.edens/lab/madness_interactive/projects/common/madnessDesktop"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1791,7 +1800,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/madness_interactive\/projects\/common\/Omnispindle"
+          "/Users/d.edens/lab/madness_interactive/projects/common/Omnispindle"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1804,7 +1813,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/madness_interactive\/projects\/common\/titancall"
+          "/Users/d.edens/lab/madness_interactive/projects/common/titancall"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1817,7 +1826,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/madness_interactive\/docs\/cursor_chathistory"
+          "/Users/d.edens/lab/madness_interactive/docs/cursor_chathistory"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1830,7 +1839,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/alloy\/AlloyMonorepo\/guardian"
+          "/Users/d.edens/lab/alloy/AlloyMonorepo/guardian"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1843,7 +1852,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/alloy\/AlloyMonorepo\/elementalsentinel"
+          "/Users/d.edens/lab/alloy/AlloyMonorepo/elementalsentinel"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1856,7 +1865,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/alloy\/AlloyMonorepo"
+          "/Users/d.edens/lab/alloy/AlloyMonorepo"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1869,7 +1878,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/regressiontestkit"
+          "/Users/d.edens/lab/regressiontestkit"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1882,7 +1891,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/elemental-machines\/devops\/devops-gcp\/elementalmachines_app_cloudflare"
+          "/Users/d.edens/lab/elemental-machines/devops/devops-gcp/elementalmachines_app_cloudflare"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1895,7 +1904,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/lab\/Asolaria"
+          "/Users/d.edens/lab/Asolaria"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1908,7 +1917,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "\/Users\/d.edens\/.hammerspoon"
+          "/Users/d.edens/.hammerspoon"
         ],
         "fn" : "AppManager.openWarpWindowAt"
       }
@@ -1944,7 +1953,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "ssh:\/\/replit-conception-alloy\/home\/runner\/workspace"
+          "ssh://replit-conception-alloy/home/runner/workspace"
         ],
         "fn" : "AppManager.openWarpSSH"
       }
@@ -1957,7 +1966,7 @@
       "action" : {
         "kind" : "call",
         "args" : [
-          "ssh:\/\/replit-conception-guardian\/home\/runner\/workspace"
+          "ssh://replit-conception-guardian/home/runner/workspace"
         ],
         "fn" : "AppManager.openWarpSSH"
       }
@@ -1976,24 +1985,6 @@
       }
     }
   ],
-  "modifierSets" : {
-    "meta" : [
-      "cmd",
-      "shift",
-      "alt"
-    ],
-    "hyper" : [
-      "cmd",
-      "shift",
-      "ctrl",
-      "alt"
-    ],
-    "hammer" : [
-      "cmd",
-      "ctrl",
-      "alt"
-    ]
-  },
   "_comment" : "Declarative hotkey table. Edited by hand, by the HammerGhost keymap tab, or by the artifact editor -- all three write this same schema. HotkeyBinder.lua applies it; HotkeyBinder.reload() re-applies without hs.reload(). 'migratedFrom' cites the pre-migration hotkeys.lua line for provenance (see git history).",
   "version" : 1
 }
