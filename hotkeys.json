@@ -1545,17 +1545,6 @@
       "migratedFrom" : "hotkeys.lua:208"
     },
     {
-      "migratedFrom" : "hotkeys.lua:211",
-      "id" : "hammer+Space",
-      "key" : "Space",
-      "description" : "Show All Hotkeys",
-      "mods" : "hammer",
-      "action" : {
-        "kind" : "call",
-        "fn" : "showCombinedList"
-      }
-    },
-    {
       "placeholder" : true,
       "action" : {
         "kind" : "call",
@@ -1566,17 +1555,6 @@
       "key" : "Space",
       "description" : "Temporary Function",
       "migratedFrom" : "hotkeys.lua:212"
-    },
-    {
-      "migratedFrom" : "hotkeys.lua:213",
-      "id" : "meta+Space",
-      "key" : "Space",
-      "description" : "Toggle Hotkey Display Mode",
-      "mods" : "meta",
-      "action" : {
-        "kind" : "call",
-        "fn" : "toggleHotkeyDisplayMode"
-      }
     },
     {
       "migratedFrom" : "hotkeys.lua:216",

@@ -25,7 +25,6 @@ local WindowManager = getModule('WindowManager')
 local FileManager = getModule('FileManager')
 local AppManager = getModule('AppManager')
 local DeviceManager = getModule('DeviceManager')
-local HotkeyManager = getModule('HotkeyManager')
 local WindowToggler = getModule('WindowToggler')
 local ProjectManager = getModule('ProjectManager')
 local WindowMenu = getModule('WindowMenu')
@@ -55,8 +54,6 @@ local modSets = (HotkeyBinder.config or {}).modifierSets or {}
 hammer = modSets.hammer or { "cmd", "ctrl", "alt" }
 _hyper = modSets.hyper or { "cmd", "shift", "ctrl", "alt" }
 _meta = modSets.meta or { "cmd", "shift", "alt" }
--- NEW: Caps Lock as Hyper key (maps to F18)
-_caps = {} -- Will be set up below with modal system
 
 -- Add state tracking for toggling right layouts
 local rightLayoutState = {
