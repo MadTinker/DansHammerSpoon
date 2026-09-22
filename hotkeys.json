@@ -895,22 +895,22 @@
     {
       "action" : {
         "kind" : "call",
-        "fn" : "WindowTidy.run"
+        "fn" : "spoon.Orrery:run"
       },
       "id" : "hammer+y",
       "key" : "y",
-      "description" : "AI Tidy Windows",
+      "description" : "Orrery: Arrange Windows",
       "migratedFrom" : "hotkeys.lua:139",
       "mods" : "hammer"
     },
     {
       "action" : {
         "kind" : "call",
-        "fn" : "WindowTidy.preview"
+        "fn" : "spoon.Orrery:preview"
       },
       "id" : "hyper+y",
       "key" : "y",
-      "description" : "AI Tidy Preview (dry run)",
+      "description" : "Orrery: Preview Arrangement",
       "migratedFrom" : "hotkeys.lua:140",
       "mods" : "hyper"
     },
@@ -931,11 +931,11 @@
     {
       "action" : {
         "kind" : "call",
-        "fn" : "WindowTidy.undo"
+        "fn" : "spoon.Orrery:undo"
       },
       "id" : "hyper+u",
       "key" : "u",
-      "description" : "AI Tidy Undo",
+      "description" : "Orrery: Undo Arrangement",
       "migratedFrom" : "hotkeys.lua:142",
       "mods" : "hyper"
     },

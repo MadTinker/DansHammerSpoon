@@ -112,18 +112,18 @@ function WindowMenu.createMainMenu()
 
         -- AI-assisted arrangement (never touches the focused window)
         {
-            title = icons.ai .. " AI Tidy Windows",
-            fn = function() require('WindowTidy').run() end,
+            title = icons.ai .. " Orrery: Arrange Windows",
+            fn = function() spoon.Orrery:run() end,
             tooltip = "Ask the CLI agent for a better arrangement and apply it"
         },
         {
-            title = icons.ai .. " AI Tidy — Preview Only",
-            fn = function() require('WindowTidy').preview() end,
+            title = icons.ai .. " Orrery: Preview Only",
+            fn = function() spoon.Orrery:preview() end,
             tooltip = "Show the proposed arrangement without moving anything"
         },
         {
-            title = icons.restore .. " AI Tidy — Undo Last",
-            fn = function() require('WindowTidy').undo() end,
+            title = icons.restore .. " Orrery: Undo Last",
+            fn = function() spoon.Orrery:undo() end,
             tooltip = "Restore windows to their frames before the last tidy"
         },
         { title = "-" },

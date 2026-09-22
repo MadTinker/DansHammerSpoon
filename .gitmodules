@@ -16,3 +16,6 @@
 [submodule "Spoons/Hopper.spoon"]
 	path = Spoons/Hopper.spoon
 	url = https://github.com/MadnessEngineering/Hopper.spoon.git
+[submodule "Spoons/Orrery.spoon"]
+	path = Spoons/Orrery.spoon
+	url = https://github.com/MadnessEngineering/Orrery.spoon.git

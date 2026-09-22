@@ -57,6 +57,7 @@ end
 -- fix it in its own repo, not by editing a copy, or the two drift again.
 hs.loadSpoon("BindForge")
 hs.loadSpoon("Hopper")
+hs.loadSpoon("Orrery")
 
 -- PadForge: editor for the XPPen shortcut-remote's exported .pcfg config
 -- (BindForge for the pad, not the keyboard -- see PadForge.spoon's README).

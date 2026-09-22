@@ -28,7 +28,6 @@ local DeviceManager = getModule('DeviceManager')
 local WindowToggler = getModule('WindowToggler')
 local ProjectManager = getModule('ProjectManager')
 local WindowMenu = getModule('WindowMenu')
-local WindowTidy = getModule('WindowTidy')
 -- The hotkey system lives in BindForge.spoon, loaded by init.lua just above.
 -- Without it nothing below can bind, so say so plainly rather than leaving a
 -- keyboard that quietly does nothing. (hs.loadSpoon returns nil rather than
