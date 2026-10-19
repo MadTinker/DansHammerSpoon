@@ -21,6 +21,21 @@ local scripts_dir = os.getenv("HOME") .. "/.hammerspoon/scripts"
 local usbWatcher = nil
 local usbisEnabled = false
 
+-- Phones re-enumerate several times on plug-in (charge -> MTP/ADB mode switch),
+-- each firing an "added" event. Only launch scrcpy once per cooldown window.
+local SCRCPY_COOLDOWN_SECONDS = 2
+local lastScrcpyLaunch = 0
+
+local function scrcpyOnCooldown()
+    local now = hs.timer.secondsSinceEpoch()
+    if now - lastScrcpyLaunch < SCRCPY_COOLDOWN_SECONDS then
+        log:d('scrcpy launch suppressed (cooldown)')
+        return true
+    end
+    lastScrcpyLaunch = now
+    return false
+end
+
 -- USB Device Management
 local function usbDeviceCallback(data)
     log:i('USB event detected:', hs.inspect(data))
@@ -48,6 +63,10 @@ local function usbDeviceCallback(data)
                 hs.alert.show("Samsung Android plugged in (Device R5CT602ZVTJ)")
             end
 
+            if device_id and scrcpyOnCooldown() then
+                return
+            end
+
             if device_id then
                 local cmd = string.format("%s/launch_scrcpy.sh samsung &> /dev/null &", scripts_dir)
                 log:d('Executing command:', cmd)
@@ -62,6 +81,7 @@ local function usbDeviceCallback(data)
             end
         elseif data["vendorName"] == "Google" then
             log:i('Google device connected:', data["productName"])
+            if scrcpyOnCooldown() then return end
             local cmd = string.format("nohup %s/launch_scrcpy.sh google &> /dev/null &", scripts_dir)
             log:d('Executing command:', cmd)
             local success, output, error = os.execute(cmd)
