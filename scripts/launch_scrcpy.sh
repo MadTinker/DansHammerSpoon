@@ -21,22 +21,24 @@ export ADB="/opt/homebrew/bin/adb"
 log "Starting scrcpy for $DEVICE_TYPE device: $DEVICE_ID"
 
 # The USB event fires before adb sees the phone; wait up to 15s for it.
+# -d = the USB device, so a wireless adb connection (adb-wifi) does not clash.
+if [ -n "$DEVICE_ID" ]; then SEL="-s $DEVICE_ID"; else SEL="-d"; fi
 for _ in $(seq 30); do
-    [ "$("$ADB" ${DEVICE_ID:+-s "$DEVICE_ID"} get-state 2>/dev/null)" = "device" ] && break
+    [ "$("$ADB" $SEL get-state 2>/dev/null)" = "device" ] && break
     sleep 0.5
 done
-log "adb state: $("$ADB" ${DEVICE_ID:+-s "$DEVICE_ID"} get-state 2>&1)"
+log "adb state: $("$ADB" $SEL get-state 2>&1)"
 
 case "$DEVICE_TYPE" in
     "samsung")
         if [ ! -z "$DEVICE_ID" ]; then
             /opt/homebrew/bin/scrcpy -s "$DEVICE_ID" -S --stay-awake >> "$LOG_FILE" 2>&1 &
         else
-            /opt/homebrew/bin/scrcpy --stay-awake --always-on-top -S >> "$LOG_FILE" 2>&1 &
+            /opt/homebrew/bin/scrcpy -d --stay-awake --always-on-top -S >> "$LOG_FILE" 2>&1 &
         fi
         ;;
     "google")
-        /opt/homebrew/bin/scrcpy --stay-awake --window-title=scrcpy --always-on-top -S >> "$LOG_FILE" 2>&1 &
+        /opt/homebrew/bin/scrcpy -d --stay-awake --window-title=scrcpy --always-on-top -S >> "$LOG_FILE" 2>&1 &
         ;;
     *)
         log "Unknown device type: $DEVICE_TYPE"
