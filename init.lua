@@ -153,6 +153,10 @@ hs.timer.doAfter(0.2, function()
     hs.console.toolbar(consoleTB)
 end)
 
+-- 📱 menubar: buttons that fire Tasker tasks on the Pixel (list: Digitomancy/buttons.json)
+local okPixel, errPixel = pcall(require, 'PixelButtons')
+if not okPixel then log:e('PixelButtons failed to load: ' .. tostring(errPixel), __FILE__, 157) end
+
 -- Alert to indicate that the config has been loaded
 hs.alert.show("Config loaded")
 
