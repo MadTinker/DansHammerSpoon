@@ -108,6 +108,14 @@ function DeviceManager.toggleUSBLogging()
     else
         usbWatcher:start()
         usbisEnabled = true
+        -- A phone already plugged in never fires "added"; run the plug-in flow for it now.
+        for _, dev in ipairs(hs.usb.attachedDevices() or {}) do
+            if dev.vendorName == "Google" then
+                log:i('Google device already attached, running plug-in flow')
+                os.execute(string.format("nohup %s/launch_scrcpy.sh google &> /dev/null &", scripts_dir))
+                break
+            end
+        end
     end
     print("USB is now " .. (usbisEnabled and "enabled" or "disabled"))
 end

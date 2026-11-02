@@ -17,6 +17,18 @@ log() {
 
 # Set ADB environment variable explicitly
 export ADB="/opt/homebrew/bin/adb"
+# Hammerspoon's environment is bare; the lab toolkit (pixel-up, adb-grants) needs adb on PATH.
+LAB_BIN="$HOME/lab/madness_interactive/bin"
+export PATH="/opt/homebrew/bin:$LAB_BIN:$PATH"
+
+# One run at a time: pixel-up's `adb tcpip` restarts adbd, the phone re-enumerates,
+# and the USB watcher fires again while this run is still going.
+LOCK="$LOGS_DIR/launch_scrcpy.lock"
+if ! mkdir "$LOCK" 2>/dev/null; then
+    log "Another launch is running, skipping ($DEVICE_TYPE)"
+    exit 0
+fi
+trap 'rmdir "$LOCK"' EXIT
 
 log "Starting scrcpy for $DEVICE_TYPE device: $DEVICE_ID"
 
@@ -27,7 +39,24 @@ for _ in $(seq 30); do
     [ "$("$ADB" $SEL get-state 2>/dev/null)" = "device" ] && break
     sleep 0.5
 done
-log "adb state: $("$ADB" $SEL get-state 2>&1)"
+STATE=$("$ADB" $SEL get-state 2>&1)
+log "adb state: $STATE"
+if [ "$STATE" != "device" ]; then
+    log "No usable phone, not launching scrcpy"
+    exit 0
+fi
+
+# Pixel: redo whatever a reboot undid (tcpip 5555, eaws tunnel, grants, always-on VPN).
+# Runs before scrcpy because its adb restart would kill a running mirror.
+if [ "$DEVICE_TYPE" = "google" ] && [ -x "$LAB_BIN/pixel-up" ]; then
+    "$LAB_BIN/pixel-up" -q >> "$LOG_FILE" 2>&1
+    log "pixel-up done"
+fi
+
+if pgrep -x scrcpy >/dev/null; then
+    log "scrcpy already running, not starting another"
+    exit 0
+fi
 
 case "$DEVICE_TYPE" in
     "samsung")
@@ -45,6 +74,17 @@ case "$DEVICE_TYPE" in
         ;;
 esac
 
+PID=$!
+# Right after adb churn (tcpip restart, tunnel reconnect) scrcpy sometimes
+# dies at once with "Server connection failed"; give it one more go.
+sleep 4
+if [ "$DEVICE_TYPE" = "google" ] && ! kill -0 $PID 2>/dev/null; then
+    log "scrcpy exited early, retrying once"
+    sleep 2
+    /opt/homebrew/bin/scrcpy -d --stay-awake --window-title=scrcpy --always-on-top -S >> "$LOG_FILE" 2>&1 &
+    PID=$!
+fi
+
 # Store the PID of the background process
-echo $! > "$LOGS_DIR/scrcpy.pid"
-log "Started scrcpy with PID: $!"
+echo $PID > "$LOGS_DIR/scrcpy.pid"
+log "Started scrcpy with PID: $PID"
