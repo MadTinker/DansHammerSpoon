@@ -58,32 +58,51 @@ if pgrep -x scrcpy >/dev/null; then
     exit 0
 fi
 
-case "$DEVICE_TYPE" in
-    "samsung")
-        if [ ! -z "$DEVICE_ID" ]; then
-            /opt/homebrew/bin/scrcpy -s "$DEVICE_ID" -S --stay-awake >> "$LOG_FILE" 2>&1 &
-        else
-            /opt/homebrew/bin/scrcpy -d --stay-awake --always-on-top -S >> "$LOG_FILE" 2>&1 &
+# adb is "device" a moment before it's usable after a restart (plug-in, tcpip,
+# adb usb). Wait until the phone answers twice in a row, a second apart.
+adb_settled() {
+    for _ in $(seq 20); do
+        if "$ADB" $SEL shell true 2>/dev/null; then
+            sleep 1
+            "$ADB" $SEL shell true 2>/dev/null && return 0
         fi
-        ;;
-    "google")
-        /opt/homebrew/bin/scrcpy -d --stay-awake --window-title=scrcpy --always-on-top -S >> "$LOG_FILE" 2>&1 &
-        ;;
-    *)
-        log "Unknown device type: $DEVICE_TYPE"
-        ;;
-esac
+        sleep 1
+    done
+    return 1
+}
 
-PID=$!
-# Right after adb churn (tcpip restart, tunnel reconnect) scrcpy sometimes
-# dies at once with "Server connection failed"; give it one more go.
-sleep 4
-if [ "$DEVICE_TYPE" = "google" ] && ! kill -0 $PID 2>/dev/null; then
-    log "scrcpy exited early, retrying once"
-    sleep 2
-    /opt/homebrew/bin/scrcpy -d --stay-awake --window-title=scrcpy --always-on-top -S >> "$LOG_FILE" 2>&1 &
+start_scrcpy() {
+    case "$DEVICE_TYPE" in
+        "samsung")
+            if [ ! -z "$DEVICE_ID" ]; then
+                /opt/homebrew/bin/scrcpy -s "$DEVICE_ID" -S --stay-awake >> "$LOG_FILE" 2>&1 &
+            else
+                /opt/homebrew/bin/scrcpy -d --stay-awake --always-on-top -S >> "$LOG_FILE" 2>&1 &
+            fi
+            ;;
+        "google")
+            /opt/homebrew/bin/scrcpy -d --stay-awake --window-title=scrcpy --always-on-top -S >> "$LOG_FILE" 2>&1 &
+            ;;
+        *)
+            log "Unknown device type: $DEVICE_TYPE"
+            return 1
+            ;;
+    esac
     PID=$!
-fi
+}
+
+# Up to 3 tries: scrcpy dies at once ("Server connection failed") if adb is
+# still settling.
+PID=
+for attempt in 1 2 3; do
+    adb_settled || { log "phone never settled, giving up"; exit 0; }
+    start_scrcpy || exit 0
+    sleep 4
+    kill -0 $PID 2>/dev/null && break
+    log "scrcpy exited early (attempt $attempt)"
+    PID=
+done
+[ -n "$PID" ] || { log "scrcpy failed 3 times"; exit 0; }
 
 # Store the PID of the background process
 echo $PID > "$LOGS_DIR/scrcpy.pid"
